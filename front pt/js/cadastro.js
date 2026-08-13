@@ -1,0 +1,420 @@
+// =========================================================================
+// ATUALIZAÇÃO DA GRADE DE NRs (CONSUMINDO A NOVA ESTRUTURA DTO DO JAVA)
+// =========================================================================
+async function atualizarMatrizNRs() {
+    // 🚀 Garante que a flag de Emitente atualize sempre que a função mudar
+    alternarFlagEmitente();
+
+    const selectFuncao = document.getElementById('funcao');
+    if (!selectFuncao) return;
+
+    const funcao = selectFuncao.value;
+    const container = document.getElementById('containerMatrizNRs');
+    if (!container) return;
+
+    if (!funcao) {
+        container.innerHTML = '<p>Selecione uma função para ver as NRs.</p>';
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/funcionarios/requisitos-cargo/${encodeURIComponent(funcao)}`);
+
+        if (!response.ok) {
+            throw new Error('Erro ao buscar requisitos do cargo no servidor');
+        }
+
+        const nrsExigidas = await response.json();
+
+        if (!nrsExigidas || nrsExigidas.length === 0) {
+            container.innerHTML = '<p>Nenhuma NR específica exigida para esta função.</p>';
+            return;
+        }
+
+        let html = '<div class="grid-nrs">';
+
+        nrsExigidas.forEach(req => {
+            const sigla = req.sigla;
+            const nome = req.nome;
+
+            html += `<div class="card-nr-item" data-nr="${sigla}">
+                <label><strong>${sigla}</strong></label>
+                <small style="display:block; margin-bottom: 5px;">${nome}</small>
+                
+                <div class="form-group">
+                    <input type="date" id="realizacao_${sigla}" class="form-control">
+                </div>
+            </div>`;
+        });
+
+        container.innerHTML = html + '</div>';
+
+    } catch (error) {
+        console.error("Erro ao carregar NRs do backend:", error);
+        container.innerHTML = '<p style="color:red;">Erro ao carregar NRs para esta função.</p>';
+    }
+}
+
+window.atualizarMatrizNRs = atualizarMatrizNRs;
+
+// =========================================================================
+// 2. CONTROLE DE EMPRESAS TERCEIRIZADAS (EXIBIR E CARREGAR)
+// =========================================================================
+
+async function carregarEmpresasTerceiras() {
+    const select = document.getElementById('selectEmpresaTerceira') || document.getElementById('empresaTerceiraSelect');
+    if (!select) return;
+
+    try {
+        const response = await fetch('http://localhost:8080/api/empresas');
+        if (!response.ok) throw new Error('Erro ao buscar lista de empresas');
+
+        const empresas = await response.json();
+
+        select.innerHTML = '<option value="">Selecione a empresa terceirizada...</option>';
+
+        empresas.forEach(empresa => {
+            const option = document.createElement('option');
+            option.value = empresa.id;
+            option.textContent = empresa.nomeFantasia;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar empresas terceiras:', error);
+    }
+}
+
+function alternarCampoTerceiro() {
+    const campoTerceiro = document.getElementById('ehTerceiro');
+    if (!campoTerceiro) return;
+
+    const ehTerceiro = campoTerceiro.type === 'checkbox'
+        ? campoTerceiro.checked
+        : campoTerceiro.value === "true";
+
+    const containerEmpresa = document.getElementById('containerEmpresaTerceira') || document.getElementById('grupoEmpresa');
+
+    if (containerEmpresa) {
+        containerEmpresa.style.display = ehTerceiro ? 'block' : 'none';
+    }
+
+    if (ehTerceiro) {
+        carregarEmpresasTerceiras();
+    } else {
+        const select = document.getElementById('selectEmpresaTerceira') || document.getElementById('empresaTerceiraSelect');
+        if (select) select.value = '';
+    }
+}
+
+window.alternarCampoTerceiro = alternarCampoTerceiro;
+
+// =========================================================================
+// CONTROLE DE EXIBIÇÃO DA PERMISSÃO DE EMISSÃO (SÓ PARA PERFIL ENCARREGADO)
+// =========================================================================
+function alternarFlagEmitente() {
+    const selectPerfil = document.getElementById('perfil');
+    const container = document.getElementById('containerAlcadaEmissao');
+    const checkboxEmitente = document.getElementById('podeEmitirPT');
+
+    if (!selectPerfil || !container) return;
+
+    // Obtém o valor e o texto da opção selecionada no perfil
+    const valorPerfil = selectPerfil.value ? selectPerfil.value.toLowerCase().trim() : "";
+    const idx = selectPerfil.selectedIndex;
+    const textoPerfil = (idx >= 0 && selectPerfil.options[idx])
+        ? selectPerfil.options[idx].text.toLowerCase().trim()
+        : "";
+
+    // Verifica se a palavra 'encarregado' está no value ou no texto exibido
+    const ehEncarregado = valorPerfil.includes('encarregado') || textoPerfil.includes('encarregado');
+
+    console.log(`[DEBUG] Perfil: "${textoPerfil}" | Exibir? ${ehEncarregado}`);
+
+    if (ehEncarregado) {
+        // 1. Remove qualquer bloqueio inline antigo
+        container.style.removeProperty('display');
+
+        // 2. Remove a classe que esconde o elemento
+        container.classList.remove('elemento-escondido');
+
+        // 3. Define a exibição padrão (flex para alinhar o checkbox e o label)
+        container.style.display = 'flex';
+    } else {
+        // Esconde a div adicionando a classe e forçando o display none
+        container.classList.add('elemento-escondido');
+        container.style.display = 'none';
+
+        // Desmarca a opção para não enviar true indevidamente
+        if (checkboxEmitente) {
+            checkboxEmitente.checked = false;
+        }
+    }
+}
+
+window.alternarFlagEmitente = alternarFlagEmitente;
+// =========================================================================
+// MAPEAMENTO DE SIGLAS DAS NRs PARA ATRIBUTOS DA ENTIDADE JAVA
+// =========================================================================
+function obterNomeCampoJava(nr) {
+    if (!nr) return null;
+    const cleanNr = nr.toUpperCase().replace('-', '').replace(' ', '').trim();
+    switch (cleanNr) {
+        case "NR01": return "Nr01";
+        case "NR10": return "Nr10";
+        case "NR10SEP": return "Nr10Sep";
+        case "NR11": return "Nr11";
+        case "NR12": return "Nr12";
+        case "NR13": return "Nr13";
+        case "NR18": return "Nr18";
+        case "NR20": return "Nr20";
+        case "NR33": return "Nr33";
+        case "NR34": return "Nr34";
+        case "NR35": return "Nr35";
+        case "BRIGADA": return "Brigada";
+        default: return cleanNr.charAt(0).toUpperCase() + cleanNr.slice(1).toLowerCase();
+    }
+}
+
+// =========================================================================
+// 3. ENVIO DOS DADOS DO FORMULÁRIO (COM VALIDAÇÕES E TRAVAS)
+// =========================================================================
+async function processarEnvioFormulario() {
+    const form = document.getElementById('formColaborador');
+    if (form && !form.checkValidity()) return form.reportValidity();
+
+    const realizacaoASO = document.getElementById('realizacaoASO')?.value;
+    if (!realizacaoASO) {
+        alert("⚠️ A data de realização do ASO é obrigatória para todos os colaboradores!");
+        document.getElementById('realizacaoASO')?.focus();
+        return;
+    }
+
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+    const campoTerceiro = document.getElementById('ehTerceiro');
+    const ehTerceiro = campoTerceiro
+        ? (campoTerceiro.type === 'checkbox' ? campoTerceiro.checked : campoTerceiro.value === "true")
+        : false;
+
+    const selectEmpresa = document.getElementById('selectEmpresaTerceira') || document.getElementById('empresaTerceiraSelect');
+    const empresaTerceiraId = selectEmpresa?.value;
+
+    if (ehTerceiro && !empresaTerceiraId) {
+        alert("Por favor, selecione qual é a empresa terceirizada.");
+        return;
+    }
+
+    const idEmpresaFinal = ehTerceiro
+        ? Number(empresaTerceiraId)
+        : usuarioLogado?.empresaId;
+
+    const perfilSelecionado = document.getElementById('perfil').value;
+
+    let podeEmitirPtFinal = false;
+    if (perfilSelecionado === 'OPERADOR_INDUSTRIAL') {
+        podeEmitirPtFinal = true;
+    } else if (perfilSelecionado === 'ENCARREGADO') {
+        podeEmitirPtFinal = document.getElementById('podeEmitirPT')?.checked || false;
+    }
+
+
+    const data = {
+        nome: document.getElementById('nome').value.trim(),
+        matricula: document.getElementById('matricula').value.trim(),
+        funcao: document.getElementById('funcao').value,
+        perfil: document.getElementById('perfil').value,
+
+        usuario: document.getElementById('usuario')?.value?.trim() || "",
+        senha: document.getElementById('senha')?.value || "",
+
+        ehTerceiro: ehTerceiro,
+        empresa: idEmpresaFinal ? { id: idEmpresaFinal } : null,
+
+        podeEmitirPt: podeEmitirPtFinal,
+        podeSolicitarPt: perfilSelecionado === "SOLICITANTE",
+
+        realizacaoASO: realizacaoASO,
+        validadeASO: document.getElementById('validadeASO')?.value || null,
+        realizacaoReciclagemPt: document.getElementById('realizacaoReciclagemPt')?.value || null,
+        validadeReciclagemPt: document.getElementById('validadeReciclagemPt')?.value || null,
+
+        usuarioLogadoId: usuarioLogado ? usuarioLogado.id : null
+    };
+
+    let nrFaltando = null;
+
+    document.querySelectorAll('.card-nr-item').forEach(card => {
+        const nr = card.dataset.nr || card.querySelector("strong")?.innerText.trim();
+        if (!nr) return;
+
+        const nomeCampo = obterNomeCampoJava(nr);
+        if (!nomeCampo) return;
+
+        const inputRealizacao = card.querySelector('input[id^="realizacao_"]');
+        const inputValidade = card.querySelector('input[id^="validade_"]');
+
+        if (inputRealizacao) {
+            if (inputRealizacao.value) {
+                data["realizacao" + nomeCampo] = inputRealizacao.value;
+                if (inputValidade && inputValidade.value) {
+                    data["validade" + nomeCampo] = inputValidade.value;
+                }
+            } else if (!nrFaltando && card.style.display !== 'none') {
+                nrFaltando = nr;
+                inputRealizacao.focus();
+            }
+        }
+    });
+
+    if (nrFaltando) {
+        alert(`⚠️ Atenção: A data de realização para o requisito [${nrFaltando}] é obrigatória para este cargo!`);
+        return;
+    }
+
+    console.log("Enviando funcionário:", JSON.stringify(data, null, 2));
+    const url = "http://localhost:8080/api/funcionarios";
+
+    try {
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        if (!resp.ok) {
+            const erro = await resp.text();
+            console.error("Erro do backend:", erro);
+            alert("Erro do backend: " + erro);
+            return;
+        }
+
+        const funcionarioSalvo = await resp.json();
+        console.log("Funcionário salvo com sucesso:", funcionarioSalvo);
+        alert("Funcionário cadastrado com sucesso!");
+
+    } catch (erro) {
+        console.error("Erro ao processar envio:", erro);
+        alert("Erro ao cadastrar funcionário. Verifique o console para mais detalhes.");
+    }
+}
+
+// =========================================================================
+// 4. FUNÇÕES DE SUPORTE E MODO DE TELA
+// =========================================================================
+function ajustarCamposLogin() {
+    console.log("Perfil alterado, ajustando campos...");
+}
+
+function configurarModoDaTela() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFuncionario = urlParams.get('id');
+
+    if (idFuncionario) {
+        const blocosValidade = document.querySelectorAll('.bloco-validade');
+        blocosValidade.forEach(bloco => {
+            bloco.classList.remove('campo-oculto');
+        });
+    }
+}
+
+// =========================================================================
+// CONTROLE DA JANELA MODAL (ABRIR, FECHAR E SALVAR EMPRESA)
+// =========================================================================
+function abrirModalEmpresa() {
+    const modal = document.getElementById('modalNovaEmpresa');
+    if (modal) {
+        modal.classList.remove('oculto');
+        modal.style.display = 'flex';
+    }
+}
+
+function fecharModalEmpresa() {
+    const modal = document.getElementById('modalNovaEmpresa');
+    if (modal) {
+        modal.classList.add('oculto');
+        modal.style.display = 'none';
+    }
+
+    const inputNome = document.getElementById('modalNomeFantasia');
+    const inputCnpj = document.getElementById('modalCnpj');
+    if (inputNome) inputNome.value = '';
+    if (inputCnpj) inputCnpj.value = '';
+}
+
+async function salvarNovaEmpresaTerceira() {
+    const nomeFantasia = document.getElementById('modalNomeFantasia')?.value.trim();
+    const cnpj = document.getElementById('modalCnpj')?.value.trim();
+
+    if (!nomeFantasia || !cnpj) {
+        alert("Por favor, preencha o Nome Fantasia e o CNPJ da empresa.");
+        return;
+    }
+
+    const payload = {
+        nomeFantasia: nomeFantasia,
+        cnpj: cnpj,
+        ativo: true
+    };
+
+    try {
+        const response = await fetch('http://localhost:8080/api/empresas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const erro = await response.text();
+            throw new Error(erro);
+        }
+
+        const empresaSalva = await response.json();
+        alert("Empresa terceirizada cadastrada com sucesso!");
+
+        fecharModalEmpresa();
+        await carregarEmpresasTerceiras();
+
+        const select = document.getElementById('selectEmpresaTerceira') || document.getElementById('empresaTerceiraSelect');
+        if (select) {
+            select.value = empresaSalva.id;
+        }
+
+    } catch (error) {
+        console.error("Erro ao salvar empresa:", error);
+        alert("Erro ao cadastrar empresa: " + error.message);
+    }
+}
+
+window.abrirModalEmpresa = abrirModalEmpresa;
+window.fecharModalEmpresa = fecharModalEmpresa;
+window.salvarNovaEmpresaTerceira = salvarNovaEmpresaTerceira;
+
+// =========================================================================
+// 5. INICIALIZAÇÃO DA TELA
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Escuta a mudança de Cargo/Função (apenas para atualizar as NRs)
+    const selectFuncao = document.getElementById('funcao');
+    if (selectFuncao) {
+        selectFuncao.addEventListener('change', atualizarMatrizNRs);
+    }
+
+    // 🚀 Escuta a mudança do Perfil Operacional para controlar a flag de Emitente
+    const selectPerfil = document.getElementById('perfil');
+    if (selectPerfil) {
+        selectPerfil.addEventListener('change', alternarFlagEmitente);
+    }
+
+    const campoTerceiro = document.getElementById('ehTerceiro');
+    if (campoTerceiro) {
+        campoTerceiro.addEventListener('change', alternarCampoTerceiro);
+    }
+
+    const btnSalvar = document.getElementById('btnDispararSubmit');
+    if (btnSalvar) btnSalvar.addEventListener('click', processarEnvioFormulario);
+
+    // Inicializa os estados dos campos ao carregar a tela
+    alternarCampoTerceiro();
+    alternarFlagEmitente();
+    configurarModoDaTela();
+});

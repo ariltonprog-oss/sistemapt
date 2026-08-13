@@ -1,0 +1,54 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Verificação de Segurança
+    const logado = sessionStorage.getItem('usuarioLogado');
+    if (!logado) { window.location.href = 'login.html'; return; }
+
+   const usuario = JSON.parse(logado);
+const perfil = usuario.perfil ? usuario.perfil.toUpperCase() : '';
+
+console.log("Dashboard carregado. Acesso como: ", perfil);
+
+
+// ADMIN_SISTEMA é somente instalação.
+// Não possui acesso ao monitoramento das PTs.
+if (perfil === "ADMIN_SISTEMA") {
+
+    alert("Acesso restrito. Usuário de instalação não possui acesso ao monitoramento de PTs.");
+
+    window.location.href = "admin.html";
+
+    return;
+}
+
+
+// MASTER_EMPRESA e usuários operacionais podem consultar conforme regras futuras
+carregarTabelaPTs();
+});
+
+// Apenas função de leitura e listagem
+async function carregarTabelaPTs() {
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho`);
+        const corpoTabela = document.getElementById('tabelaPtCorpo');
+        if (!response.ok || !corpoTabela) return;
+
+        const listaPts = await response.json();
+        corpoTabela.innerHTML = ''; // Limpa antes de preencher
+
+        listaPts.forEach(pt => {
+            // Renderiza apenas a linha, sem botões de ação se o perfil não puder interagir
+            corpoTabela.innerHTML += `
+                <tr>
+                    <td>#${pt.id}</td>
+                    <td>${pt.plantaArea}</td>
+                    <td>${pt.tag}</td>
+                    <td>${pt.descricaoAtividade}</td>
+                    <td><span class="badge">${pt.status}</span></td>
+                    <td>Fiscalização em modo leitura</td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error("Erro ao fiscalizar PTs:", error);
+    }
+}

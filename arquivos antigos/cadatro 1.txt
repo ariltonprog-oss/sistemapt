@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SESMT - Cadastro de Colaborador</title>
+    <style>
+        /* Classe para manter os novos campos com o padrão escuro do sistema */
+        .campo-custom-escuro {
+            background-color: #2c3e50 !important;
+            color: white !important;
+            border: 1px solid #34495e !important;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: #1e293b;
+            padding: 20px;
+            border-bottom: 4px solid #eab308;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #eab308;
+            font-size: 24px;
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .titulo-secao {
+            color: #eab308;
+            font-size: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #334155;
+            border: 1px solid #475569;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-senha-mascarado {
+            -webkit-text-security: disc !important;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #eab308;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            border-top: 1px solid #334155;
+            padding-top: 20px;
+        }
+
+        .btn-salvar {
+            background: #eab308;
+            color: #0f172a;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-salvar:hover {
+            background: #ca8a04;
+        }
+
+        .btn-cancelar {
+            background: #ef4444;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background 0.2s;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .btn-cancelar:hover {
+            background: #dc2626;
+        }
+
+        .secao-nrs {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #eab308;
+            margin-top: 10px;
+        }
+
+        .titulo-nrs {
+            font-size: 15px;
+            color: #eab308;
+            margin-bottom: 15px;
+        }
+
+        .grid-nrs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .elemento-escondido {
+            display: none !important;
+        }
+
+        .linha-formulario-tres-colunas {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .linha-formulario-tres-colunas-fim {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .texto-informativo-vazio {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .container-alcada-emissao {
+            margin-bottom: 15px;
+            background: #1e293b;
+            padding: 12px;
+            border-radius: 4px;
+            border-left: 4px solid #eab308;
+        }
+
+        .alinhamento-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-customizado {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .label-customizado-aviso {
+            cursor: pointer;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .card-nr-item {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+        }
+
+        .rotulo-data {
+            font-size: 12px;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .inputs-alinhados-historico {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-meses {
+            width: 80px !important;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>👷‍♂️ Gerenciamento de Colaboradores (SESMT)</h1>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2 class="titulo-secao">📝 Inserir Novo Colaborador no Sistema</h2>
+
+            <form id="formColaborador" autocomplete="off" onsubmit="return false;">
+                <div class="linha-formulario-tres-colunas">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo</label>
+                        <input type="text" id="nome" required placeholder="Ex: João Silva" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="matricula">Matrícula do Funcionário</label>
+                        <input type="text" id="matricula" required placeholder="Ex: 1000857" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="funcao">Função Operacional / Especialidade</label>
+                        <select id="funcao" class="form-control" onchange="atualizarMatrizNRs()">
+                            <option value="">Selecione a especialidade...</option>
+                            <option value="Mecânico">Mecânico</option>
+                            <option value="Eletricista">Eletricista</option>
+                            <option value="Instrumentista">Instrumentista</option>
+                            <option value="Pintor Industrial">Pintor Industrial</option>
+                            <option value="Caldeireiro">Caldeireiro</option>
+                            <option value="Encanador Industrial">Encanador Industrial</option>
+                            <option value="Soldador">Soldador</option>
+                            <option value="Oficial de Construção Civil">Oficial de Construção Civil</option>
+                            <option value="Operador Industrial">Operador Industrial</option>
+                            <option value="Encarregado de Instrumentação/Elétrica">Encarregado de Instrumentação/Elétrica</option>
+                            <option value="Encarregado de Caldeiraria/Tubulação">Encarregado de Caldeiraria/Tubulação</option>
+                            <option value="Encarregado de Mecânica">Encarregado de Mecânica</option>
+                            <option value="Encarregado de Civil e Pintura">Encarregado de Civil e Pintura</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="linha-formulario-tres-colunas">
+                    <div class="form-group">
+                        <label for="perfil">Perfil Operacional / Alçada de PT</label>
+                        <select id="perfil" required onchange="ajustarCamposLogin()">
+                            <option value="">Selecione...</option>
+                            <option value="EXECUTANTE">EXECUTANTE (Sem Login - Apenas Fiscalização de NRs)</option>
+                            <option value="OFICIAL">OFICIAL / TÉCNICO (Solicitante e Executante de PT)</option>
+                            <option value="OPERADOR_INDUSTRIAL">OPERADOR INDUSTRIAL (Emitente de PT)</option>
+                            <option value="ENCARREGADO">ENCARREGADO (Solicitante / Emitente Opcional de PT)</option>
+                           
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="usuario" id="labelUsuario">Usuário (Login)</label>
+                        <input type="text" id="usuario" placeholder="Gerado automaticamente ao salvar" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="senha" id="labelSenha">Senha de Acesso *</label>
+                        <input type="text" id="senha" class="input-senha-mascarado" placeholder="Digite a senha" autocomplete="off">
+                    </div>
+                </div>
+
+                <div id="containerAlcadaEmissao" class="container-alcada-emissao elemento-escondido">
+                    <div class="alinhamento-checkbox-label">
+                        <input type="checkbox" id="podeEmitirPT" class="checkbox-customizado">
+                        <label for="podeEmitirPT" class="label-customizado-aviso">
+                            ⚠️ Permitir que este Encarregado atue como EMITENTE de PT (Conforme regra da área)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="linha-formulario-tres-colunas" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="ehTerceiro">Tipo de Colaborador *</label>
+                        <select id="ehTerceiro" class="form-control campo-custom-escuro" onchange="toggleEmpresa()">
+                            <option value="false">Funcionário Próprio</option>
+                            <option value="true">Colaborador Terceiro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group elemento-escondido" id="grupoEmpresa">
+                        <label for="empresa">Empresa Parceira *</label>
+                        <input type="text" id="empresa" class="form-control campo-custom-escuro" placeholder="Nome da empresa contratada">
+                    </div>
+                    <div></div>
+                </div>
+
+                <div class="linha-formulario-tres-colunas-fim">
+                    <div class="form-group">
+                        <label for="realizacaoAso">ASO Médico (Realização e Meses de Validade)</label>
+                        <div class="inputs-alinhados-historico">
+                            <input type="date" id="realizacaoAso" required onchange="calcularVencimentoDireto('realizacaoAso', 'validadeAso', document.getElementById('mesesAso').value)">
+                            <input type="number" id="mesesAso" value="12" min="1" class="input-meses" placeholder="Meses" oninput="calcularVencimentoDireto('realizacaoAso', 'validadeAso', this.value)">
+                        </div>
+                        <input type="hidden" id="validadeAso">
+                    </div>
+                    <div class="form-group">
+                        <label for="realizacaoReciclagemPt" id="labelReciclagemPt">Reciclagem PT (Realização e Meses de Validade)</label>
+                        <div class="inputs-alinhados-historico">
+                            <input type="date" id="realizacaoReciclagemPt" onchange="calcularVencimentoDireto('realizacaoReciclagemPt', 'validadeReciclagemPt', document.getElementById('mesesReciclagemPt').value)">
+                            <input type="number" id="mesesReciclagemPt" value="12" min="1" class="input-meses" placeholder="Meses" oninput="calcularVencimentoDireto('realizacaoReciclagemPt', 'validadeReciclagemPt', this.value)">
+                        </div>
+                        <input type="hidden" id="validadeReciclagemPt">
+                    </div>
+                    <div></div>
+                </div>
+
+                <div class="secao-nrs">
+                    <h3 class="titulo-nrs">📋 Requisitos Obrigatórios de Segurança (Matriz Baseada na Função)</h3>
+                    <div id="containerMatrizNRs">
+                        <p class="texto-informativo-vazio">Selecione uma função para carregar as NRs obrigatórias...</p>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" id="btnDispararSubmit" class="btn-salvar">SALVAR E CERTIFICAR COLABORADOR</button>
+                    <a href="/admin.html" class="btn-cancelar">CANCELAR</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Objeto global de cache para dados vindos da edição
+        let dadosTreinamentosDoBanco = {};
+
+        // ==========================================
+        // 1. DEFINIÇÃO DA MATRIZ E REQUISITOS (BIBLIOTECA)
+        // ==========================================
+        const matrizNRsPorFuncao = {
+            "Operador Industrial": ["NR10", "NR11", "NR12", "NR33", "NR35"],
+            "Mecânico": ["NR11", "NR12", "NR33", "NR35"],
+            "Eletricista": ["NR10", "NR12", "NR35"],
+            "Instrumentista": ["NR10", "NR12"],
+            "Pintor Industrial": ["NR33", "NR35"],
+            "Caldeireiro": ["NR12", "NR34", "NR35"],
+            "Encanador Industrial": ["NR12", "NR33", "NR35"],
+            "Soldador": ["NR12", "NR34", "NR35"]
+        };
+
+        const bibliotecaRequisitos = {
+            "NR10": { nome: "NR-10 Segurança em Eletricidade", validade: 24 },
+            "NR11": { nome: "NR-11 Transporte e Movimentação", validade: 12 },
+            "NR12": { nome: "NR-12 Segurança em Máquinas", validade: 24 },
+            "NR33": { nome: "NR-33 Espaço Confinado", validade: 12 },
+            "NR34": { nome: "NR-34 Condições de Trabalho Naval/Quente", validade: 12 },
+            "NR35": { nome: "NR-35 Trabalho em Altura", validade: 24 }
+        };
+
+        // ==========================================
+        // 2. FUNÇÕES DE SUPORTE E CÁLCULOS DE VALIDADE
+        // ==========================================
+        function calcularVencimentoDireto(idRealizacao, idValidade, mesesValidade) {
+            const inputRealizacao = document.getElementById(idRealizacao);
+            const inputValidade = document.getElementById(idValidade);
+            
+            if (!inputRealizacao || !inputRealizacao.value || !inputValidade) return;
+            if (!mesesValidade || parseInt(mesesValidade) <= 0) return;
+
+            const dataRealizacao = new Date(inputRealizacao.value + 'T00:00:00');
+            if (isNaN(dataRealizacao.getTime())) return;
+
+            dataRealizacao.setMonth(dataRealizacao.getMonth() + parseInt(mesesValidade));
+            
+            const ano = dataRealizacao.getFullYear();
+            const mes = String(dataRealizacao.getMonth() + 1).padStart(2, '0');
+            const dia = String(dataRealizacao.getDate()).padStart(2, '0');
+
+            inputValidade.value = `${ano}-${mes}-${dia}`;
+        }
+
+        function ajustarCamposLogin() {
+            const perfil = document.getElementById('perfil').value;
+            const usuarioInput = document.getElementById('usuario');
+            const senhaInput = document.getElementById('senha');
+            const containerAlcada = document.getElementById('containerAlcadaEmissao');
+
+            // Controla a exibição do checkbox condicional para Encarregado
+            if (perfil === 'ENCARREGADO') {
+                if (containerAlcada) containerAlcada.classList.remove('elemento-escondido');
+            } else {
+                if (containerAlcada) containerAlcada.classList.add('elemento-escondido');
+                const chkEmitir = document.getElementById('podeEmitirPT');
+                if (chkEmitir) chkEmitir.checked = false;
+            }
+
+            if (perfil === 'EXECUTANTE' || perfil === '') {
+                usuarioInput.value = '';
+                senhaInput.value = '';
+                usuarioInput.disabled = true;
+                senhaInput.disabled = true;
+                senhaInput.required = false;
+            } else {
+                usuarioInput.disabled = false;
+                senhaInput.disabled = false;
+                senhaInput.required = !document.getElementById('matricula').disabled;
+            }
+        }
+
+        function toggleEmpresa() {
+            const ehTerceiro = document.getElementById('ehTerceiro').value === 'true';
+            const grupoEmpresa = document.getElementById('grupoEmpresa');
+            const inputEmpresa = document.getElementById('empresa');
+
+            if (grupoEmpresa && inputEmpresa) {
+                if (ehTerceiro) {
+                    grupoEmpresa.classList.remove('elemento-escondido');
+                    inputEmpresa.required = true;
+                } else {
+                    grupoEmpresa.classList.add('elemento-escondido');
+                    inputEmpresa.required = false;
+                    inputEmpresa.value = "";
+                }
+            }
+        }
+
+        function atualizarMatrizNRs() {
+            let funcaoSelecionada = document.getElementById('funcao').value;
+            const container = document.getElementById('containerMatrizNRs');
+            if (!container) return;
+
+            if (funcaoSelecionada) {
+                funcaoSelecionada = funcaoSelecionada.trim();
+                if (funcaoSelecionada === "OPERADOR_INDUSTRIAL") funcaoSelecionada = "Operador Industrial";
+                if (funcaoSelecionada === "MECANICO") funcaoSelecionada = "Mecânico";
+                if (funcaoSelecionada === "ELETRICISTA") funcaoSelecionada = "Eletricista";
+                if (funcaoSelecionada === "INSTRUMENTISTA") funcaoSelecionada = "Instrumentista";
+                if (funcaoSelecionada === "PINTOR_INDUSTRIAL") funcaoSelecionada = "Pintor Industrial";
+                if (funcaoSelecionada === "CALDEIREIRO") funcaoSelecionada = "Caldeireiro";
+                if (funcaoSelecionada === "ENCANADOR_INDUSTRIAL") funcaoSelecionada = "Encanador Industrial";
+                if (funcaoSelecionada === "SOLDADOR") funcaoSelecionada = "Soldador";
+            }
+
+            container.innerHTML = '';
+
+            if (!funcaoSelecionada || !matrizNRsPorFuncao[funcaoSelecionada]) {
+                container.innerHTML = '<p class="texto-informativo-vazio">Selecione uma função para carregar as NRs obrigatórias...</p>';
+                return;
+            }
+
+            const nrsObrigatorias = matrizNRsPorFuncao[funcaoSelecionada];
+            let gridHTML = '<div class="grid-nrs">';
+
+            nrsObrigatorias.forEach(nr => {
+                const dadosNR = bibliotecaRequisitos[nr];
+                gridHTML += `
+                    <div class="card-nr-item">
+                        <div class="alinhamento-checkbox-label" style="margin-bottom: 8px;">
+                            <input type="checkbox" id="check_${nr}" checked disabled class="checkbox-customizado">
+                            <label class="label-customizado-aviso" style="color: #eab308;" for="check_${nr}">${nr}</label>
+                        </div>
+                        <small style="color: #cbd5e1; display: block; margin-bottom: 8px;">${dadosNR.nome}</small>
+                        <div style="margin-bottom: 8px;">
+                            <label class="rotulo-data">Realização:</label>
+                            <input type="date" id="realizacao_${nr}" 
+                                   onchange="calcularVencimentoDireto('realizacao_${nr}', 'validade_${nr}', ${dadosNR.validade})">
+                        </div>
+                        <div>
+                            <label class="rotulo-data">Vencimento:</label>
+                            <input type="date" id="validade_${nr}" readonly>
+                        </div>
+                    </div>`;
+            });
+
+            gridHTML += '</div>';
+            container.innerHTML = gridHTML;
+        }
+
+        // ==========================================
+        // 3. ENVIO DOS DADOS (SUBMIT FORM)
+        // ==========================================
+        document.getElementById('btnDispararSubmit').addEventListener('click', async () => {
+            const form = document.getElementById('formColaborador');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const funcaoSelecionada = document.getElementById('funcao').value;
+            const perfilSelecionado = document.getElementById('perfil').value;
+            const urlParams = new URLSearchParams(window.location.search);
+            const ehEdicao = urlParams.has('id');
+
+            const colaboradorData = {
+                nome: document.getElementById('nome').value,
+                matricula: document.getElementById('matricula').value,
+                funcao: funcaoSelecionada,
+                perfil: perfilSelecionado,
+                usuario: document.getElementById('usuario').value.trim() || null,
+                senha: document.getElementById('senha').value.trim() || null,
+                realizacaoAso: document.getElementById('realizacaoAso').value || null,
+                validadeAso: document.getElementById('validadeAso').value || null,
+                realizacaoReciclagemPt: document.getElementById('realizacaoReciclagemPt').value || null,
+                validadeReciclagemPt: document.getElementById('validadeReciclagemPt').value || null,
+                podeSolicitarPt: (perfilSelecionado === 'OFICIAL' || perfilSelecionado === 'ENCARREGADO' || perfilSelecionado === 'ADMIN_SESMT'),
+                podeEmitirPt: (perfilSelecionado === 'OPERADOR_INDUSTRIAL') ? true : (document.getElementById('podeEmitirPT') ? document.getElementById('podeEmitirPT').checked : false),
+                ehTerceiro: document.getElementById('ehTerceiro').value === 'true',
+                empresa: document.getElementById('ehTerceiro').value === 'true' ? document.getElementById('empresa').value.trim() : 'Interno'
+            };
+
+            Object.keys(bibliotecaRequisitos).forEach(coluna => {
+                const inputValidadeCalculada = document.getElementById(`validade_${coluna}`);
+                const inputRealizacaoDigitada = document.getElementById(`realizacao_${coluna}`);
+                const propriedadeRealizacaoJava = "realizacao" + coluna;
+
+                if (ehEdicao) {
+                    const chaveProcuraValidade = coluna.toLowerCase();
+                    const chaveProcuraRealizacao = "realizacao" + coluna.toLowerCase();
+
+                    colaboradorData[coluna.toLowerCase()] = (inputValidadeCalculada && inputValidadeCalculada.value) ? inputValidadeCalculada.value : (dadosTreinamentosDoBanco[chaveProcuraValidade] || null);
+                    colaboradorData[propriedadeRealizacaoJava] = (inputRealizacaoDigitada && inputRealizacaoDigitada.value) ? inputRealizacaoDigitada.value : (dadosTreinamentosDoBanco[chaveProcuraRealizacao] || null);
+                } else {
+                    const checkbox = document.getElementById(`check_${coluna}`);
+                    if (checkbox && inputValidadeCalculada && inputValidadeCalculada.value) {
+                        colaboradorData[coluna.toLowerCase()] = inputValidadeCalculada.value;
+                        colaboradorData[propriedadeRealizacaoJava] = inputRealizacaoDigitada.value;
+                    } else {
+                        colaboradorData[coluna.toLowerCase()] = null;
+                        colaboradorData[propriedadeRealizacaoJava] = null;
+                    }
+                }
+            });
+
+            let url = '/api/funcionarios';
+            let metodo = 'POST';
+
+            if (ehEdicao) {
+                const idColaborador = urlParams.get('id');
+                url = `/api/funcionarios/${idColaborador}`;
+                metodo = 'PUT';
+                colaboradorData.id = parseInt(idColaborador);
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(colaboradorData)
+                });
+
+                if (response.ok) {
+                    alert('⚡ Colaborador e histórico completo de SSMA salvos com sucesso!');
+                    window.location.href = '/admin.html';
+                } else {
+                    const erroTexto = await response.text();
+                    alert('Erro ao salvar colaborador: ' + erroTexto);
+                }
+            } catch (err) {
+                alert('Erro de comunicação com o servidor.');
+                console.error(err);
+            }
+        });
+
+        // ==========================================
+        // 4. CARREGAMENTO EM CASO DE EDIÇÃO (ONLOAD)
+        // ==========================================
+        async function verificarEdicao() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const idColaborador = urlParams.get('id');
+
+            if (idColaborador) {
+                try {
+                    const response = await fetch(`/api/funcionarios/${idColaborador}`);
+                    if (!response.ok) return;
+
+                    const f = await response.json();
+                    dadosTreinamentosDoBanco = { ...f };
+
+                    document.getElementById('nome').value = f.nome || '';
+                    document.getElementById('matricula').value = f.matricula || '';
+                    document.getElementById('usuario').value = f.usuario || '';
+                    document.getElementById('senha').value = f.senha || '';
+                    document.getElementById('perfil').value = f.perfil || '';
+
+                    if (document.getElementById('ehTerceiro')) {
+                        document.getElementById('ehTerceiro').value = f.ehTerceiro ? 'true' : 'false';
+                        toggleEmpresa();
+                    }
+                    if (f.ehTerceiro && document.getElementById('empresa')) {
+                        document.getElementById('empresa').value = f.empresa || '';
+                    }
+
+                    ajustarCamposLogin();
+
+                    const campoEmitir = document.getElementById('podeEmitirPT');
+                    if (campoEmitir && f.perfil === 'ENCARREGADO') {
+                        if (f.podeEmitirPt) campoEmitir.checked = true;
+                    }
+
+                    Object.keys(f).forEach(chave => {
+                        const chaveLimpa = chave.toLowerCase().replace(/_/g, '');
+                        dadosTreinamentosDoBanco[chaveLimpa] = f[chave];
+                    });
+
+                    if (dadosTreinamentosDoBanco['realizacaoaso']) {
+                        document.getElementById('realizacaoAso').value = String(dadosTreinamentosDoBanco['realizacaoaso']).split('T')[0];
+                    }
+                    if (dadosTreinamentosDoBanco['validadeaso']) {
+                        document.getElementById('validadeAso').value = String(dadosTreinamentosDoBanco['validadeaso']).split('T')[0];
+                    }
+                    if (dadosTreinamentosDoBanco['realizacaoreciclagempt']) {
+                        document.getElementById('realizacaoReciclagemPt').value = String(dadosTreinamentosDoBanco['realizacaoreciclagempt']).split('T')[0];
+                    }
+                    if (dadosTreinamentosDoBanco['validadereciclagempt']) {
+                        document.getElementById('validadeReciclagemPt').value = String(dadosTreinamentosDoBanco['validadereciclagempt']).split('T')[0];
+                    }
+
+                    const selectFuncao = document.getElementById('funcao');
+                    const funcaoBanco = f.funcao;
+                    if (funcaoBanco && selectFuncao) {
+                        const funcaoTratada = String(funcaoBanco).trim();
+                        let encontrouOpcao = false;
+                        for (let i = 0; i < selectFuncao.options.length; i++) {
+                            if (selectFuncao.options[i].value.toLowerCase() === funcaoTratada.toLowerCase()) {
+                                selectFuncao.selectedIndex = i;
+                                encontrouOpcao = true;
+                                break;
+                            }
+                        }
+                        if (!encontrouOpcao) {
+                            const novaOpcao = document.createElement('option');
+                            novaOpcao.value = funcaoTratada;
+                            novaOpcao.text = funcaoTratada;
+                            novaOpcao.selected = true;
+                            selectFuncao.add(novaOpcao);
+                        }
+                    }
+                    
+                    atualizarMatrizNRs();
+                    document.querySelector('.titulo-secao').innerText = '✏️ Editar Registro Técnico de Colaborador';
+                } catch (e) {
+                    console.error("Erro crítico na carga de dados de edição:", e);
+                }
+            } else {
+                ajustarCamposLogin();
+            }
+        }
+
+        window.onload = verificarEdicao;
+    </script>
+</body>
+
+</html>

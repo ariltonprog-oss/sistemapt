@@ -1,0 +1,113 @@
+document.addEventListener("DOMContentLoaded", function () {
+    // Variável global do escopo da página para guardar os dados da PT
+    let ptAtual = null;
+
+    // 1. Função para carregar os dados da PT ao abrir a página (buscando o ID na URL)
+    async function carregarDadosPT() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const ptId = urlParams.get('id');
+
+        if (!ptId) {
+            console.warn("Nenhum ID de PT informado na URL.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/pts/${ptId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar dados da PT: ${response.status}`);
+            }
+
+            ptAtual = await response.json();
+
+            // Preenche os campos de leitura da PT na tela de gerenciamento/baixa
+            document.getElementById('plantaArea').value = ptAtual.plantaArea || '';
+            document.getElementById('turnoGrupo').value = ptAtual.turnoGrupo || '';
+            document.getElementById('tag').value = ptAtual.tag || '';
+            document.getElementById('ordemPj').value = ptAtual.ordemPj || '';
+            document.getElementById('descricaoAtividade').value = ptAtual.descricaoAtividade || '';
+
+        } catch (error) {
+            console.error("Erro ao carregar a PT:", error);
+        }
+    }
+
+    // Executa o carregamento inicial da PT
+    carregarDadosPT();
+
+    // --- LÓGICA DO MODAL DE REVALIDAÇÃO ---
+    const modalReval = document.getElementById('modalRevalidacao');
+    const btnAbrirModalReval = document.getElementById('btnAbrirModalReval');
+    const btnFecharModal = document.getElementById('btnFecharModal');
+    const formRevalInterno = document.getElementById('formRevalInterno');
+
+    // 2. Abrir o modal
+    if (btnAbrirModalReval) {
+        btnAbrirModalReval.addEventListener('click', () => {
+            // Agora ptAtual está acessível e traz o solicitante correto da PT
+            const solicitanteNome = (ptAtual && ptAtual.solicitante) ? ptAtual.solicitante : "Não informado";
+            document.getElementById('modalSolicitante').value = solicitanteNome;
+            
+            // Sugere a data e hora atuais nos inputs
+            const agora = new Date();
+            document.getElementById('revalData').value = agora.toISOString().split('T')[0];
+            document.getElementById('revalHora').value = agora.toTimeString().slice(0, 5);
+
+            modalReval.style.display = 'flex';
+        });
+    }
+
+    // 3. Fechar o modal
+    if (btnFecharModal) {
+        btnFecharModal.addEventListener('click', () => {
+            modalReval.style.display = 'none';
+        });
+    }
+
+    // 4. Envio dos dados de revalidação
+    if (formRevalInterno) {
+        formRevalInterno.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!ptAtual || !ptAtual.id) {
+                alert("Erro: ID da PT não identificada.");
+                return;
+            }
+
+            const payload = {
+                etapa: document.getElementById('revalEtapa').value,
+                data: document.getElementById('revalData').value,
+                hora: document.getElementById('revalHora').value,
+                solicitante: document.getElementById('modalSolicitante').value,
+                emitente: document.getElementById('modalEmitente').value
+            };
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/pts/${ptAtual.id}/revalidar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("Revalidação salva com sucesso!");
+                    modalReval.style.display = 'none';
+                    location.reload();
+                } else {
+                    alert("Erro ao salvar a revalidação no servidor.");
+                }
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                alert("Falha de comunicação com o servidor.");
+            }
+        });
+    }
+});

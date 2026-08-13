@@ -1,0 +1,451 @@
+/* =========================================================================
+   ESTILOS ESPECÍFICOS - SOLICITAÇÃO DE PT (DARK THEME SESMT)
+   ========================================================================= */
+
+body {
+    background-color: #0b1329;
+    color: #f8fafc;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* BARRA DE TÍTULO SUPERIOR (IGUAL AO SEU CABEÇALHO DA TELA) */
+.topo-pagina-sesmt {
+    background-color: #0f172a;
+    padding: 12px 25px;
+    border-bottom: 2px solid #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #f59e0b;
+    font-size: 1.15rem;
+    font-weight: bold;
+}
+
+.container-form {
+    max-width: 1050px;
+    margin: 25px auto;
+    padding: 0 15px;
+}
+
+/* CARD PRINCIPAL */
+.card-pt {
+    background: #1e293b;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    border: 1px solid #334155;
+    padding: 25px;
+}
+
+/* TÍTULOS DE SEÇÃO */
+.card-titulo-amarelo {
+    color: #f59e0b;
+    font-size: 1.1rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #334155;
+}
+
+.card-titulo-amarelo small {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    margin-left: auto;
+    font-weight: normal;
+}
+
+/* GRIDS E CAMPOS DE FORMULÁRIO ESCUROS */
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+}
+
+
+/* INPUTS, SELECTS E TEXTAREAS */
+.form-control,
+input[type="text"],
+select,
+textarea {
+    background-color: #2a374a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #ffffff;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #64748b;
+}
+
+/* CAIXA DE DESTAQUE COM BORDA LATERAL AMARELA (IGUAL AO PRINT) */
+.box-destaque-dark {
+    background-color: #131c2e;
+    border: 1px solid #334155;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.box-destaque-dark .box-titulo {
+    color: #f59e0b;
+    font-weight: bold;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* CHECKBOXES E SELEÇÕES */
+.grid-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #e2e8f0;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"],
+.chk-solicitante {
+    width: 16px;
+    height: 16px;
+    accent-color: #f59e0b;
+    cursor: pointer;
+}
+
+.label-solicitante {
+    color: #fcd34d;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+/* BOTÕES NO ESTILO DA IMAGEM */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 25px;
+    padding-top: 15px;
+}
+
+.btn-solicitar {
+    background-color: #f59e0b;
+    color: #0f172a;
+    font-weight: bold;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: background-color 0.2s;
+}
+
+.btn-solicitar:hover {
+    background-color: #d97706;
+}
+
+.btn-cancelar {
+    background-color: #ef4444;
+    color: #ffffff;
+    font-weight: bold;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.2s;
+}
+
+.btn-cancelar:hover {
+    background-color: #dc2626;
+}
+
+/* =========================================================================
+   BUSCA E TABELA DE EXECUTANTES POR MATRÍCULA
+   ========================================================================= */
+
+.input-matricula-group {
+    display: grid;
+    grid-template-columns: 200px 1fr 140px;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 6px;
+}
+
+.btn-adicionar-executante {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    cursor: pointer;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-adicionar-executante:hover {
+    background-color: #1d4ed8;
+}
+
+.msg-status-matricula {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    min-height: 20px;
+}
+
+.msg-status-matricula.erro {
+    color: #ef4444;
+}
+
+.msg-status-matricula.sucesso {
+    color: #22c55e;
+}
+
+/* TABELA DE EXECUTANTES ADICIONADOS */
+.container-tabela-executantes {
+    background-color: #131c2e;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.tabela-executantes {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.tabela-executantes th {
+    background-color: #2a374a;
+    color: #f59e0b;
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    border-bottom: 1px solid #334155;
+}
+
+.tabela-executantes td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #1e293b;
+    color: #e2e8f0;
+}
+
+.tabela-executantes tr.linha-vazia td {
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+    padding: 20px;
+}
+
+.btn-remover-executante {
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.btn-remover-executante:hover {
+    background: #dc2626;
+}
+
+@media (max-width: 768px) {
+    .input-matricula-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ESTILOS AUXILIARES PARA REMOVER INLINE STYLES DO HTML */
+#displayEmpresaGestora {
+    color: #f59e0b;
+}
+
+.col-acao {
+    width: 80px;
+    text-align: center;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Indicadores de campo obrigatório */
+.asterisco-obrigatorio {
+    color: #d9534f;
+}
+
+/* Espaçamento do container emergencial */
+.campo-emergencial {
+    margin-top: 14px;
+    margin-bottom: 18px;
+}
+
+/* Card do atendimento emergencial */
+.card-emergencial {
+    border: 1px solid #d9534f;
+    background-color: rgba(217, 83, 79, 0.08);
+    padding: 12px 16px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.checkbox-emergencial {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Grid para dividir a linha em 2 colunas de tamanhos iguais */
+.grid-form-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: flex-end;
+    /* Garante alinhamento pela base dos inputs */
+    margin-bottom: 15px;
+}
+
+/* Esconde a label fantasma em telas menores ou mantém o respiro */
+.label-espaco-alinhamento {
+    display: block;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Responsividade para celulares/telas pequenas */
+@media (max-width: 768px) {
+    .grid-form-2col {
+        grid-template-columns: 1fr;
+        /* Em telas pequenas, volta a empilhar */
+    }
+
+    .label-espaco-alinhamento {
+        display: none;
+    }
+}
+
+/* Grid de 2 colunas com alinhamento na base dos rótulos */
+.grid-form-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 15px;
+}
+
+/* Rótulo fantasma para dar o mesmo espaçamento superior */
+.label-vazia {
+    display: block;
+    visibility: hidden;
+    margin-bottom: 6px;
+}
+
+/* Força a mesma altura padrão em ambos os elementos */
+#areaAtuacao,
+.card-emergencial {
+    height: 44px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    width: 100%;
+}
+
+/* Estilização do Card Emergencial */
+.card-emergencial {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 12px;
+    gap: 10px;
+    border: 1px solid #e74c3c;
+    background-color: rgba(231, 76, 60, 0.1);
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Impede que o checkbox diminua de tamanho */
+.card-emergencial input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Garante o texto na mesma linha e bem alinhado */
+.texto-emergencial {
+    white-space: nowrap;
+    font-size: 0.88rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}

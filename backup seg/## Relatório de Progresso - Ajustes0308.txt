@@ -1,0 +1,17 @@
+## Relatório de Progresso - Ajustes no Sistema de Permissão de Trabalho (PT)
+
+---
+
+### 1. Alinhamento do Fluxo Operacional
+
+* **Definição de Papéis:** Estabelecido formalmente que o **Técnico Solicitante** preenche o cadastro inicial (marcando riscos e especificando detalhes técnicos), enquanto o **Operador** realiza apenas a conferência, revisão e emissão final da PT.
+
+### 2. Implementações e Correções no Back-end (Java / JPA)
+
+* **Geração Automática de EPIs:** Ajustada a rotina de salvamento para que, ao identificar riscos químicos ativos (`agentesQuimicos.ativo = true`), o back-end processe e grave automaticamente os EPIs obrigatórios correspondentes na tabela auxiliar (`PERMISSAO_TRABALHO_EPIS_OBRIGATORIOS`).
+* **Validação Bem-Sucedida:** Testado e confirmado através da **PT #39**, onde o sistema gravou corretamente tanto o kit básico quanto os EPIs específicos para químicos (macacão de proteção, protetor facial, luvas nitrílicas/neoprene e Diphoterine) estruturados em linhas normalizadas via JPA.
+
+### 3. Alinhamentos para o Front-end (`emitir-pt.js`)
+
+* **Mapeamento de Objetos de Risco:** Identificada a necessidade de atualizar o script de emissão para processar estruturas de objetos complexos (`agentesQuimicos`), indo além das simples bandeiras booleanas.
+* **Dinâmica de Texto Complementar:** Alinhado o tratamento para que a interface do operador exiba de forma personalizada o texto complementar inserido pelo técnico na solicitação (seja "Soda cáustica", "Ácido" ou qualquer outro produto informado).

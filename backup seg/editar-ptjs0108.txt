@@ -1,0 +1,193 @@
+
+// Dicionário para traduzir Enums e constantes do banco de dados
+const TRADUCOES = {
+    // Áreas de Atuação
+    'INSTRUMENTACAO': 'Instrumentação',
+    'ELETRICA': 'Elétrica',
+    'MECANICA': 'Mecânica',
+    'CIVIL': 'Civil',
+    'CALDEIRARIA': 'Caldeiraria',
+    'GERAL': 'Geral',
+
+    // Status da PT
+    'SOLICITADA': 'Solicitada',
+    'EMITIDA': 'Emitida',
+    'EM_REVALIDACAO': 'Em Revalidação',
+    'ENCERRADA': 'Encerrada',
+    'CANCELADA': 'Cancelada'
+};
+
+// Função para formatar o texto para Português correto
+function formatarTexto(valor) {
+    if (!valor) return '-';
+    const chave = valor.toString().trim().toUpperCase();
+    return TRADUCOES[chave] || valor;
+}
+
+
+// Obtém o ID da PT passado na URL (?id=X)
+const params = new URLSearchParams(window.location.search);
+const ptId = params.get('id');
+
+// Converte "Instrumentação" de volta para "INSTRUMENTACAO" (formato que o Java aceita)
+function desformatarParaEnum(texto) {
+    if (!texto) return '';
+
+    // Procura no dicionário TRADUCOES qual é a chave em caixa alta
+    for (const [chave, valor] of Object.entries(TRADUCOES)) {
+        if (valor.toLowerCase() === texto.trim().toLowerCase() || chave === texto.trim().toUpperCase()) {
+            return chave;
+        }
+    }
+
+    // Fallback: remove acentos, espaços e deixa em caixa alta
+    return texto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Valida se o ID existe
+    if (!ptId) {
+        alert("Nenhuma Permissão de Trabalho selecionada para edição.");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    // 2. Atualiza o título na tela
+    const titulo = document.getElementById('tituloPagina');
+    if (titulo) titulo.textContent = `Editar Permissão de Trabalho #${ptId}`;
+
+    // 3. Carrega os dados atuais da PT
+    carregarDadosPT(ptId);
+
+    // 4. Atribui o ouvinte de envio do formulário
+    const form = document.getElementById('formEditarPT');
+    if (form) {
+        form.addEventListener('submit', salvarAlteracoesPT);
+    }
+});
+
+// Busca as informações no backend e popula o formulário
+async function carregarDadosPT(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}`);
+        if (!response.ok) {
+            alert("Erro ao carregar dados da PT.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const pt = await response.json();
+
+        // Trava de segurança no front: Apenas 'SOLICITADA' pode ser editada
+        const statusAtual = (pt.status || '').toUpperCase();
+        if (statusAtual !== 'SOLICITADA' && statusAtual !== 'RASCUNHO') {
+            alert(`A PT #${id} possui o status ${statusAtual} e não pode ser editada.`);
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        // Preenchimento dos inputs de texto / selects
+        setValorInput('plantaArea', pt.plantaArea);
+        setValorInput('turnoGrupo', pt.turnoGrupo);
+        setValorInput('tag', pt.tag);
+        setValorInput('ordemPj', pt.ordemPj);
+        setValorInput('descricaoAtividade', pt.descricaoAtividade);
+        setValorInput('AreaAtuacao', pt.AreaAtuacao);
+
+        // 🟢 PREENCHIMENTO DA ESPECIALIDADE TRADUZIDA
+        const campoArea = document.getElementById('areaAtuacao');
+        if (campoArea) {
+            const valorBruto = pt.areaAtuacao || '';
+
+            // Guarda "INSTRUMENTACAO" internamente no HTML
+            campoArea.dataset.valorBruto = valorBruto;
+
+            // Exibe "Instrumentação" bonita na tela
+            campoArea.value = formatarTexto(valorBruto);
+        }
+
+        // Preenchimento dos checkboxes
+        setValorCheckbox('solicitanteExecutante', pt.solicitanteExecutante);
+        setValorCheckbox('requerTrabalhoQuente', pt.requerTrabalhoQuente);
+        setValorCheckbox('requerTrabalhoFrio', pt.requerTrabalhoFrio);
+        setValorCheckbox('requerTrabalhoAltura', pt.requerTrabalhoAltura);
+        setValorCheckbox('requerEspacoConfinado', pt.requerEspacoConfinado);
+        setValorCheckbox('requerRiscoEletrico', pt.requerRiscoEletrico);
+        setValorCheckbox('requerAltaTensaoSep', pt.requerAltaTensaoSep);
+        setValorCheckbox('requerAreaClassificada', pt.requerAreaClassificada);
+        setValorCheckbox('requerSegurancaMaquinas', pt.requerSegurancaMaquinas);
+        setValorCheckbox('requerLoto', pt.requerLoto);
+        setValorCheckbox('requerAtividadePintura', pt.requerAtividadePintura);
+
+    } catch (error) {
+        console.error("Erro ao carregar PT:", error);
+        alert("Erro de conexão ao buscar informações da PT.");
+    }
+}
+
+// Envia os dados atualizados via PUT para o Controller Spring
+async function salvarAlteracoesPT(event) {
+    event.preventDefault();
+
+    const campoArea = document.getElementById('areaAtuacao');
+    // Pega o valor do dataset (se houver) ou o texto do input
+    const valorAreaBruto = campoArea ? (campoArea.dataset.valorBruto || campoArea.value) : '';
+
+    const payload = {
+        plantaArea: document.getElementById('plantaArea').value.trim().toUpperCase(),
+        turnoGrupo: document.getElementById('turnoGrupo').value.trim().toUpperCase(),
+        tag: document.getElementById('tag').value.trim().toUpperCase(),
+        ordemPj: document.getElementById('ordemPj').value.trim().toUpperCase(),
+        descricaoAtividade: document.getElementById('descricaoAtividade').value.trim().toUpperCase(),
+
+        // 🟢 Converte "Instrumentação" para "INSTRUMENTACAO" antes de montar o JSON
+        areaAtuacao: desformatarParaEnum(valorAreaBruto),
+
+        solicitanteExecutante: document.getElementById('solicitanteExecutante').checked,
+        requerTrabalhoQuente: document.getElementById('requerTrabalhoQuente').checked,
+        requerTrabalhoFrio: document.getElementById('requerTrabalhoFrio').checked,
+        requerTrabalhoAltura: document.getElementById('requerTrabalhoAltura').checked,
+        requerEspacoConfinado: document.getElementById('requerEspacoConfinado').checked,
+        requerRiscoEletrico: document.getElementById('requerRiscoEletrico').checked,
+        requerAltaTensaoSep: document.getElementById('requerAltaTensaoSep').checked,
+        requerAreaClassificada: document.getElementById('requerAreaClassificada').checked,
+        requerSegurancaMaquinas: document.getElementById('requerSegurancaMaquinas').checked,
+        requerLoto: document.getElementById('requerLoto').checked,
+        requerAtividadePintura: document.getElementById('requerAtividadePintura').checked
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert(`Permissão de Trabalho #${ptId} atualizada com sucesso!`);
+            window.location.href = "dashboard.html";
+        } else {
+            const erroTxt = await response.text();
+            alert("Não foi possível salvar as alterações: " + erroTxt);
+        }
+    } catch (error) {
+        console.error("Erro na alteração da PT:", error);
+        alert("Falha de comunicação com o servidor.");
+    }
+}
+
+// Helper para setar valor em inputs/selects
+function setValorInput(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.value = valor || '';
+}
+
+// Helper para setar valor em checkboxes
+function setValorCheckbox(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.checked = Boolean(valor);
+}

@@ -1,0 +1,245 @@
+let ptId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    ptId = urlParams.get('id');
+
+    if (!ptId) {
+        alert("Nenhuma Permissão de Trabalho selecionada!");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    document.getElementById('labelPtId').textContent = ptId;
+
+    preencherDatasPadrao();
+    carregarDadosParaEmissao(ptId);
+
+    const formEmitir = document.getElementById('formEmitirPT');
+    if (formEmitir) {
+        formEmitir.addEventListener('submit', confirmarEmissaoPT);
+    }
+});
+
+function preencherDatasPadrao() {
+    const agora = new Date();
+    agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+    document.getElementById('dataHoraInicio').value = agora.toISOString().slice(0, 16);
+}
+
+async function carregarDadosParaEmissao(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}`);
+        if (!response.ok) {
+            alert("Erro ao carregar dados da PT.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const pt = await response.json();
+
+        // 1. Popula os campos básicos
+        document.getElementById('infoPlantaArea').textContent = pt.plantaArea || '-';
+        
+        document.getElementById('infoTag').textContent = pt.tag || '-';
+        document.getElementById('infoOrdemPj').textContent = pt.ordemPj || '-';
+        document.getElementById('infoDescricao').textContent = pt.descricaoAtividade || '-';
+
+        const solNome = pt.solicitante?.nome || pt.solicitanteNome || 'Não informado';
+        const solMatricula = pt.solicitante?.matricula || pt.solicitanteMatricula || '';
+        const textoSolicitante = solMatricula ? `${solNome} (Mat: ${solMatricula})` : solNome;
+
+        const elSolicitante = document.getElementById('infoSolicitante');
+        if (elSolicitante) elSolicitante.textContent = textoSolicitante;
+
+        let textoExecutantes = '';
+        const temEquipeExterna = pt.executantes || pt.executanteNome || (pt.equipe && pt.equipe.trim() !== '');
+
+        if (!temEquipeExterna || pt.solicitanteExecutante === true) {
+            textoExecutantes = `👷 Atuação Própria: ${textoSolicitante}`;
+        } else {
+            const execNome = pt.executantes || pt.executanteNome || pt.equipe || 'Não especificado';
+            const execMatricula = pt.executanteMatricula ? ` (Mat: ${pt.executanteMatricula})` : '';
+            textoExecutantes = `${execNome}${execMatricula}`;
+        }
+
+        const elExecutantes = document.getElementById('infoExecutantes');
+        if (elExecutantes) elExecutantes.textContent = textoExecutantes;
+
+        // 2. Renderiza as tags de Riscos e Requisitos
+        const containerRiscos = document.getElementById('listaRiscosResumo');
+        if (containerRiscos) {
+            containerRiscos.innerHTML = '';
+
+            const riscosMapeados = [
+                { chave: 'requerTrabalhoQuente', label: '🔥 Trabalho a Quente' },
+                { chave: 'requerTrabalhoFrio', label: '❄️ Trabalho a Frio' },
+                { chave: 'requerTrabalhoAltura', label: '🧗 Trabalho em Altura' },
+                { chave: 'requerEspacoConfinado', label: '🕳️ Espaço Confinado' },
+                { chave: 'requerRiscoEletrico', label: '⚡ Risco Elétrico' },
+                { chave: 'requerAltaTensaoSep', label: '⚠️ Alta Tensão / SEP' },
+                { chave: 'requerAreaClassificada', label: '🏭 Área Classificada' },
+                { chave: 'requerSegurancaMaquinas', label: '⚙️ Segurança em Máquinas' },
+                { chave: 'requerLoto', label: '🔒 Bloqueio LOTO' },
+                { chave: 'requerAtividadePintura', label: '🎨 Atividade de Pintura' },
+                // Adicionando o Agente Químico verificando o objeto .ativo e pegando o texto complementar
+                { 
+                    objeto: pt.agentesQuimicos, 
+                    labelPadrao: '🧪 Risco Químico', 
+                    temTextoComplementar: true 
+                },
+                // Se quiser incluir o Diphoterine também:
+                { 
+                    objeto: pt.diphoterine, 
+                    labelPadrao: '💧 Uso de Diphoterine / Descontaminação', 
+                    temTextoComplementar: false 
+                }
+            ];
+
+            let temRisco = false;
+            riscosMapeados.forEach(r => {
+                let ativo = false;
+                let textoFinal = r.label;
+
+                // Verifica se é uma chave booleana simples ou um objeto complexo
+                if (r.chave && pt[r.chave]) {
+                    ativo = true;
+                } else if (r.objeto && r.objeto.ativo) {
+                    ativo = true;
+                    // Se o objeto tiver texto complementar (ex: "Soda caustica"), concatena no label
+                    if (r.temTextoComplementar && r.objeto.textoComplementar) {
+                        textoFinal = `🧪 Risco Químico: ${r.objeto.textoComplementar}`;
+                    }
+                }
+
+                if (ativo) {
+                    temRisco = true;
+                    const tag = document.createElement('span');
+                    tag.textContent = textoFinal;
+                    tag.className = 'risco-badge';
+                    containerRiscos.appendChild(tag);
+                }
+            });
+
+            if (!temRisco) {
+                const aviso = document.createElement('span');
+                aviso.textContent = 'Nenhum risco crítico adicional marcado.';
+                aviso.className = 'risco-vazio';
+                containerRiscos.appendChild(aviso);
+            }
+        }
+
+        // 3. Monta dinamicamente o Checklist de EPIs e Medidas com base na PT carregada
+        gerarChecklistDinamico(pt);
+
+        // 4. Lógica de Exibição Condicional dos Blocos de Preenchimento
+        const blocoLoto = document.getElementById('blocoLoto');
+        if (blocoLoto) blocoLoto.classList.toggle('oculto', !pt.requerLoto);
+
+        const blocoAltura = document.getElementById('blocoAltura');
+        if (blocoAltura) blocoAltura.classList.toggle('oculto', !pt.requerTrabalhoAltura);
+
+        const blocoMonitoramento = document.getElementById('blocoMonitoramento');
+        if (blocoMonitoramento) {
+            const exigeMonitoramento = pt.requerEspacoConfinado || pt.requerTrabalhoQuente;
+            blocoMonitoramento.classList.toggle('oculto', !exigeMonitoramento);
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar PT:", error);
+        alert("Falha de comunicação com o servidor.");
+    }
+}
+
+// 🟢 FUNÇÃO QUE PUXA OS EPIs CALCULADOS DIRETAMENTE DO BACK-END
+function gerarChecklistDinamico(pt) {
+    const container = document.getElementById('containerInspecaoEpiMedidas');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Pega a lista exata calculada pelas classes de negócio do Back-end (ex: Especialidade / Service)
+    const episCalculados = pt.episObrigatorios || [];
+
+    if (episCalculados.length === 0) {
+        const aviso = document.createElement('p');
+        aviso.textContent = 'Nenhum EPI específico obrigatório para esta seleção.';
+        aviso.style.color = 'var(--texto-secundario, #a0aec0)';
+        container.appendChild(aviso);
+        return;
+    }
+
+    // Renderiza dinamicamente na tela exatamente o que o back-end determinou
+    episCalculados.forEach(epiNome => {
+        const labelEl = document.createElement('label');
+        labelEl.className = 'checkbox-card';
+        
+        // Define o name como 'episVerificados' para capturar na hora do submit da emissão
+        labelEl.innerHTML = `<input type="checkbox" name="episVerificados" value="${epiNome}"> ${epiNome}`;
+        container.appendChild(labelEl);
+    });
+}
+
+async function confirmarEmissaoPT(event) {
+    event.preventDefault();
+
+    // 1. Recupera o objeto do usuário logado que está guardado no sessionStorage
+    const usuarioLogadoStr = sessionStorage.getItem('usuarioLogado');
+    const usuarioLogado = usuarioLogadoStr ? JSON.parse(usuarioLogadoStr) : null;
+    
+    // 2. Extrai o ID de dentro do objeto (conforme retornado pelo seu AutenticacaoController)
+    const emitenteIdLogado = usuarioLogado ? usuarioLogado.id : null;
+
+    if (!emitenteIdLogado) {
+        alert('Sessão expirada ou usuário não identificado. Por favor, faça login novamente.');
+        window.location.href = "login.html";
+        return;
+    }
+
+    const turnoGrupoValor = document.getElementById('turnoGrupo')?.value.trim();
+
+    if (!turnoGrupoValor) {
+        alert('Por favor, informe o Turno / Grupo antes de emitir a PT.');
+        document.getElementById('turnoGrupo')?.focus();
+        return;
+    }
+
+    const episInspecionados = Array.from(document.querySelectorAll('input[name="episVerificados"]:checked')).map(el => el.value);
+    const medidasInspecionadas = Array.from(document.querySelectorAll('input[name="medidasVerificadas"]:checked')).map(el => el.value);
+
+    const payload = {
+        dataHoraInicio: document.getElementById('dataHoraInicio').value,
+        recomendacoesEmissor: document.getElementById('recomendacoesEmissor').value.trim(),
+
+        lotoDetalhes: document.getElementById('lotoDetalhes')?.value.trim() || null,
+        alturaDetalhes: document.getElementById('alturaDetalhes')?.value.trim() || null,
+        nomeAst: document.getElementById('nomeAst')?.value.trim() || null,
+        monitoramentoAmbiental: document.getElementById('monitoramentoAmbiental')?.value.trim() || null,
+
+        turnoGrupo: turnoGrupoValor,
+        emitenteId: emitenteIdLogado, // <-- Agora o ID correto vai no DTO
+
+        episInspecionados: episInspecionados,
+        medidasInspecionadas: medidasInspecionadas,
+
+        status: 'EMITIDA'
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/emitir`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert(`Permissão de Trabalho #${ptId} emitida com sucesso!`);
+            window.location.href = "dashboard.html";
+        } else {
+            const erroTexto = await response.text();
+            alert("Não foi possível emitir a PT: " + erroTexto);
+        }
+    } catch (error) {
+        console.error("Erro na emissão da PT:", error);
+        alert("Falha de comunicação com o servidor ao emitir a PT.");
+    }
+}

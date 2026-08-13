@@ -1,0 +1,242 @@
+let ptId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    ptId = urlParams.get('id');
+
+    if (!ptId) {
+        alert("Nenhuma Permissão de Trabalho selecionada!");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    document.getElementById('labelPtId').textContent = ptId;
+
+    preencherDatasPadrao();
+    carregarDadosParaEmissao(ptId);
+
+    const formEmitir = document.getElementById('formEmitirPT');
+    if (formEmitir) {
+        formEmitir.addEventListener('submit', confirmarEmissaoPT);
+    }
+});
+
+function preencherDatasPadrao() {
+    const agora = new Date();
+    agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+    document.getElementById('dataHoraInicio').value = agora.toISOString().slice(0, 16);
+}
+
+async function carregarDadosParaEmissao(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}`);
+        if (!response.ok) {
+            alert("Erro ao carregar dados da PT.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const pt = await response.json();
+
+        // 1. Popula os campos básicos
+        document.getElementById('infoPlantaArea').textContent = pt.plantaArea || '-';
+        document.getElementById('infoTurnoGrupo').textContent = pt.turnoGrupo || '-';
+        document.getElementById('infoTag').textContent = pt.tag || '-';
+        document.getElementById('infoOrdemPj').textContent = pt.ordemPj || '-';
+        document.getElementById('infoDescricao').textContent = pt.descricaoAtividade || '-';
+
+        const solNome = pt.solicitante?.nome || pt.solicitanteNome || 'Não informado';
+        const solMatricula = pt.solicitante?.matricula || pt.solicitanteMatricula || '';
+        const textoSolicitante = solMatricula ? `${solNome} (Mat: ${solMatricula})` : solNome;
+
+        const elSolicitante = document.getElementById('infoSolicitante');
+        if (elSolicitante) elSolicitante.textContent = textoSolicitante;
+
+        let textoExecutantes = '';
+        const temEquipeExterna = pt.executantes || pt.executanteNome || (pt.equipe && pt.equipe.trim() !== '');
+
+        if (!temEquipeExterna || pt.solicitanteExecutante === true) {
+            textoExecutantes = `👷 Atuação Própria: ${textoSolicitante}`;
+        } else {
+            const execNome = pt.executantes || pt.executanteNome || pt.equipe || 'Não especificado';
+            const execMatricula = pt.executanteMatricula ? ` (Mat: ${pt.executanteMatricula})` : '';
+            textoExecutantes = `${execNome}${execMatricula}`;
+        }
+
+        const elExecutantes = document.getElementById('infoExecutantes');
+        if (elExecutantes) elExecutantes.textContent = textoExecutantes;
+
+        // 2. Renderiza as tags de Riscos e Requisitos
+        const containerRiscos = document.getElementById('listaRiscosResumo');
+        if (containerRiscos) {
+            containerRiscos.innerHTML = '';
+
+            const riscosMapeados = [
+                { chave: 'requerTrabalhoQuente', label: '🔥 Trabalho a Quente' },
+                { chave: 'requerTrabalhoFrio', label: '❄️ Trabalho a Frio' },
+                { chave: 'requerTrabalhoAltura', label: '🧗 Trabalho em Altura' },
+                { chave: 'requerEspacoConfinado', label: '🕳️ Espaço Confinado' },
+                { chave: 'requerRiscoEletrico', label: '⚡ Risco Elétrico' },
+                { chave: 'requerAltaTensaoSep', label: '⚠️ Alta Tensão / SEP' },
+                { chave: 'requerAreaClassificada', label: '🏭 Área Classificada' },
+                { chave: 'requerSegurancaMaquinas', label: '⚙️ Segurança em Máquinas' },
+                { chave: 'requerLoto', label: '🔒 Bloqueio LOTO' },
+                { chave: 'requerAtividadePintura', label: '🎨 Atividade de Pintura' }
+            ];
+
+            let temRisco = false;
+            riscosMapeados.forEach(r => {
+                if (pt[r.chave]) {
+                    temRisco = true;
+                    const tag = document.createElement('span');
+                    tag.textContent = r.label;
+                    tag.className = 'risco-badge';
+                    containerRiscos.appendChild(tag);
+                }
+            });
+
+            if (!temRisco) {
+                const aviso = document.createElement('span');
+                aviso.textContent = 'Nenhum risco crítico adicional marcado.';
+                aviso.className = 'risco-vazio';
+                containerRiscos.appendChild(aviso);
+            }
+        }
+
+        // 3. Monta dinamicamente o Checklist de EPIs e Medidas com base na PT carregada
+        gerarChecklistDinamico(pt);
+
+        // 4. Lógica de Exibição Condicional dos Blocos de Preenchimento
+        const blocoLoto = document.getElementById('blocoLoto');
+        if (blocoLoto) blocoLoto.classList.toggle('oculto', !pt.requerLoto);
+
+        const blocoAltura = document.getElementById('blocoAltura');
+        if (blocoAltura) blocoAltura.classList.toggle('oculto', !pt.requerTrabalhoAltura);
+
+        const blocoMonitoramento = document.getElementById('blocoMonitoramento');
+        if (blocoMonitoramento) {
+            const exigeMonitoramento = pt.requerEspacoConfinado || pt.requerTrabalhoQuente;
+            blocoMonitoramento.classList.toggle('oculto', !exigeMonitoramento);
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar PT:", error);
+        alert("Falha de comunicação com o servidor.");
+    }
+}
+
+// 🟢 FUNÇÃO INTELIGENTE QUE GERA OS EPIS E MEDIDAS DE ACORDO COM OS RISCOS DA PT
+function gerarChecklistDinamico(pt) {
+    const container = document.getElementById('containerInspecaoEpiMedidas');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const itens = [];
+
+    // EPIs básicos obrigatórios padrão da planta
+    itens.push({ label: '🥾 Calçado de Segurança com biqueira', tipo: 'epi' });
+    itens.push({ label: '🪖 Capacete de Segurança com jugular', tipo: 'epi' });
+    itens.push({ label: '🥽 Óculos de Segurança', tipo: 'epi' });
+
+    // Riscos Principais (Trabalhos Críticos)
+    if (pt.requerTrabalhoQuente) {
+        itens.push({ label: '🔥 Máscara/Visor de Solda e Avental de Raspa', tipo: 'epi' });
+        itens.push({ label: '🧯 Extintor de Incêndio Posicionado no Local', tipo: 'medida' });
+    }
+    if (pt.requerTrabalhoAltura) {
+        itens.push({ label: '🧗 Cinto Tipo Paraquedista com Talabarte Duplo', tipo: 'epi' });
+        itens.push({ label: '⚓ Linha de Vida / Ponto de Ancoragem Inspecionado', tipo: 'medida' });
+    }
+    if (pt.requerEspacoConfinado) {
+        itens.push({ label: '📊 Detector de Gases Portátil Calibrado (O2, LEL, Tóxicos)', tipo: 'medida' });
+        itens.push({ label: '🕳️ Sistema de Exaustão e Vigia Posicionado', tipo: 'medida' });
+    }
+    if (pt.requerRiscoEletrico || pt.requerAltaTensaoSep) {
+        itens.push({ label: '⚡ Luvas Isolantes de Borracha apropriadas', tipo: 'epi' });
+        itens.push({ label: '⚡ Ferramentas Isoladas e Tapete Dielétrico', tipo: 'medida' });
+    }
+    if (pt.requerLoto) {
+        itens.push({ label: '🔒 Bloqueio LOTO Efetivado (Cadeados e Garras)', tipo: 'medida' });
+        itens.push({ label: '🔋 Confirmação de Estado de Energia Zero', tipo: 'medida' });
+    }
+    if (pt.requerAreaClassificada) {
+        itens.push({ label: '⚙️ Utilização de Ferramentas Antifaiscantes', tipo: 'medida' });
+    }
+    if (pt.requerAtividadePintura) {
+        itens.push({ label: '🎨 Respirador com Filtro Químico (Vapores Orgânicos)', tipo: 'epi' });
+    }
+
+    // Matriz de Riscos Ambientais e Físicos Detalhados
+    if (pt.ruido && pt.ruido.ativo) {
+        const tipoProtetor = pt.ruido.opcoesSelecionadas?.length ? pt.ruido.opcoesSelecionadas.join(' + ') : 'Simples ou Dupla';
+        itens.push({ label: `🎧 Protetor Auricular (${tipoProtetor})`, tipo: 'epi' });
+    }
+    if (pt.vibracao && pt.vibracao.ativo) {
+        itens.push({ label: '📳 Luvas Antivibração', tipo: 'epi' });
+    }
+    if (pt.superficiesAquecidas && pt.superficiesAquecidas.ativo) {
+        itens.push({ label: '🌡️ Luvas Térmicas para Superfícies Quentes', tipo: 'epi' });
+    }
+    if (pt.radiacaoNaoIonizante && pt.radiacaoNaoIonizante.ativo) {
+        itens.push({ label: '☀️ Óculos / Máscara com Filtro UV / Infravermelho', tipo: 'epi' });
+    }
+    if (pt.agentesQuimicos && pt.agentesQuimicos.ativo) {
+        itens.push({ label: '🧪 Luvas Químicas e Óculos de Ampla Visão', tipo: 'epi' });
+    }
+    if (pt.diphoterine && pt.diphoterine.ativo) {
+        itens.push({ label: '💧 Kit de Diphoterine Posicionado para Emergência Química', tipo: 'medida' });
+    }
+    if (pt.isolamentoArea && pt.isolamentoArea.ativo) {
+        itens.push({ label: '🚧 Área Isolada com Cones, Fitas e Sinalização', tipo: 'medida' });
+    }
+
+    // Cria e insere os elementos dinamicamente na tela
+    itens.forEach(item => {
+        const nomeInput = item.tipo === 'epi' ? 'episVerificados' : 'medidasVerificadas';
+        const labelEl = document.createElement('label');
+        labelEl.className = 'checkbox-card';
+        labelEl.innerHTML = `<input type="checkbox" name="${nomeInput}" value="${item.label}"> ${item.label}`;
+        container.appendChild(labelEl);
+    });
+}
+
+async function confirmarEmissaoPT(event) {
+    event.preventDefault();
+
+    const episInspecionados = Array.from(document.querySelectorAll('input[name="episVerificados"]:checked')).map(el => el.value);
+    const medidasInspecionadas = Array.from(document.querySelectorAll('input[name="medidasVerificadas"]:checked')).map(el => el.value);
+
+    const payload = {
+        dataHoraInicio: document.getElementById('dataHoraInicio').value,
+        recomendacoesEmissor: document.getElementById('recomendacoesEmissor').value.trim(),
+
+        lotoDetalhes: document.getElementById('lotoDetalhes')?.value.trim() || null,
+        alturaDetalhes: document.getElementById('alturaDetalhes')?.value.trim() || null,
+        nomeAst: document.getElementById('nomeAst')?.value.trim() || null,
+        monitoramentoAmbiental: document.getElementById('monitoramentoAmbiental')?.value.trim() || null,
+
+        episInspecionados: episInspecionados,
+        medidasInspecionadas: medidasInspecionadas,
+
+        status: 'EMITIDA'
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/emitir`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert(`Permissão de Trabalho #${ptId} emitida com sucesso!`);
+            window.location.href = "dashboard.html";
+        } else {
+            const erroTexto = await response.text();
+            alert("Não foi possível emitir a PT: " + erroTexto);
+        }
+    } catch (error) {
+        console.error("Erro na emissão da PT:", error);
+        alert("Falha de comunicação com o servidor ao emitir a PT.");
+    }
+}

@@ -1,0 +1,209 @@
+// Variável global para guardar os dados da PT
+let ptAtual = null;
+let executantesReais = []; // Lista para armazenar os executantes adicionados
+
+// 1. Função global para abrir o modal (Chamada diretamente pelo botão no HTML)
+window.abrirModalReval = function() {
+    const modalReval = document.getElementById('modalRevalidacao');
+    
+    if (!modalReval) {
+        console.error("Erro: O elemento modalRevalidacao não existe no HTML.");
+        return;
+    }
+
+    const solicitanteNome = (ptAtual && ptAtual.solicitante) ? ptAtual.solicitante : "Não informado";
+    document.getElementById('modalSolicitante').value = solicitanteNome;
+    
+    const agora = new Date();
+    document.getElementById('revalData').value = agora.toISOString().split('T')[0];
+    document.getElementById('revalHora').value = agora.toTimeString().slice(0, 5);
+
+    modalReval.style.display = 'flex';
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // 2. Carrega os dados da PT ao abrir a página (buscando o ID na URL)
+    async function carregarDadosPT() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const ptId = urlParams.get('id');
+
+        if (!ptId) {
+            console.warn("Nenhum ID de PT informado na URL.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/pts/${ptId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar dados da PT: ${response.status}`);
+            }
+
+            ptAtual = await response.json();
+
+            // Preenche os campos de leitura da PT
+            if (document.getElementById('plantaArea')) document.getElementById('plantaArea').value = ptAtual.plantaArea || '';
+            if (document.getElementById('turnoGrupo')) document.getElementById('turnoGrupo').value = ptAtual.turnoGrupo || '';
+            if (document.getElementById('tag')) document.getElementById('tag').value = ptAtual.tag || '';
+            if (document.getElementById('ordemPj')) document.getElementById('ordemPj').value = ptAtual.ordemPj || '';
+            if (document.getElementById('descricaoAtividade')) document.getElementById('descricaoAtividade').value = ptAtual.descricaoAtividade || '';
+
+        } catch (error) {
+            console.error("Erro ao carregar a PT:", error);
+        }
+    }
+
+    carregarDadosPT();
+
+    // 3. Lógica de Busca e Adição de Executantes Reais por Matrícula
+    const inputMatricula = document.getElementById('inputMatricula');
+    const inputNomeExecutante = document.getElementById('inputNomeExecutante');
+    const btnAdicionarExecutante = document.getElementById('btnAdicionarExecutante');
+    const tbodyExecutantes = document.getElementById('tbodyExecutantes');
+    const msgMatriculaStatus = document.getElementById('msgMatriculaStatus');
+
+    // Buscar dados do funcionário ao digitar a matrícula
+    if (inputMatricula) {
+        inputMatricula.addEventListener('blur', async () => {
+            const matricula = inputMatricula.value.trim();
+            if (!matricula) return;
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/funcionarios/matricula/${matricula}`, {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+
+                if (response.ok) {
+                    const func = await response.json();
+                    inputNomeExecutante.value = func.nome || '';
+                    inputMatricula.dataset.funcao = func.funcao || '---';
+                    if (msgMatriculaStatus) msgMatriculaStatus.textContent = "";
+                } else {
+                    inputNomeExecutante.value = "";
+                    if (msgMatriculaStatus) msgMatriculaStatus.textContent = "Colaborador não encontrado.";
+                }
+            } catch (error) {
+                console.error("Erro ao buscar funcionário:", error);
+            }
+        });
+    }
+
+    // Adicionar executante à tabela de auditoria
+    if (btnAdicionarExecutante) {
+        btnAdicionarExecutante.addEventListener('click', () => {
+            const matricula = inputMatricula.value.trim();
+            const nome = inputNomeExecutante.value.trim();
+            const funcao = inputMatricula.dataset.funcao || '---';
+
+            if (!matricula || !nome) {
+                alert("Informe uma matrícula válida para adicionar o executante.");
+                return;
+            }
+
+            // Verifica se já foi adicionado
+            if (executantesReais.some(e => e.matricula === matricula)) {
+                alert("Este colaborador já foi adicionado à equipe executante.");
+                return;
+            }
+
+            executantesReais.push({ matricula, nome, funcao });
+            atualizarTabelaExecutantes();
+
+            // Limpa os campos
+            inputMatricula.value = "";
+            inputNomeExecutante.value = "";
+            delete inputMatricula.dataset.funcao;
+        });
+    }
+
+    function atualizarTabelaExecutantes() {
+        if (!tbodyExecutantes) return;
+
+        tbodyExecutantes.innerHTML = "";
+
+        if (executantesReais.length === 0) {
+            tbodyExecutantes.innerHTML = `
+                <tr class="linha-vazia">
+                    <td colspan="4">Nenhum executante real adicionado para auditoria.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        executantesReais.forEach((exec, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${exec.matricula}</td>
+                <td>${exec.nome}</td>
+                <td>${exec.funcao}</td>
+                <td class="col-acao">
+                    <button type="button" class="btn-excluir-exec" onclick="removerExecutante(${index})">🗑️</button>
+                </td>
+            `;
+            tbodyExecutantes.appendChild(tr);
+        });
+    }
+
+    // Função global para remover executante da lista
+    window.removerExecutante = function(index) {
+        executantesReais.splice(index, 1);
+        atualizarTabelaExecutantes();
+    };
+
+    // 4. Fechar o modal de revalidação
+    const btnFecharModal = document.getElementById('btnFecharModal');
+    if (btnFecharModal) {
+        btnFecharModal.addEventListener('click', () => {
+            const modalReval = document.getElementById('modalRevalidacao');
+            if (modalReval) modalReval.style.display = 'none';
+        });
+    }
+
+    // 5. Envio dos dados de revalidação
+    const formRevalInterno = document.getElementById('formRevalInterno');
+    if (formRevalInterno) {
+        formRevalInterno.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!ptAtual || !ptAtual.id) {
+                alert("Erro: ID da PT não identificada.");
+                return;
+            }
+
+            const payload = {
+                etapa: document.getElementById('revalEtapa').value,
+                data: document.getElementById('revalData').value,
+                hora: document.getElementById('revalHora').value,
+                solicitante: document.getElementById('modalSolicitante').value,
+                emitente: document.getElementById('modalEmitente').value
+            };
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/pts/${ptAtual.id}/revalidar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("Revalidação salva com sucesso!");
+                    document.getElementById('modalRevalidacao').style.display = 'none';
+                    location.reload();
+                } else {
+                    alert("Erro ao salvar a revalidação no servidor.");
+                }
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                alert("Falha de comunicação com o servidor.");
+            }
+        });
+    }
+});

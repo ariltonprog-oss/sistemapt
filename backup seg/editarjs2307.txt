@@ -1,0 +1,345 @@
+// =========================================================================
+// 1. INICIALIZAÇÃO E EVENTOS DA PÁGINA
+// =========================================================================
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Vincula o botão de salvar
+    const btnSalvar = document.getElementById('btnDispararSubmit');
+    if (btnSalvar) btnSalvar.addEventListener('click', salvarAlteracoes);
+
+    // Vincula a mudança da função (para atualizar a grade de NRs)
+    const selectFuncao = document.getElementById('funcao');
+    if (selectFuncao) selectFuncao.addEventListener('change', atualizarMatrizNRs);
+
+    // Vincula o evento para alternar o campo de empresa parceira
+    const selectTerceiro = document.getElementById('ehTerceiro');
+    if (selectTerceiro) {
+        selectTerceiro.addEventListener('change', toggleEmpresa);
+    }
+
+    // Carrega a lista de empresas terceirizadas primeiro
+    await carregarEmpresasTerceiras();
+
+    // Carrega os dados do colaborador para edição
+    await carregarDadosDoColaborador();
+});
+
+// =========================================================================
+// 2. FUNÇÕES DE SUPORTE A EMPRESAS TERCEIRIZADAS E MODAL
+// =========================================================================
+
+async function carregarEmpresasTerceiras() {
+    const select = document.getElementById('selectEmpresaTerceira');
+    if (!select) return;
+
+    try {
+        const response = await fetch('http://localhost:8080/api/empresas/terceiras');
+        if (!response.ok) throw new Error('Erro ao buscar lista de empresas');
+
+        const empresas = await response.json();
+        const valorAtual = select.value;
+
+        select.innerHTML = '<option value="">Selecione a empresa terceirizada...</option>';
+
+        empresas.forEach(empresa => {
+            const option = document.createElement('option');
+            option.value = empresa.id;
+            option.textContent = empresa.nomeFantasia;
+            select.appendChild(option);
+        });
+
+        if (valorAtual) select.value = valorAtual;
+    } catch (error) {
+        console.error('Erro ao carregar empresas terceiras:', error);
+    }
+}
+
+function toggleEmpresa() {
+    const ehTerceiro = document.getElementById('ehTerceiro').value === "true";
+    const grupoEmpresa = document.getElementById('grupoEmpresa');
+
+    if (grupoEmpresa) {
+        grupoEmpresa.style.display = ehTerceiro ? 'block' : 'none';
+        if (ehTerceiro) {
+            carregarEmpresasTerceiras();
+        }
+    }
+}
+
+function abrirModalEmpresa() {
+    const modal = document.getElementById('modalNovaEmpresa');
+    if (modal) {
+        modal.classList.remove('oculto');
+        modal.style.display = 'flex';
+    }
+}
+
+function fecharModalEmpresa() {
+    const modal = document.getElementById('modalNovaEmpresa');
+    if (modal) {
+        modal.classList.add('oculto');
+        modal.style.display = 'none';
+    }
+
+    const inputNome = document.getElementById('modalNomeFantasia');
+    const inputCnpj = document.getElementById('modalCnpj');
+    if (inputNome) inputNome.value = '';
+    if (inputCnpj) inputCnpj.value = '';
+}
+
+async function salvarNovaEmpresaTerceira() {
+    const nomeFantasia = document.getElementById('modalNomeFantasia')?.value.trim();
+    const cnpj = document.getElementById('modalCnpj')?.value.trim();
+
+    if (!nomeFantasia || !cnpj) {
+        alert("Por favor, preencha o Nome Fantasia e o CNPJ da empresa.");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:8080/api/empresas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nomeFantasia, cnpj, ativo: true })
+        });
+
+        if (!response.ok) {
+            const erro = await response.text();
+            throw new Error(erro);
+        }
+
+        const empresaSalva = await response.json();
+        alert("Empresa terceirizada cadastrada com sucesso!");
+
+        fecharModalEmpresa();
+        await carregarEmpresasTerceiras();
+
+        const select = document.getElementById('selectEmpresaTerceira');
+        if (select) select.value = empresaSalva.id;
+
+    } catch (error) {
+        console.error("Erro ao salvar empresa:", error);
+        alert("Erro ao cadastrar empresa: " + error.message);
+    }
+}
+
+// =========================================================================
+// 3. CARREGAMENTO DOS DADOS DO COLABORADOR
+// =========================================================================
+
+async function carregarDadosDoColaborador() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    if (!id) {
+        alert("Erro: ID do colaborador não encontrado na URL.");
+        window.location.href = "gerenciar.html";
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/funcionarios/${id}`);
+        if (!response.ok) throw new Error("Erro ao buscar dados do colaborador.");
+
+        const funcionario = await response.json();
+
+        // Preenche campos simples
+        if (document.getElementById('nome')) document.getElementById('nome').value = funcionario.nome || '';
+        if (document.getElementById('matricula')) document.getElementById('matricula').value = funcionario.matricula || '';
+        if (document.getElementById('funcao')) document.getElementById('funcao').value = funcionario.funcao || '';
+        if (document.getElementById('perfil')) document.getElementById('perfil').value = funcionario.perfil || '';
+        if (document.getElementById('usuario')) document.getElementById('usuario').value = funcionario.usuario || '';
+
+        // Preenche tipo (Próprio / Terceiro) e Empresa
+        const selectTerceiro = document.getElementById('ehTerceiro');
+        if (selectTerceiro) {
+            selectTerceiro.value = funcionario.ehTerceiro ? "true" : "false";
+            toggleEmpresa();
+
+            if (funcionario.ehTerceiro && funcionario.empresa) {
+                const selectEmpresa = document.getElementById('selectEmpresaTerceira');
+                if (selectEmpresa) {
+                    selectEmpresa.value = funcionario.empresa.id;
+                }
+            }
+        }
+
+        // Permissão de Emissão de PT
+        const chkPodeEmitir = document.getElementById('podeEmitirPT');
+        if (chkPodeEmitir) {
+            chkPodeEmitir.checked = !!funcionario.podeEmitirPt;
+        }
+
+        // Atualiza a grade de NRs antes de preencher as datas
+        atualizarMatrizNRs();
+
+        // Datas Fixas (ASO e PT)
+        if (document.getElementById('realizacaoASO')) document.getElementById('realizacaoASO').value = funcionario.realizacaoASO || '';
+        if (document.getElementById('validadeASO')) document.getElementById('validadeASO').value = funcionario.validadeASO || '';
+        if (document.getElementById('realizacaoReciclagemPt')) document.getElementById('realizacaoReciclagemPt').value = funcionario.realizacaoReciclagemPt || '';
+        if (document.getElementById('validadeReciclagemPt')) document.getElementById('validadeReciclagemPt').value = funcionario.validadeReciclagemPt || '';
+
+        // Preenche as NRs dinâmicas
+        if (funcionario.funcao && typeof matrizNRsPorFuncao !== 'undefined' && matrizNRsPorFuncao[funcionario.funcao]) {
+            matrizNRsPorFuncao[funcionario.funcao].forEach(nr => {
+                const nomeCampo = obterNomeCampoJava(nr);
+                if (nomeCampo) {
+                    const inputR = document.getElementById(`realizacao_${nr}`);
+
+                    // Preenche apenas a Data de Realização
+                    if (inputR) inputR.value = funcionario["realizacao" + nomeCampo] || '';
+                }
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Não foi possível carregar os dados.");
+    }
+}
+
+// =========================================================================
+// 4. ATUALIZAÇÃO DA GRADE DE NRs
+// =========================================================================
+
+function atualizarMatrizNRs() {
+    const selectFuncao = document.getElementById('funcao');
+    if (!selectFuncao) return;
+
+    const funcao = selectFuncao.value;
+    const container = document.getElementById('containerMatrizNRs');
+    if (!container) return;
+
+    if (!funcao || typeof matrizNRsPorFuncao === 'undefined' || !matrizNRsPorFuncao[funcao]) {
+        container.innerHTML = '<p>Selecione uma função para ver as NRs.</p>';
+        return;
+    }
+
+    let html = '<div class="grid-nrs">';
+    matrizNRsPorFuncao[funcao].forEach(nr => {
+        const d = bibliotecaRequisitos[nr];
+        html += `<div class="card-nr-item">
+        <label><strong>${nr}</strong></label>
+        <small>${d ? d.nome : ''}</small>
+        <div class="form-group">
+            <input type="date" id="realizacao_${nr}">
+        </div>
+    </div>`;
+    });
+    container.innerHTML = html + '</div>';
+}
+
+// Exibe ou oculta opções extras (como a flag de emissão de PT do Encarregado) conforme o perfil selecionado
+function ajustarCamposLogin() {
+    const perfilSelect = document.getElementById('perfil');
+    if (!perfilSelect) return;
+
+    const perfil = perfilSelect.value.toUpperCase();
+    const divPodeEmitir = document.getElementById('divPodeEmitirPT') || document.getElementById('boxPodeEmitirPT');
+
+    if (divPodeEmitir) {
+        if (perfil === 'ENCARREGADO') {
+            divPodeEmitir.style.display = 'block';
+        } else {
+            divPodeEmitir.style.display = 'none';
+            const chkEmitir = document.getElementById('podeEmitirPT');
+            if (chkEmitir) chkEmitir.checked = false;
+        }
+    }
+}
+
+// =========================================================================
+// 5. ENVIO DAS ALTERAÇÕES (PUT)
+// =========================================================================
+
+async function salvarAlteracoes() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    if (!id) {
+        alert("ID do colaborador não informado.");
+        return;
+    }
+
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    const ehTerceiro = document.getElementById('ehTerceiro')?.value === "true";
+    const empresaTerceiraId = document.getElementById('selectEmpresaTerceira')?.value;
+
+    // Validação de Empresa Terceira
+    if (ehTerceiro && !empresaTerceiraId) {
+        alert("Por favor, selecione a empresa parceira do colaborador terceiro.");
+        return;
+    }
+
+    // Determina o objeto da Empresa
+    let objetoEmpresa = null;
+    if (ehTerceiro) {
+        objetoEmpresa = { id: parseInt(empresaTerceiraId) };
+    } else if (usuarioLogado && usuarioLogado.empresaId) {
+        objetoEmpresa = { id: parseInt(usuarioLogado.empresaId) };
+    } else {
+        objetoEmpresa = { id: 1 }; // Default caso não haja usuário logado na sessão
+    }
+
+    // 1. Monta o objeto base
+    const data = {
+        id: parseInt(id),
+        nome: document.getElementById('nome')?.value.trim(),
+        matricula: document.getElementById('matricula')?.value.trim(),
+        funcao: document.getElementById('funcao')?.value,
+        perfil: document.getElementById('perfil')?.value,
+        usuario: document.getElementById('usuario')?.value.trim(),
+        senha: document.getElementById('senha') ? document.getElementById('senha').value : "",
+
+        ehTerceiro: ehTerceiro,
+        empresa: objetoEmpresa,
+
+        podeEmitirPt: document.getElementById('podeEmitirPT')?.checked || false,
+        podeSolicitarPt: document.getElementById('perfil')?.value === "SOLICITANTE",
+
+        realizacaoASO: document.getElementById('realizacaoASO')?.value || null,
+        validadeASO: document.getElementById('validadeASO')?.value || null,
+        realizacaoReciclagemPt: document.getElementById('realizacaoReciclagemPt')?.value || null,
+        validadeReciclagemPt: document.getElementById('validadeReciclagemPt')?.value || null,
+
+        usuarioLogadoId: usuarioLogado ? usuarioLogado.id : null
+    };
+
+    // 2. Coleta as NRs Dinâmicas
+    document.querySelectorAll('.card-nr-item').forEach(card => {
+        const tagStrong = card.querySelector("strong");
+        if (!tagStrong) return;
+
+        const nr = tagStrong.innerText.trim();
+        const nomeCampo = obterNomeCampoJava(nr);
+        if (!nomeCampo) return;
+
+        const realizacao = card.querySelector(`input[id="realizacao_${nr}"]`);
+        const validade = card.querySelector(`input[id="validade_${nr}"]`);
+
+        if (realizacao && realizacao.value) {
+            data["realizacao" + nomeCampo] = realizacao.value;
+            data["validade" + nomeCampo] = validade.value;
+        }
+    });
+
+    // 3. Envio via PUT
+    try {
+        const resp = await fetch(`http://localhost:8080/api/funcionarios/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        if (!resp.ok) {
+            const erroDetalhado = await resp.text();
+            console.error("ERRO DO SERVIDOR:", erroDetalhado);
+            throw new Error(erroDetalhado);
+        }
+
+        alert("Alterações salvas com sucesso!");
+        window.location.href = 'gerenciar.html';
+    } catch (erro) {
+        console.error("Erro ao salvar:", erro);
+        alert("Erro ao salvar: " + erro.message);
+    }
+}

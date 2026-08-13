@@ -1,0 +1,166 @@
+// Dicionário para traduzir Enums e constantes do banco de dados
+const TRADUCOES = {
+    // Áreas de Atuação
+    'INSTRUMENTACAO': 'Instrumentação',
+    'ELETRICA': 'Elétrica',
+    'MECANICA': 'Mecânica',
+    'CIVIL': 'Civil',
+    'CALDEIRARIA': 'Caldeiraria',
+    'GERAL': 'Geral',
+
+    // Status da PT
+    'SOLICITADA': 'Solicitada',
+    'EMITIDA': 'Emitida',
+    'EM_REVALIDACAO': 'Em Revalidação',
+    'ENCERRADA': 'Encerrada',
+    'CANCELADA': 'Cancelada'
+};
+
+// Função para formatar o texto para Português correto
+function formatarTexto(valor) {
+    if (!valor) return '-';
+    const chave = valor.toString().trim().toUpperCase();
+    return TRADUCOES[chave] || valor;
+}
+
+// Variáveis globais para controle de filtro
+let listaPtsGlobal = [];
+let statusFiltroAtual = 'TODAS';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Verificação de Segurança
+    const logado = sessionStorage.getItem('usuarioLogado');
+    if (!logado) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const usuario = JSON.parse(logado);
+    const perfil = usuario.perfil ? usuario.perfil.toUpperCase() : '';
+
+    console.log("Dashboard carregado. Acesso como: ", perfil);
+
+    // ADMIN_SISTEMA é somente instalação.
+    if (perfil === "ADMIN_SISTEMA") {
+        alert("Acesso restrito. Usuário de instalação não possui acesso ao monitoramento de PTs.");
+        window.location.href = "admin.html";
+        return;
+    }
+
+    carregarTabelaPTs();
+});
+
+// 1. Carrega as PTs e guarda na variável global
+async function carregarTabelaPTs() {
+    try {
+        const response = await fetch('http://localhost:8080/api/permissoes-trabalho');
+        if (!response.ok) return;
+
+        listaPtsGlobal = await response.json();
+        filtrarStatus(statusFiltroAtual); // Aplica o filtro atual (padrão 'TODAS')
+
+    } catch (error) {
+        console.error("Erro ao carregar monitoramento de PTs:", error);
+    }
+}
+
+// 2. Função acionada ao clicar nas abas de filtro (anexada ao window para escopo global)
+window.filtrarStatus = function (status, event) {
+    statusFiltroAtual = status;
+
+    // Atualiza o estilo visual dos botões de filtro
+    document.querySelectorAll('.dashboard-filtros button').forEach(btn => btn.classList.remove('ativo'));
+    if (event && event.currentTarget) {
+        event.currentTarget.classList.add('ativo');
+    }
+
+    // Filtra os dados com base na lista global
+    if (status === 'TODAS') {
+        renderizarTabela(listaPtsGlobal);
+    } else {
+        const filtradas = listaPtsGlobal.filter(pt => (pt.status || '').toUpperCase() === status);
+        renderizarTabela(filtradas);
+    }
+}
+
+// 3. Renderiza a tabela de acordo com a lista filtrada
+function renderizarTabela(lista) {
+    const corpoTabela = document.getElementById('corpoTabela');
+    if (!corpoTabela) return;
+
+    if (lista.length === 0) {
+        corpoTabela.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 20px;">
+                    Nenhuma Permissão de Trabalho encontrada para este filtro.
+                </td>
+            </tr>`;
+        return;
+    }
+
+    const logado = sessionStorage.getItem('usuarioLogado');
+    const usuario = logado ? JSON.parse(logado) : {};
+    const perfil = usuario.perfil ? usuario.perfil.toUpperCase() : '';
+
+    const perfisEmitentes = ['EMISSOR', 'SESMT', 'MASTER', 'ADMIN', 'OPERADOR_INDUSTRIAL'];
+    const ehEmitente = perfisEmitentes.includes(perfil);
+
+    corpoTabela.innerHTML = lista.map(pt => {
+        const statusChave = (pt.status || 'SOLICITADA').toUpperCase();
+        const statusExibicao = formatarTexto(statusChave);
+        const areaExibicao = formatarTexto(pt.areaAtuacao);
+
+        let acoesHtml = '';
+
+        // 🟢 REGRA 1: Status SOLICITADA (Verificar e Emitir)
+        if (statusChave === 'SOLICITADA') {
+            if (ehEmitente) {
+                acoesHtml += `<a href="emitir-pt.html?id=${pt.id}" class="btn-acao-emitir" title="Emitir PT">🛡️ Emitir</a> `;
+            }
+            acoesHtml += `<a href="editar-pt.html?id=${pt.id}" class="btn-acao-editar" title="Ver/Editar Solicitação">✏️ Detalhes</a>`;
+        }
+        // 🟢 REGRA 2: Status EMITIDA ou EM_REVALIDACAO (Editar condições operacionais, riscos ou baixa)
+        else if (statusChave === 'EMITIDA' || statusChave === 'EM_REVALIDACAO') {
+            acoesHtml += `<a href="editar-pt.html?id=${pt.id}" class="btn-acao-editar" title="Editar Riscos/Condições">⚙️ Gerenciar</a> `;
+
+            if (ehEmitente || perfil === 'SOLICITANTE') {
+                acoesHtml += `<button onclick="abrirModalEncerramento(${pt.id})" class="btn-acao-encerrar" title="Dar Baixa / Quitar PT">🏁 Dar Baixa</button>`;
+            }
+        }
+        // 🟢 REGRA 3: Status ENCERRADA / DADO BAIXA (Consulta sem edição)
+        else {
+            acoesHtml += `<a href="visualizar-pt.html?id=${pt.id}" class="btn-acao-visualizar" title="Apenas Consulta">👁️ Visualizar</a>`;
+        }
+
+        return `
+            <tr>
+                <td>#${pt.id}</td>
+                <td>${pt.plantaArea || '-'}</td>
+                <td>${pt.emergencial ? '🚨 Emergencial' : (pt.ordemPj || '-')}</td>
+                <td><strong>${areaExibicao}</strong></td>
+                <td>${pt.tag || '-'}</td>
+                <td>${pt.solicitante ? pt.solicitante.nome : '-'}</td>
+                <td><span class="badge ${getStatusBadgeClass(statusChave)}">${statusExibicao}</span></td>
+                <td class="coluna-acoes">
+                    ${acoesHtml}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Retorna as cores de cada badge
+function getStatusBadgeClass(status) {
+    switch (status) {
+        case 'SOLICITADA':
+            return 'badge-solicitada';
+        case 'EMITIDA':
+            return 'badge-emitida';
+        case 'EM_REVALIDACAO':
+            return 'badge-revalidacao';
+        case 'ENCERRADA':
+            return 'badge-encerrada';
+        default:
+            return 'badge-solicitada';
+    }
+}

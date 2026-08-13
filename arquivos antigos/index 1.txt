@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema PT - Login</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 320px; }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #666; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        .error { color: red; text-align: center; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Acesso ao Sistema</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="usuario">Usuário</label>
+            <input type="text" id="usuario" required>
+        </div>
+        <div class="form-group">
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" required>
+        </div>
+        <button type="submit">Entrar</button>
+        <div id="mensagemErro" class="error"></div>
+    </form>
+</div>
+
+<script>
+    const API_URL = "http://localhost:8080/api/auth/login"; // Ajuste para o seu endpoint de login
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const usuario = document.getElementById('usuario').value;
+        const senha = document.getElementById('senha').value;
+        const msgErro = document.getElementById('mensagemErro');
+        msgErro.innerText = "";
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario, senha })
+            });
+
+            if (!response.ok) {
+                throw new Error("Usuário ou senha inválidos.");
+            }
+
+            const dadosExemplo = await response.json();
+            
+            // Exemplo de lógica de direcionamento baseada no perfil (ROLE)
+            localStorage.setItem('usuarioLogado', JSON.stringify(dadosExemplo));
+            
+            if (dadosExemplo.perfil === 'MASTER') {
+                window.location.href = 'admin.html'; // Tela do Admin Master para criar empresas
+            } else {
+                window.location.href = 'dashboard.html'; // Dashboard geral
+            }
+
+        } catch (error) {
+            msgErro.innerText = error.message;
+        }
+    });
+</script>
+</body>
+</html>

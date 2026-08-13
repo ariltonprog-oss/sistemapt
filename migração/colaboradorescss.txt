@@ -1,0 +1,6 @@
+#containerMatrizNRs { width: 100%; margin-top: 20px; }
+.grid-nrs { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; width: 100%; }
+
+.card-nr-item { background: var(--cor-card); padding: 18px; border-radius: 6px; border: 1px solid var(--borda); display: flex; flex-direction: column; gap: 12px; }
+.card-nr-item .form-group { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 10px; }
+.card-nr-item label { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0; }

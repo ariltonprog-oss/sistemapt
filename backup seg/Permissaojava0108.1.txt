@@ -1,0 +1,411 @@
+package com.gestaopt.sistemapt.model;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
+@interface JsonIgnoreProperties {
+
+    String[] value() default {};
+}
+
+@interface JsonProperty {
+
+    String value() default "";
+}
+
+@Entity
+@Table(name = "permissoes_trabalho")
+public class PermissaoTrabalho {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty("id")
+    private Long id;
+
+    // --- BLOCO 1 AO 6: CABEÇALHO DO FORMULÁRIO ---
+    @JsonProperty("plantaArea")
+    private String plantaArea;
+
+    @JsonProperty("dataHoraEmissao")
+    private LocalDateTime dataHoraEmissao;
+
+    @JsonProperty("empresaGestora")
+    private String empresaGestora;
+
+    @Column(name = "turno_grupo")
+    @JsonProperty("turnoGrupo")
+    private String turnoGrupo;
+
+    @JsonProperty("tag")
+    private String tag;
+
+    @JsonProperty("ordemPj")
+    private String ordemPj;
+
+    @JsonProperty("emergencial")
+    private boolean emergencial = false;
+
+    @Column(name = "descricao_atividade", length = 255, nullable = false)
+    @JsonProperty("descricaoAtividade")
+    private String descricaoAtividade;
+
+    // Controle de fluxo do Sistema ("SOLICITADA", "EMITIDA", "EM_REVALIDACAO", "ENCERRADA")
+    @JsonProperty("status")
+    private String status;
+
+    // --- CONTROLE DE REVALIDAÇÕES OPERACIONAIS ---
+    @Column(name = "qtd_revalidadas")
+    @JsonProperty("qtdRevalidadas")
+    private int qtdRevalidadas = 0;
+
+    @Transient
+    public static final int LIMITE_TOTAL_DIAS = 5;
+
+    @OneToMany(mappedBy = "permissaoTrabalho", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("permissaoTrabalho")
+    @JsonProperty("revalidacoes")
+    private List<RevalidaPermissao> revalidacoes = new ArrayList<>();
+
+    // --- INDICADOR OPERACIONAL ---
+    @JsonProperty("solicitanteExecutante")
+    private boolean solicitanteExecutante;
+
+    // --- ESPECIALIDADE ---
+    @Enumerated(EnumType.STRING)
+    @Column(name = "area_atuacao")
+    @JsonProperty("areaAtuacao")
+    private Especialidade areaAtuacao;
+
+    // --- MATRIZ DE EPIs CALCULADOS ---
+    @ElementCollection
+    @JsonProperty("episObrigatorios")
+    private List<String> episObrigatorios = new ArrayList<>();
+
+    // Adicione os métodos getter e setter:
+    public List<String> getEpisObrigatorios() {
+        return episObrigatorios;
+    }
+
+    public void setEpisObrigatorios(List<String> episObrigatorios) {
+        this.episObrigatorios = episObrigatorios;
+    }
+
+    // --- FLIP DE RISCOS / ATIVIDADES CRÍTICAS ---
+    @JsonProperty("requerTrabalhoFrio")
+    private boolean requerTrabalhoFrio;
+
+    @JsonProperty("requerTrabalhoAltura")
+    private boolean requerTrabalhoAltura;
+
+    @JsonProperty("requerEspacoConfinado")
+    private boolean requerEspacoConfinado;
+
+    @JsonProperty("requerTrabalhoQuente")
+    private boolean requerTrabalhoQuente;
+
+    @JsonProperty("requerRiscoEletrico")
+    private boolean requerRiscoEletrico;
+
+    @JsonProperty("requerAltaTensaoSep")
+    private boolean requerAltaTensaoSep;
+
+    @JsonProperty("requerAreaClassificada")
+    private boolean requerAreaClassificada;
+
+    @JsonProperty("requerAtividadePintura")
+    private boolean requerAtividadePintura;
+
+    @JsonProperty("requerSegurancaMaquinas")
+    private boolean requerSegurancaMaquinas;
+
+    @Column(name = "requer_loto", nullable = false)
+    @JsonProperty("requerLoto")
+    private boolean requerLoto;
+
+    // --- RELACIONAMENTOS E PAPÉIS DE SEGURANÇA ---
+    @ManyToOne
+    @JoinColumn(name = "solicitante_id")
+    @JsonIgnoreProperties({"administradorResponsavel", "senha", "usuario"})
+    private Funcionario solicitante;
+
+    @ManyToOne
+    @JoinColumn(name = "emitente_id")
+    @JsonIgnoreProperties({"administradorResponsavel", "senha", "usuario"})
+    private Funcionario emitente;
+
+    @ManyToMany
+    @JoinTable(
+            name = "pt_executantes",
+            joinColumns = @JoinColumn(name = "pt_id"),
+            inverseJoinColumns = @JoinColumn(name = "funcionario_id")
+    )
+    @JsonIgnoreProperties({"administradorResponsavel", "senha", "usuario"})
+    private List<Funcionario> executantes;
+
+    // --- CONSTRUTOR PADRÃO ---
+    public PermissaoTrabalho() {
+        this.status = "SOLICITADA";
+        this.qtdRevalidadas = 0;
+    }
+
+    // --- CALLBACK DO JPA ---
+    @PrePersist
+    public void prePersist() {
+        if (this.status == null || this.status.isBlank() || "RASCUNHO".equalsIgnoreCase(this.status)) {
+            this.status = "SOLICITADA";
+        }
+    }
+
+    // --- MÉTODOS DE REGRA DE NEGÓCIO DA PT ---
+    @Transient
+    public boolean podeRevalidar() {
+        return this.qtdRevalidadas < LIMITE_TOTAL_DIAS;
+    }
+
+    @Transient
+    public boolean requerMonitoramentoAmbiental() {
+        return this.requerEspacoConfinado || (this.requerTrabalhoQuente && this.requerAreaClassificada);
+    }
+
+    @Transient
+    public boolean necessitaFormularioAdicional() {
+        return this.qtdRevalidadas > 1;
+    }
+
+    // --- GETTERS AND SETTERS ---
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPlantaArea() {
+        return plantaArea;
+    }
+
+    public void setPlantaArea(String plantaArea) {
+        this.plantaArea = plantaArea;
+    }
+
+    public LocalDateTime getDataHoraEmissao() {
+        return dataHoraEmissao;
+    }
+
+    public void setDataHoraEmissao(LocalDateTime dataHoraEmissao) {
+        this.dataHoraEmissao = dataHoraEmissao;
+    }
+
+    public String getEmpresaGestora() {
+        return empresaGestora;
+    }
+
+    public void setEmpresaGestora(String empresaGestora) {
+        this.empresaGestora = empresaGestora;
+    }
+
+    public String getTurnoGrupo() {
+        return turnoGrupo;
+    }
+
+    public void setTurnoGrupo(String turnoGrupo) {
+        this.turnoGrupo = turnoGrupo;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getOrdemPj() {
+        return ordemPj;
+    }
+
+    public void setOrdemPj(String ordemPj) {
+        this.ordemPj = ordemPj;
+    }
+
+    public boolean isEmergencial() {
+        return emergencial;
+    }
+
+    public void setEmergencial(boolean emergencial) {
+        this.emergencial = emergencial;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public int getQtdRevalidadas() {
+        return qtdRevalidadas;
+    }
+
+    public void setQtdRevalidadas(int qtdRevalidadas) {
+        this.qtdRevalidadas = qtdRevalidadas;
+    }
+
+    public List<RevalidaPermissao> getRevalidacoes() {
+        return revalidacoes;
+    }
+
+    public void setRevalidacoes(List<RevalidaPermissao> revalidacoes) {
+        this.revalidacoes = revalidacoes;
+    }
+
+    public boolean isSolicitanteExecutante() {
+        return solicitanteExecutante;
+    }
+
+    public void setSolicitanteExecutante(boolean solicitanteExecutante) {
+        this.solicitanteExecutante = solicitanteExecutante;
+    }
+
+    public Especialidade getAreaAtuacao() {
+        return areaAtuacao;
+    }
+
+    public void setAreaAtuacao(Especialidade areaAtuacao) {
+        this.areaAtuacao = areaAtuacao;
+    }
+
+    public boolean isRequerTrabalhoAltura() {
+        return requerTrabalhoAltura;
+    }
+
+    public void setRequerTrabalhoAltura(boolean requerTrabalhoAltura) {
+        this.requerTrabalhoAltura = requerTrabalhoAltura;
+    }
+
+    public boolean isRequerEspacoConfinado() {
+        return requerEspacoConfinado;
+    }
+
+    public void setRequerEspacoConfinado(boolean requerEspacoConfinado) {
+        this.requerEspacoConfinado = requerEspacoConfinado;
+    }
+
+    public boolean isRequerTrabalhoQuente() {
+        return requerTrabalhoQuente;
+    }
+
+    public void setRequerTrabalhoQuente(boolean requerTrabalhoQuente) {
+        this.requerTrabalhoQuente = requerTrabalhoQuente;
+    }
+
+    public Funcionario getSolicitante() {
+        return solicitante;
+    }
+
+    public void setSolicitante(Funcionario solicitante) {
+        this.solicitante = solicitante;
+    }
+
+    public Funcionario getEmitente() {
+        return emitente;
+    }
+
+    public void setEmitente(Funcionario emitente) {
+        this.emitente = emitente;
+    }
+
+    public List<Funcionario> getExecutantes() {
+        return executantes;
+    }
+
+    public void setExecutantes(List<Funcionario> executantes) {
+        this.executantes = executantes;
+    }
+
+    public boolean isRequerRiscoEletrico() {
+        return requerRiscoEletrico;
+    }
+
+    public void setRequerRiscoEletrico(boolean r) {
+        this.requerRiscoEletrico = r;
+    }
+
+    public boolean isRequerAltaTensaoSep() {
+        return requerAltaTensaoSep;
+    }
+
+    public void setRequerAltaTensaoSep(boolean r) {
+        this.requerAltaTensaoSep = r;
+    }
+
+    public boolean isRequerAreaClassificada() {
+        return requerAreaClassificada;
+    }
+
+    public void setRequerAreaClassificada(boolean r) {
+        this.requerAreaClassificada = r;
+    }
+
+    public boolean isRequerAtividadePintura() {
+        return requerAtividadePintura;
+    }
+
+    public void setRequerAtividadePintura(boolean r) {
+        this.requerAtividadePintura = r;
+    }
+
+    public boolean isRequerSegurancaMaquinas() {
+        return requerSegurancaMaquinas;
+    }
+
+    public void setRequerSegurancaMaquinas(boolean r) {
+        this.requerSegurancaMaquinas = r;
+    }
+
+    public boolean isRequerTrabalhoFrio() {
+        return requerTrabalhoFrio;
+    }
+
+    public void setRequerTrabalhoFrio(boolean requerTrabalhoFrio) {
+        this.requerTrabalhoFrio = requerTrabalhoFrio;
+    }
+
+    public boolean isRequerLoto() {
+        return requerLoto;
+    }
+
+    public void setRequerLoto(boolean requerLoto) {
+        this.requerLoto = requerLoto;
+    }
+
+    public String getDescricaoAtividade() {
+        return descricaoAtividade;
+    }
+
+    public void setDescricaoAtividade(String descricaoAtividade) {
+        this.descricaoAtividade = descricaoAtividade;
+    }
+}

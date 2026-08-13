@@ -1,0 +1,228 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+body { background-color: var(--cor-fundo); color: var(--cor-texto); min-height: 100vh; display: flex; }
+
+.sidebar-header { padding: 30px 20px; color: var(--cor-primaria); text-align: center; font-size: 1.3rem; font-weight: bold; border-bottom: 1px solid var(--borda); }
+.sidebar-menu { list-style: none; margin-top: 20px; }
+.sidebar-menu li a { display: block; padding: 18px 25px; color: var(--cor-texto); text-decoration: none; font-weight: 500; border-left: 4px solid transparent; }
+.sidebar-menu li a:hover { background-color: var(--borda); color: var(--cor-primaria); border-left: 4px solid var(--cor-primaria); }
+
+.card { background: var(--cor-card); padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 20px; }
+.main-content {
+    padding: 20px;
+    width: 100%;
+    max-width: 1200px; /* Limita a largura máxima */
+    margin: 0 auto;    /* Centraliza na tela */
+}
+/* =========================================
+   ESTILOS PARA A TABELA DO DASHBOARD
+   ========================================= */
+
+   Expande o container principal para aproveitar melhor a tela */
+.dashboard-container, .container, main {
+    width: 98% !important;
+    max-width: 100% !important;
+    margin: 0 auto;
+    padding: 10px 15px;
+}
+/*Faz a tabela ocupar toda a largura disponível sem estourar */
+.tabela-pts, table {
+    width: 100% !important;
+    table-layout: auto; /* Permite que as colunas se ajustem de forma inteligente */
+}
+
+/* 3. Reduz leves margens e paddings das células para otimizar o espaço horizontal */
+.tabela-pts th, .tabela-pts td {
+    padding: 10px 8px; /* Reduz um pouco o padding lateral se estiver muito largo */
+    font-size: 0.9em;
+}
+
+/* 4. Garante que a coluna de ações caiba confortavelmente */
+.tabela-pts td.coluna-acoes, th.coluna-acoes {
+    white-space: nowrap;
+    width: 1%; /* Força a coluna a ocupar apenas o espaço necessário para os botões */
+}
+
+/* Estilo específico para o cabeçalho ficar destacado */
+.tabela-pts th {
+    font-weight: bold;
+    white-space: nowrap; /* Impede que o cabeçalho quebre linha desnecessariamente */
+    background-color: rgba(255, 255, 255, 0.02); /* Leve destaque no fundo do cabeçalho */
+}
+
+/* Efeito de hover (passar o mouse) nas linhas da tabela para ficar interativo */
+.tabela-pts tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Container flex para alinhar o Select e o Botão lado a lado */
+.input-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espaçamento entre o select e o botão */
+    width: 100%;
+}
+
+/* Faz o select ocupar todo o espaço disponível restante */
+.input-group-inline select {
+    flex: 1;
+    min-width: 0; /* Impede que o select 'vaze' em telas menores */
+}
+
+/* Estilo do Botão Nova Empresa (+) */
+.btn-add-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    width: 40px;             /* Largura fixa proporcional */
+    height: 38px;            /* Deve ser a mesma altura exata dos seus inputs */
+    
+    background-color: #2b5c8f; /* Azul ligeiramente mais claro e destacado que o fundo dos inputs */
+    color: #ffffff;
+    border: 1px solid #4172a3; /* Borda sutil combinando */
+    border-radius: 6px;      /* Mesma curvatura de borda dos seus inputs */
+    
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;          /* Impede que o botão encolha ao redimensionar */
+}
+
+/* Efeito ao passar o mouse */
+.btn-add-inline:hover {
+    background-color: #3b7ac2; /* Ilumina um pouco mais para indicar interatividade */
+    border-color: #538cc6;
+    transform: translateY(-1px); /* Leve elevação ao passar o mouse */
+}
+
+/* Efeito ao clicar */
+.btn-add-inline:active {
+    transform: translateY(0);
+}
+/* CONTAINER DA TABELA COM SCROLL LATERAL SE PRECISAR */
+.tabela-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 15px;
+    border-radius: 8px;
+    background-color: #1a2234;
+    border: 1px solid #2d3748;
+}
+
+/* FORMATAÇÃO GERAL DA TABELA */
+.tabela-estilizada {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+}
+
+/* CABEÇALHO DA TABELA */
+.tabela-estilizada thead tr {
+    background-color: #0f172a;
+    border-bottom: 2px solid #334155;
+}
+
+.tabela-estilizada th {
+    padding: 14px 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    white-space: nowrap;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+}
+
+/* CORPO DA TABELA E LINHAS */
+.tabela-estilizada tbody tr {
+    border-bottom: 1px solid #1e293b;
+    transition: background-color 0.2s;
+}
+
+.tabela-estilizada tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.tabela-estilizada td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* BADGE DE STATUS */
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.status-solicitada, .status-pendente {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.status-aprovada {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+/* BOTÃO DE AÇÃO (SUBSTITUI O LINK ROXO PADRÃO) */
+.btn-acao-editar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background-color: #2563eb;
+    color: #ffffff !important;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-acao-editar:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+}
+/* Container da Empresa Gestora na Sidebar */
+.sidebar-empresa-gestora {
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 10px 15px;
+}
+
+.sidebar-empresa-gestora .label-empresa {
+    display: block;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.sidebar-empresa-gestora .nome-empresa {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f59e0b; /* Laranja padrão do tema */
+    display: flex;
+    align-items: baseline;
+    margin-top: 2px;
+}
+
+/* Primeira Letra em destaque maior */
+.sidebar-empresa-gestora .letra-destaque {
+    font-size: 1.5rem;   /* Tamanho ampliado da 1ª letra */
+    font-weight: 800;
+    color: #fbbf24;      /* Dourado / Laranja claro */
+    line-height: 1;
+    margin-right: 1px;
+}

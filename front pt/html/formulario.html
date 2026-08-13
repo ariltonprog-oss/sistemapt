@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prontuário Oficial - Permissão de Trabalho</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="page-formulario">
+        }
+
+        /* Estrutura das Tabelas Operacionais (Estilo GS Inima) */
+        .w-full {
+            width: 100%;
+        }
+
+        .m-top {
+            margin-top: 10px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .text-lg {
+            font-size: 14px;
+        }
+
+        .text-sm {
+            font-size: 9px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1.5px solid #000000;
+            /* Linhas escuras idênticas ao prontuário real */
+            padding: 5px;
+            vertical-align: top;
+        }
+
+        /* Classes auxiliares de alinhamento para eliminar erros de estilo inline */
+        .celula-meio-alinhada {
+            vertical-align: middle !important;
+        }
+
+        .celula-titulo-logo {
+            font-size: 16px;
+            vertical-align: middle;
+        }
+
+        .alinhamento-executante-lista {
+            text-align: left !important;
+        }
+
+        /* Estilo dos Blocos e Seções Numeradas */
+        .titulo-secao {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-weight: bold;
+            padding: 4px 6px;
+            text-transform: uppercase;
+            font-size: 11px;
+            margin-top: 12px;
+        }
+
+        .conteudo-secao {
+            border: 1.5px solid #000000;
+            border-top: none;
+            padding: 8px;
+        }
+
+        /* Caixas de Texto com Altura Mínima Garantida */
+        .caixa-texto-campo {
+            font-style: italic;
+            min-height: 45px;
+            white-space: pre-wrap;
+        }
+
+        /* Checklist das NRs */
+        .tabela-checklist th {
+            background-color: #f1f5f9 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            text-align: left;
+        }
+
+        /* Área de Assinaturas e Rodapé Técnico */
+        .grid-assinaturas {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            border: none;
+        }
+
+        .box-assinatura {
+            width: 48%;
+            text-align: left;
+        }
+
+        .linha-assinatura {
+            border-top: 1px solid #000000;
+            margin-top: 35px;
+            margin-bottom: 4px;
+            width: 100%;
+        }
+
+        /* Estilo para a tela do Bloqueio de Fluxo SESMT */
+        .bloqueio-sesmt-container {
+            text-align: center;
+            margin-top: 50px;
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        .bloqueio-sesmt-titulo {
+            color: #dc2626;
+        }
+
+        .bloqueio-sesmt-texto {
+            margin-top: 10px;
+            color: #475569;
+        }
+
+        .bloqueio-sesmt-badge {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Adaptação amigável de cores para quando visualizado no Tablet */
+        @media screen {
+            body {
+                background-color: #f8fafc;
+                padding: 20px;
+                max-width: 800px;
+                margin: 0 auto;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            }
+        }
+
+        /* Oculta o botão de disparo manual na folha impressa ou PDF */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .btn-imprimir-manual {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        /* 🌟 CONFIGURAÇÃO DA TABELA DE EXECUTANTES (SEÇÃO 21) */
+        .tabela-executantes-oficial th {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+            font-weight: bold;
+            text-align: center;
+            font-size: 10px;
+            padding: 4px;
+            border: 1.5px solid #000000 !important;
+        }
+
+        .tabela-executantes-oficial td {
+            border: 1.5px solid #000000 !important;
+        }
+
+        /* Fundo cinza suave e alinhamento para os números dos itens (1 a 9) */
+        .celula-manual-item {
+            vertical-align: middle !important;
+            text-align: center !important;
+            font-weight: bold;
+            background-color: #f1f5f9 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Célula retangular limpa: espaço ideal para escrita manual ou digital */
+        .celula-campo-limpo {
+            height: 25px;
+            vertical-align: middle !important;
+            padding: 3px 6px !important;
+        }
+
+        .text-left {
+            text-align: left !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="btn-imprimir-manual no-print" onclick="window.print()">🖨️ Disparar Impressão Manual</button>
+
+    <div>
+        <table class="w-full">
+            <tr>
+                <td width="20%" class="text-center bold celula-titulo-logo">GS Inima</td>
+                <td width="55%" class="text-center bold text-lg celula-meio-alinhada">PERMISSÃO PARA TRABALHO SEGURO
+                    (PT)</td>
+                <td width="25%" class="text-sm">
+                    <b>Nº REGISTRO:</b> <span id="pId">---</span><br>
+                    <b>STATUS:</b> <span id="pStatus" class="bold">---</span><br> <b>DATA/HORA LIBERAÇÃO:</b> <span
+                        id="pData">---</span>
+                </td>
+            </tr>
+        </table>
+
+        <table class="w-full">
+            <tr>
+                <td width="25%"><b>1. PLANTA / ÁREA:</b><br><span id="pPlanta">---</span></td>
+                <td width="25%"><b>2. TURNO / GRUPO:</b><br><span id="pTurno">---</span></td>
+                <td width="25%"><b>3. TAG EQUIPAMENTO:</b><br><span id="pTag">---</span></td>
+                <td width="25%"><b>4. ORDEM DE SERVIÇO / PJ:</b><br><span id="pOrdem">---</span></td>
+            </tr>
+            <tr>
+                <td colspan="2"><b>5. EMPRESA GESTORA / EXECUTANTE:</b><br><span id="pEmpresa">---</span></td>
+                <td colspan="2"><b>6. ÁREA DE ATUAÇÃO (ESPECIALIDADE):</b><br><span id="pArea">---</span></td>
+            </tr>
+        </table>
+
+        <div class="titulo-secao">7. DESCRIÇÃO DETALHADA DO SERVIÇO / FERRAMENTAS QUE SERÃO UTILIZADAS</div>
+        <div class="conteudo-secao">
+            <div id="pDescricao" class="caixa-texto-campo">---</div>
+        </div>
+
+        <div class="titulo-secao">8. ESCOPO DO TRABALHO E DIRETRIZES DE SEGURANÇA (NR APRECIADAS)</div>
+        <table class="w-full tabela-checklist">
+            <thead>
+                <tr>
+                    <th width="35%">Norma Regulamentadora / Risco Ativo</th>
+                    <th width="15%" class="text-center">Enquadramento</th>
+                    <th width="50%">Medidas de Controle Críticas Obrigatórias</th>
+                </tr>
+            </thead>
+            <tbody id="pCorpoChecklist">
+            </tbody>
+        </table>
+
+        <div id="blocoMonitoramentoAtmosferico">
+            <div class="titulo-secao">12. MONITORAMENTO AMBIENTAL DA ATMOSFERA DE TRABALHO</div>
+            <table class="w-full text-center">
+                <tr>
+                    <td width="20%"><b>Oxigênio (% O₂):</b><br><br><span class="bold">_______ %</span></td>
+                    <td width="20%"><b>Explosividade (% LIE):</b><br><br><span class="bold">_______ %</span></td>
+                    <td width="20%"><b>Gases Tóxicos (H₂S):</b><br><br><span class="bold">_______ ppm</span></td>
+                    <td width="20%"><b>Monóxido (CO):</b><br><br><span class="bold">_______ ppm</span></td>
+                    <td width="20%"><b>Vigência de Teste:</b><br><br><span class="bold">_____:_____ h</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="titulo-secao">16. DECLARAÇÃO DOS EMITENTES (RESPONSÁVEIS PELA LIBERAÇÃO)</div>
+
+        <div class="grid-assinaturas">
+            <div class="box-assinatura">
+                <div class="linha-assinatura"></div>
+                <div><b>Requisitante / Solicitante:</b> <span id="pNomeSolicitante">---</span></div>
+                <div class="m-top-xs"><b>Matrícula:</b> <span id="pMatriculaSolicitante">---</span></div>
+            </div>
+
+            <div class="box-assinatura">
+                <div class="linha-assinatura"></div>
+                <div><b>Emitente (Responsável pela Área):</b> <span id="pNomeEmitente">---</span></div>
+                <div class="m-top-xs"><b>Matrícula:</b> <span id="pMatriculaEmitente">---</span></div>
+            </div>
+        </div>
+        <table class="tabela-revalidacao">
+            <tr>
+                <td colspan="4" class="titulo-secao">
+                    17. A PT ESTÁ SENDO MANTIDA EM ABERTO PARA REVALIDAÇÃO?
+                    <span class="opcoes-revalidar">[ ] SIM [ ] NÃO &nbsp;&nbsp;&nbsp;&nbsp; (Prazo de até 24 horas para
+                        revalidar)</span>
+                </td>
+            </tr>
+            <tr class="font-normal">
+                <td width="25%"><b>EMITENTE DA PT</b> <br>Nome:</td>
+                <td width="15%">Hora:</td>
+                <td width="35%">Assinatura:</td>
+                <td width="25%">Matrícula:</td>
+            </tr>
+            <tr class="font-normal">
+                <td><b>REQUISITANTE DA PT</b> <br>Nome:</td>
+                <td>Hora:</td>
+                <td>Assinatura:</td>
+                <td>Matrícula:</td>
+            </tr>
+            <tr class="font-normal">
+                <td><b>REQUISITANTE DA PT</b> <br>Nome:</td>
+                <td>Hora:</td>
+                <td>Assinatura:</td>
+                <td>Matrícula:</td>
+            </tr>
+        </table>
+
+        <table class="tabela-revalidacao">
+            <thead>
+                <tr>
+                    <th colspan="5" class="titulo-coluna alinhado-esquerda">18. REVALIDAÇÃO DA PERMISSÃO DE TRABALHO
+                    </th>
+                    </th> TRABALHO</th>
+                </tr>
+                <tr>
+                    <th colspan="4" class="titulo-coluna" width="75%">INÍCIO DE JORNADA</th>
+                    <th class="titulo-coluna" width="25%">TÉRMINO DA JORNADA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td width="15%" rowspan="2">
+                        <span class="label">Data / Hora:</span>
+                        <div class="altura-corpo"></div>
+                    </td>
+                    <td width="20%">
+                        <span class="label">Emitente da PT</span>
+                        <div class="altura-corpo"></div>
+                        <span class="sub-label">Nome / Matrícula</span>
+                    </td>
+                    <td width="20%">
+                        <span class="label">Requisitante da PT</span>
+                        <div class="altura-corpo"></div>
+                        <span class="sub-label">Nome / Matrícula</span>
+                    </td>
+                    <td width="20%">
+                        <span class="label">Requisitante da PT</span>
+                        <div class="altura-corpo"></div>
+                        <span class="sub-label">Nome / Matrícula</span>
+                    </td>
+                    <td>
+                        <span class="label">Emitente da PT / Hora</span>
+                        <div class="altura-termino"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="sem-recuo">
+                        <table class="sub-tabela-gases">
+                            <tr>
+                                <td colspan="3" class="border-bottom text-center"><b>Monitoramento</b></td>
+                            </tr>
+                            <tr class="txt-gases">
+                                <td class="border-right largura-gases-col">Oxi.</td>
+                                <td class="border-right largura-gases-col">Explo.</td>
+                                <td class="largura-gases-col-fim">Tox.</td>
+                            </tr>
+                            <tr>
+                                <td class="border-right altura-gases-dados"></td>
+                                <td class="border-right"></td>
+                                <td></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <td>
+                        <span class="label">Especialista envolvido na liberação</span>
+                        <div class="altura-corpo"></div>
+                        <span class="sub-label">Nome / Matrícula</span>
+                    </td>
+                    <td>
+                        <span class="label">Requisitante da PT</span>
+                        <div class="altura-corpo"></div>
+                        <span class="sub-label">Nome / Matrícula</span>
+                    </td>
+                    <td>
+                        <span class="label">Requisitante da PT / Hora</span>
+                        <div class="altura-termino"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="texto-alerta">
+                        * Se a atividade ultrapassar esta jornada, imprima o "Formulário de Extensão de Revalidação".
+                    </td>
+                    <td>
+                        <span class="label">Requisitante da PT / Hora</span>
+                        <div class="altura-termino"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+
+
+        <div class="titulo-secao">21. NOMES DOS EXECUTANTES ENVOLVIDOS NO SERVIÇO</div>
+        <table class="w-full tabela-executantes-oficial">
+            <thead>
+                <tr>
+                    <th width="5%">ITEM</th>
+                    <th width="35%">NOME</th>
+                    <th width="15%">FUNÇÃO</th>
+                    <th width="15%">EMPRESA</th>
+                    <th width="12%">MATRÍCULA</th>
+                    <th width="18%">ASSINATURA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="celula-manual-item">1</td>
+                    <td class="celula-campo-limpo bold text-left" id="pExecutantePrincipal">---</td>
+                    <td class="celula-campo-limpo text-center">SOLICITANTE</td>
+                    <td class="celula-campo-limpo text-center" id="pEmpresaExecutantePrincipal">---</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">2</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">3</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">4</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">5</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">6</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">7</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">8</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+                <tr>
+                    <td class="celula-manual-item">9</td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                    <td class="celula-campo-limpo"></td>
+                </tr>
+            </tbody>
+        </table>
+
+
+
+    </div>
+
+    <script src="js/formulario.js"></script>
+</body>
+
+</html>

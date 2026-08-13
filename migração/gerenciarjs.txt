@@ -1,0 +1,56 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const tabelaCorpo = document.getElementById('tabelaCorpo');
+    const campoBusca = document.getElementById('campoBusca');
+
+    // 1. Função para buscar colaboradores no Back-end
+    async function carregarColaboradores(termo = "") {
+        try {
+            // Agora apontando corretamente para o seu back-end em Java
+            const response = await fetch(`http://localhost:8080/api/funcionarios?filtro=${termo}`);
+
+            if (!response.ok) {
+                throw new Error(`Erro na API: ${response.status}`);
+            }
+
+            const dados = await response.json();
+
+            tabelaCorpo.innerHTML = "";
+
+            dados.forEach(colaborador => {
+                console.log("Objeto Colaborador recebido:", colaborador);
+                const tr = document.createElement('tr');
+                // Dentro do seu forEach no gerenciar.js
+                // Dentro do forEach no seu gerenciar.js
+                tr.innerHTML = `
+                    <td>${colaborador.nome || '---'}</td>
+                    <td>${colaborador.usuario || '---'}</td>
+                    <td>${colaborador.matricula || '---'}</td>
+                    <td>${colaborador.funcao || '---'}</td>
+                    <td>${colaborador.empresa ? colaborador.empresa.nomeFantasia : '---'}</td>
+                    <td>${colaborador.validadeAso || '---'}</td>
+                    <td>${colaborador.validadeReciclagemPt || '---'}</td>
+                    <td>${colaborador.nrVencida || "---"}</td>
+                    <td>
+                    <button onclick="editarColaborador('${colaborador.id}')">Editar</button>
+                     </td>
+            `;
+                tabelaCorpo.appendChild(tr);
+            });
+        } catch (error) {
+            console.error("Erro ao carregar colaboradores:", error);
+        }
+    }
+
+    // 2. Filtro em tempo real ao digitar
+    campoBusca.addEventListener('input', (e) => {
+        carregarColaboradores(e.target.value);
+    });
+
+    // Carrega todos ao iniciar
+    carregarColaboradores();
+});
+
+// 3. Função de edição (redireciona para o cadastro com o ID)
+function editarColaborador(id) {
+    window.location.href = `cadastro.html?id=${id}`;
+}

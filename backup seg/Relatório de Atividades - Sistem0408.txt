@@ -1,0 +1,35 @@
+## Relatório de Atividades - Sistema SESMT (Permissões de Trabalho)
+
+---
+
+### 🚀 Resumo das Entregas de Hoje
+
+Durante a sessão de desenvolvimento de hoje, focamos na correção de falhas de integração no fluxo de **Emissão de Permissões de Trabalho (PT)** e na automação de regras de perfil para colaboradores. Abaixo está o registro técnico das alterações realizadas:
+
+### 1. Correção no Fluxo de Emissão de PT (`emitir-pt.js`)
+
+* **Identificação do Emitente:** Ajustado o mapeamento do objeto de sessão (`sessionStorage`) para extrair corretamente o ID do usuário logado e enviá-lo como `emitenteId` no corpo da requisição PATCH (`confirmarEmissaoPT`).
+
+
+* **Interface de Emissão:** Inserido o campo visual de **Emitente Responsável** (somente leitura) ao lado do campo de Turno / Grupo na tela de emissão, preenchendo o nome do operador automaticamente com base nos dados autenticados na sessão.
+
+
+
+### 2. Ajuste nas Regras de Alçada e Perfis (`cadastro.js` e `editar-colaborador.js`)
+
+* **Correção da Flag `podeEmitirPt`:** Identificado e corrigido o problema que fazia com que o campo de permissão de emissão fosse sobrescrito como `false` ao salvar o cadastro de colaboradores.
+
+
+* **Automação por Cargo:**
+* Configurado para que o perfil **OPERADOR_INDUSTRIAL** defina automaticamente `podeEmitirPt: true` de forma nativa e obrigatória.
+
+
+* Mantido o comportamento flexível e opcional (via checkbox de interface) para o perfil **ENCARREGADO**, respeitando as restrições operacionais de área.
+
+
+
+
+
+---
+
+*Relatório gerado automaticamente para encerramento das atividades de hoje.*

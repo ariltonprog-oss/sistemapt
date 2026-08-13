@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de PTs</title>
+    <link rel="stylesheet" href="../css/style.css">
+
+
+<body>
+    <div id="sidebar-wrapper"></div>
+
+    <main class="main-content">
+        <!-- CABEÇALHO DA PÁGINA -->
+        <header class="header-pagina">
+            <div class="header-conteudo">
+                <h2>📊 Gerenciamento de PT / Monitoramento de Permissões de Trabalho (SESMT)</h2>
+            </div>
+        </header>
+
+
+        <!-- FILTROS DE STATUS DA PT -->
+        <div class="dashboard-filtros">
+            <button type="button" class="btn-filtro ativo" onclick="filtrarStatus('TODAS', event)">📋 Todas</button>
+            <button type="button" class="btn-filtro" onclick="filtrarStatus('SOLICITADA', event)">⏳ Solicitadas</button>
+            <button type="button" class="btn-filtro" onclick="filtrarStatus('EMITIDA', event)">🟢 Emitidas (Em
+                Execução)</button>
+            <button type="button" class="btn-filtro" onclick="filtrarStatus('ENCERRADA', event)">🏁 Encerradas /
+                Baixadas</button>
+        </div>
+
+        <!-- CONTAINER / CARD DA TABELA -->
+        <div class="card-formulario">
+            <div class="card-header">
+                <h3>📋 Painel de Monitoramento</h3>
+            </div>
+
+            <div class="tabela-container">
+                <table id="tabelaMonitoramento" class="tabela-estilizada">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Área</th>
+                            <th>Ordem / PJ</th>
+                            <th>Especialidade</th>
+                            <th>TAG</th>
+                            <th>Solicitante</th>
+                            <th>Data Emissão</th>
+                            <th>Status</th>
+                            <th class="coluna-acoes">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabela">
+                        <!-- Conteúdo carregado dinamicamente pelo dashboard.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+
+</html>

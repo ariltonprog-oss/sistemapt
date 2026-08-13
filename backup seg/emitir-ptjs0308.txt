@@ -1,0 +1,167 @@
+let ptId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Recupera o ID da PT na URL (?id=X)
+    const urlParams = new URLSearchParams(window.location.search);
+    ptId = urlParams.get('id');
+
+    if (!ptId) {
+        alert("Nenhuma Permissão de Trabalho selecionada!");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    document.getElementById('labelPtId').textContent = ptId;
+
+    // Define data/hora atual como padrão para o início
+    preencherDatasPadrao();
+
+    // Carrega os dados da solicitação do backend
+    carregarDadosParaEmissao(ptId);
+});
+
+// Preenche o campo de início com o momento atual (formato datetime-local)
+function preencherDatasPadrao() {
+    const agora = new Date();
+    agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+    document.getElementById('dataHoraInicio').value = agora.toISOString().slice(0, 16);
+}
+
+// Busca os detalhes da PT no Spring Boot
+// Busca os detalhes da PT no Spring Boot e aplica a exibição condicional
+async function carregarDadosParaEmissao(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}`);
+        if (!response.ok) {
+            alert("Erro ao carregar dados da PT.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const pt = await response.json();
+
+        // 1. Popula os campos básicos do resumo visual
+        document.getElementById('infoPlantaArea').textContent = pt.plantaArea || '-';
+        document.getElementById('infoTurnoGrupo').textContent = pt.turnoGrupo || '-';
+        document.getElementById('infoTag').textContent = pt.tag || '-';
+        document.getElementById('infoOrdemPj').textContent = pt.ordemPj || '-';
+        document.getElementById('infoDescricao').textContent = pt.descricaoAtividade || '-';
+
+        // Popula Solicitante e Executantes com segurança contra variações no DTO/Entity do Java
+        // 1. Formata e exibe o Solicitante (Nome + Matrícula)
+        const solNome = pt.solicitante?.nome || pt.solicitanteNome || 'Não informado';
+        const solMatricula = pt.solicitante?.matricula || pt.solicitanteMatricula || '';
+        const textoSolicitante = solMatricula ? `${solNome} (Mat: ${solMatricula})` : solNome;
+
+        const elSolicitante = document.getElementById('infoSolicitante');
+        if (elSolicitante) elSolicitante.textContent = textoSolicitante;
+
+        // 2. Formata e exibe o Executante (Garantindo a clareza exigida pelo SESMT)
+        let textoExecutantes = '';
+        const temEquipeExterna = pt.executantes || pt.executanteNome || (pt.equipe && pt.equipe.trim() !== '');
+
+        if (!temEquipeExterna || pt.solicitanteExecutante === true) {
+            // Se o solicitante atua na execução, repete explicitamente para validação de campo do SESMT
+            textoExecutantes = `👷 Atuação Própria: ${textoSolicitante}`;
+        } else {
+            const execNome = pt.executantes || pt.executanteNome || pt.equipe || 'Não especificado';
+            const execMatricula = pt.executanteMatricula ? ` (Mat: ${pt.executanteMatricula})` : '';
+            textoExecutantes = `${execNome}${execMatricula}`;
+        }
+
+        const elExecutantes = document.getElementById('infoExecutantes');
+        if (elExecutantes) elExecutantes.textContent = textoExecutantes;
+
+        // 2. Renderiza as tags de Riscos e Requisitos marcados na PT
+        // 2. Renderiza as tags de Riscos e Requisitos marcados na PT
+        const containerRiscos = document.getElementById('listaRiscosResumo');
+        if (containerRiscos) {
+            containerRiscos.innerHTML = ''; // Limpa anterior
+
+            const riscosMapeados = [
+                { chave: 'requerTrabalhoQuente', label: '🔥 Trabalho a Quente' },
+                { chave: 'requerTrabalhoFrio', label: '❄️ Trabalho a Frio' },
+                { chave: 'requerTrabalhoAltura', label: '🧗 Trabalho em Altura' },
+                { chave: 'requerEspacoConfinado', label: '🕳️ Espaço Confinado' },
+                { chave: 'requerRiscoEletrico', label: '⚡ Risco Elétrico' },
+                { chave: 'requerAltaTensaoSep', label: '⚠️ Alta Tensão / SEP' },
+                { chave: 'requerAreaClassificada', label: '🏭 Área Classificada' },
+                { chave: 'requerSegurancaMaquinas', label: '⚙️ Segurança em Máquinas' },
+                { chave: 'requerLoto', label: '🔒 Bloqueio LOTO' },
+                { chave: 'requerAtividadePintura', label: '🎨 Atividade de Pintura' }
+            ];
+
+            let temRisco = false;
+            riscosMapeados.forEach(r => {
+                if (pt[r.chave]) {
+                    temRisco = true;
+                    const tag = document.createElement('span');
+                    tag.textContent = r.label;
+                    tag.className = 'risco-badge'; // Atribui a classe CSS profissional
+                    containerRiscos.appendChild(tag);
+                }
+            });
+
+            if (!temRisco) {
+                const aviso = document.createElement('span');
+                aviso.textContent = 'Nenhum risco crítico adicional marcado.';
+                aviso.className = 'risco-vazio';
+                containerRiscos.appendChild(aviso);
+            }
+        }
+
+        // 3. Lógica de Exibição Condicional dos Blocos de Preenchimento
+        const blocoLoto = document.getElementById('blocoLoto');
+        if (blocoLoto) blocoLoto.classList.toggle('oculto', !pt.requerLoto);
+
+        const blocoAltura = document.getElementById('blocoAltura');
+        if (blocoAltura) blocoAltura.classList.toggle('oculto', !pt.requerTrabalhoAltura);
+
+        const blocoMonitoramento = document.getElementById('blocoMonitoramento');
+        if (blocoMonitoramento) {
+            const exigeMonitoramento = pt.requerEspacoConfinado || pt.requerTrabalhoQuente;
+            blocoMonitoramento.classList.toggle('oculto', !exigeMonitoramento);
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar PT:", error);
+        alert("Falha de comunicação com o servidor.");
+    }
+}
+
+// Envia a confirmação de emissão para o backend
+async function confirmarEmissaoPT(event) {
+    event.preventDefault();
+
+    const payload = {
+        dataHoraInicio: document.getElementById('dataHoraInicio').value,
+        recomendacoesEmissor: document.getElementById('recomendacoesEmissor').value.trim(),
+
+        // Captura os campos condicionais caso estejam visíveis e preenchidos
+        lotoDetalhes: document.getElementById('lotoDetalhes')?.value.trim() || null,
+        alturaDetalhes: document.getElementById('alturaDetalhes')?.value.trim() || null,
+        nomeAst: document.getElementById('nomeAst')?.value.trim() || null,
+        monitoramentoAmbiental: document.getElementById('monitoramentoAmbiental')?.value.trim() || null,
+
+        status: 'EMITIDA'
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/emitir`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert(`Permissão de Trabalho #${ptId} emitida com sucesso!`);
+            window.location.href = "dashboard.html";
+        } else {
+            const erroTexto = await response.text();
+            alert("Não foi possível emitir a PT: " + erroTexto);
+        }
+    } catch (error) {
+        console.error("Erro na emissão da PT:", error);
+        alert("Falha de comunicação com o servidor ao emitir a PT.");
+    }
+}

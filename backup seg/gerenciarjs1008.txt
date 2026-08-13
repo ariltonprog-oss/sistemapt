@@ -1,0 +1,99 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const tabelaCorpo = document.getElementById('tabelaCorpo');
+    const campoBusca = document.getElementById('campoBusca');
+
+    // 1. Função para buscar colaboradores no Back-end
+    async function carregarColaboradores(termo = "") {
+        try {
+            const response = await fetch(`http://localhost:8080/api/funcionarios?filtro=${termo}`);
+
+            if (!response.ok) {
+                throw new Error(`Erro na API: ${response.status}`);
+            }
+
+            const dados = await response.json();
+
+            tabelaCorpo.innerHTML = "";
+
+            dados.forEach(colaborador => {
+                console.log("Objeto Colaborador recebido:", colaborador);
+                const tr = document.createElement('tr');
+                
+                // Fallback para caso o ID no Java tenha outro nome
+                const idColaborador = colaborador.id || colaborador.idFuncionario || colaborador.matricula;
+
+                tr.innerHTML = `
+                    <td>${colaborador.nome || '---'}</td>
+                    <td>${colaborador.matricula || '---'}</td>
+                    <td>${colaborador.funcao || '---'}</td>
+                    <td>${colaborador.empresa ? colaborador.empresa.nomeFantasia : '---'}</td>
+                    <td>${colaborador.validadeASO || '---'}</td>
+                    <td>${colaborador.validadeReciclagemPt || '---'}</td>
+                    <td>${colaborador.nrVencida || "---"}</td>
+                    <td>
+                        <button class="btn-editar" onclick="editarColaborador('${idColaborador}')">✏️ Editar</button>
+                    </td>
+                `;
+                tabelaCorpo.appendChild(tr);
+            });
+        } catch (error) {
+            console.error("Erro ao carregar colaboradores:", error);
+        }
+    }
+
+    // 2. Filtro em tempo real ao digitar
+    if (campoBusca) {
+        campoBusca.addEventListener('input', (e) => {
+            carregarColaboradores(e.target.value);
+        });
+    }
+
+    // Carrega todos ao iniciar
+    carregarColaboradores();
+});
+
+// 3. Função de edição associada ao escopo global (window)
+window.editarColaborador = function(id) {
+    if (!id || id === 'undefined') {
+        alert("Erro: Não foi possível identificar o ID deste colaborador.");
+        return;
+    }
+    // Redireciona para a página de edição
+    window.location.href = `editar-colaborador.html?id=${id}`;
+};
+// Abertura do Modal
+document.getElementById('btnAbrirModalReval').addEventListener('click', () => {
+    // Busca o solicitante atual na tela (assumindo que você o salvou ou carregou na PT)
+    // Se você não tiver o campo solicitante visível, busque do seu objeto 'pt'
+    const solicitanteOriginal = pt.solicitante || "Não informado"; 
+    
+    document.getElementById('modalSolicitante').value = solicitanteOriginal;
+    document.getElementById('modalRevalidacao').style.display = 'flex';
+});
+
+// Fechamento
+document.getElementById('btnFecharModal').addEventListener('click', () => {
+    document.getElementById('modalRevalidacao').style.display = 'none';
+});
+
+// Envio
+document.getElementById('formRevalInterno').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const payload = {
+        etapa: document.getElementById('revalEtapa').value,
+        data: document.getElementById('revalData').value,
+        hora: document.getElementById('revalHora').value,
+        solicitante: document.getElementById('modalSolicitante').value,
+        emitente: document.getElementById('modalEmitente').value
+    };
+
+    // Aqui você faz o fetch para sua API de revalidação
+    console.log("Enviando revalidação:", payload);
+    
+    // Exemplo:
+    // await fetch(`/api/pts/${pt.id}/revalidar`, { method: 'POST', body: JSON.stringify(payload) ... });
+    
+    alert("Revalidação salva com sucesso!");
+    document.getElementById('modalRevalidacao').style.display = 'none';
+});

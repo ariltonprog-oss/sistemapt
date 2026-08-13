@@ -1,0 +1,404 @@
+// =========================================================================
+// EDIÇÃO DE PT - FRONTEND INTEGRADO AO BACKEND JAVA
+// =========================================================================
+
+let listaColaboradoresAPI = [];
+let equipeExecutantesSelecionados = [];
+let colaboradorEncontradoAtual = null;
+
+const TRADUCOES = {
+    'INSTRUMENTACAO': 'Instrumentação',
+    'ELETRICA': 'Elétrica',
+    'MECANICA': 'Mecânica',
+    'CIVIL': 'Civil',
+    'CALDEIRARIA': 'Caldeiraria',
+    'GERAL': 'Geral',
+    'SOLICITADA': 'Solicitada',
+    'EMITIDA': 'Emitida',
+    'EM_REVALIDACAO': 'Em Revalidação',
+    'ENCERRADA': 'Encerrada',
+    'CANCELADA': 'Cancelada'
+};
+
+function formatarTexto(valor) {
+    if (!valor) return '-';
+    const chave = valor.toString().trim().toUpperCase();
+    return TRADUCOES[chave] || valor;
+}
+
+const params = new URLSearchParams(window.location.search);
+const ptId = params.get('id');
+
+function desformatarParaEnum(texto) {
+    if (!texto) return '';
+
+    for (const [chave, valor] of Object.entries(TRADUCOES)) {
+        if (valor.toLowerCase() === texto.trim().toLowerCase() || chave === texto.trim().toUpperCase()) {
+            return chave;
+        }
+    }
+
+    return texto
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase()
+        .trim();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!ptId) {
+        alert("Nenhuma Permissão de Trabalho selecionada para edição.");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    const titulo = document.getElementById('tituloPagina');
+    if (titulo) titulo.innerHTML = `<i class="fa-solid fa-file-pen"></i> Editar Permissão de Trabalho #${ptId}`;
+
+    await carregarBaseColaboradores();
+    await carregarDadosPT(ptId);
+
+    const inputMatricula = document.getElementById('inputMatricula');
+    if (inputMatricula) {
+        inputMatricula.addEventListener('input', buscarPorMatricula);
+    }
+
+    const btnAdicionar = document.getElementById('btnAdicionarExecutante');
+    if (btnAdicionar) {
+        btnAdicionar.addEventListener('click', adicionarExecutanteNaEquipe);
+    }
+
+    const chkSolicitante = document.getElementById('solicitanteExecutante');
+    if (chkSolicitante) {
+        chkSolicitante.addEventListener('change', tratarSolicitanteComoExecutante);
+    }
+
+    const form = document.getElementById('formEditarPT');
+    if (form) {
+        form.addEventListener('submit', salvarAlteracoesPT);
+    }
+});
+
+async function carregarBaseColaboradores() {
+    try {
+        const response = await fetch('http://localhost:8080/api/funcionarios');
+        if (response.ok) {
+            listaColaboradoresAPI = await response.json();
+        }
+    } catch (error) {
+        console.error("Erro ao carregar colaboradores do sistema:", error);
+    }
+}
+
+function buscarPorMatricula() {
+    const matriculaDigitada = document.getElementById('inputMatricula').value.trim();
+    const inputNome = document.getElementById('inputNomeExecutante');
+    const msgStatus = document.getElementById('msgMatriculaStatus');
+
+    if (!matriculaDigitada) {
+        inputNome.value = '';
+        msgStatus.textContent = '';
+        msgStatus.className = 'msg-status-matricula';
+        colaboradorEncontradoAtual = null;
+        return;
+    }
+
+    const localizado = listaColaboradoresAPI.find(c => c.matricula && c.matricula.trim() === matriculaDigitada);
+
+    if (localizado) {
+        inputNome.value = localizado.nome;
+        msgStatus.textContent = '✓ Colaborador localizado!';
+        msgStatus.className = 'msg-status-matricula sucesso';
+        colaboradorEncontradoAtual = localizado;
+    } else {
+        inputNome.value = '';
+        msgStatus.textContent = '⚠️ Nenhum colaborador encontrado com esta matrícula.';
+        msgStatus.className = 'msg-status-matricula erro';
+        colaboradorEncontradoAtual = null;
+    }
+}
+
+function adicionarExecutanteNaEquipe() {
+    if (!colaboradorEncontradoAtual) {
+        alert("Digite uma matrícula válida antes de adicionar.");
+        return;
+    }
+
+    const jaExiste = equipeExecutantesSelecionados.some(e => e.id === colaboradorEncontradoAtual.id);
+    if (jaExiste) {
+        alert("Este colaborador já faz parte da equipe de executantes.");
+        return;
+    }
+
+    equipeExecutantesSelecionados.push(colaboradorEncontradoAtual);
+    renderizarTabelaExecutantes();
+
+    document.getElementById('inputMatricula').value = '';
+    document.getElementById('inputNomeExecutante').value = '';
+    document.getElementById('msgMatriculaStatus').textContent = '';
+    colaboradorEncontradoAtual = null;
+}
+
+function removerExecutante(idColaborador) {
+    equipeExecutantesSelecionados = equipeExecutantesSelecionados.filter(e => e.id !== idColaborador);
+
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (usuarioLogado && usuarioLogado.id === idColaborador) {
+        const chkSolicitante = document.getElementById('solicitanteExecutante');
+        if (chkSolicitante) chkSolicitante.checked = false;
+    }
+
+    renderizarTabelaExecutantes();
+}
+
+function tratarSolicitanteComoExecutante(event) {
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (!usuarioLogado) return;
+
+    if (event.target.checked) {
+        const colaboradorCompleto = listaColaboradoresAPI.find(c => c.id === usuarioLogado.id) || usuarioLogado;
+        const jaExiste = equipeExecutantesSelecionados.some(e => e.id === colaboradorCompleto.id);
+        if (!jaExiste) {
+            equipeExecutantesSelecionados.push(colaboradorCompleto);
+        }
+    } else {
+        equipeExecutantesSelecionados = equipeExecutantesSelecionados.filter(e => e.id !== usuarioLogado.id);
+    }
+
+    renderizarTabelaExecutantes();
+}
+
+function renderizarTabelaExecutantes() {
+    const tbody = document.getElementById('tbodyExecutantes');
+    if (!tbody) return;
+
+    if (equipeExecutantesSelecionados.length === 0) {
+        tbody.innerHTML = `
+            <tr class="linha-vazia">
+                <td colspan="4">Nenhum executante adicionado à equipe até o momento.</td>
+            </tr>`;
+        return;
+    }
+
+    tbody.innerHTML = equipeExecutantesSelecionados.map(e => `
+        <tr>
+            <td><strong>${e.matricula || 'N/A'}</strong></td>
+            <td>${e.nome}</td>
+            <td>${e.funcao || e.cargo || 'Operacional'}</td>
+            <td style="text-align: center;">
+                <button type="button" class="btn-remover-executante" onclick="removerExecutante(${e.id})" title="Remover da equipe">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function carregarDadosPT(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}`);
+        if (!response.ok) {
+            alert("Erro ao carregar dados da PT.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const pt = await response.json();
+
+        const statusAtual = (pt.status || '').toUpperCase();
+        if (statusAtual !== 'SOLICITADA' && statusAtual !== 'RASCUNHO') {
+            alert(`A PT #${id} possui o status ${statusAtual} e não pode ser editada.`);
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        setValorInput('plantaArea', pt.plantaArea);
+        setValorInput('turnoGrupo', pt.turnoGrupo);
+        setValorInput('tag', pt.tag);
+        setValorInput('ordemPj', pt.ordemPj);
+        setValorInput('descricaoAtividade', pt.descricaoAtividade);
+
+        const campoArea = document.getElementById('areaAtuacao');
+        if (campoArea) {
+            const valorBruto = pt.areaAtuacao || '';
+            campoArea.dataset.valorBruto = valorBruto;
+            campoArea.value = formatarTexto(valorBruto);
+        }
+
+        setValorCheckbox('solicitanteExecutante', pt.solicitanteExecutante);
+        setValorCheckbox('requerTrabalhoQuente', pt.requerTrabalhoQuente);
+        setValorCheckbox('requerTrabalhoFrio', pt.requerTrabalhoFrio);
+        setValorCheckbox('requerTrabalhoAltura', pt.requerTrabalhoAltura);
+        setValorCheckbox('requerEspacoConfinado', pt.requerEspacoConfinado);
+        setValorCheckbox('requerRiscoEletrico', pt.requerRiscoEletrico);
+        setValorCheckbox('requerAltaTensaoSep', pt.requerAltaTensaoSep);
+        setValorCheckbox('requerAreaClassificada', pt.requerAreaClassificada);
+        setValorCheckbox('requerSegurancaMaquinas', pt.requerSegurancaMaquinas);
+        setValorCheckbox('requerLoto', pt.requerLoto);
+        setValorCheckbox('requerAtividadePintura', pt.requerAtividadePintura);
+
+        // Matriz Detalhada de Riscos
+        if (pt.ruido) {
+            setValorCheckbox('ruidoAtivo', pt.ruido.ativo);
+            if (pt.ruido.opcoesSelecionadas && Array.isArray(pt.ruido.opcoesSelecionadas)) {
+                pt.ruido.opcoesSelecionadas.forEach(opcao => {
+                    const chk = document.querySelector(`input[name="ruido.opcoesSelecionadas"][value="${opcao}"]`);
+                    if (chk) chk.checked = true;
+                });
+            }
+            setValorInputTextoPorName('ruido.textoComplementar', pt.ruido.textoComplementar);
+        }
+
+        if (pt.vibracao) {
+            setValorCheckbox('vibracaoAtivo', pt.vibracao.ativo);
+            setValorInputTextoPorName('vibracao.textoComplementar', pt.vibracao.textoComplementar);
+        }
+
+        if (pt.superficiesAquecidas) {
+            setValorCheckbox('superficiesAtivo', pt.superficiesAquecidas.ativo);
+            setValorInputTextoPorName('superficiesAquecidas.textoComplementar', pt.superficiesAquecidas.textoComplementar);
+        }
+
+        if (pt.radiacaoNaoIonizante) {
+            setValorCheckbox('radiacaoAtivo', pt.radiacaoNaoIonizante.ativo);
+            setValorInputTextoPorName('radiacaoNaoIonizante.textoComplementar', pt.radiacaoNaoIonizante.textoComplementar);
+        }
+
+        if (pt.agentesQuimicos) {
+            setValorCheckbox('quimicosAtivo', pt.agentesQuimicos.ativo);
+            setValorInputTextoPorName('agentesQuimicos.textoComplementar', pt.agentesQuimicos.textoComplementar);
+        }
+
+        if (pt.diphoterine) {
+            setValorInputTextoPorName('diphoterine.textoComplementar', pt.diphoterine.textoComplementar);
+        }
+
+        if (pt.isolamentoArea) {
+            setValorCheckbox('isolamentoAtivo', pt.isolamentoArea.ativo);
+            setValorInputTextoPorName('isolamentoArea.textoComplementar', pt.isolamentoArea.textoComplementar);
+        }
+
+        if (pt.executantes && Array.isArray(pt.executantes)) {
+            equipeExecutantesSelecionados = pt.executantes;
+            renderizarTabelaExecutantes();
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar PT:", error);
+        alert("Erro de conexão ao buscar informações da PT.");
+    }
+}
+
+async function salvarAlteracoesPT(event) {
+    event.preventDefault();
+
+    const atuarComoExecutante = document.getElementById('solicitanteExecutante')?.checked || false;
+
+    if (!atuarComoExecutante && equipeExecutantesSelecionados.length === 0) {
+        alert("⚠️ Validação SESMT: Como você não marcou que atuará como executante, é obrigatório adicionar pelo menos um colaborador na Equipe Executante.");
+        return;
+    }
+
+    const campoArea = document.getElementById('areaAtuacao');
+    const valorAreaBruto = campoArea ? (campoArea.dataset.valorBruto || campoArea.value) : '';
+    const executantesPayload = equipeExecutantesSelecionados.map(e => ({ id: e.id }));
+
+    // Verifica se Agentes Químicos está ativo para tornar o Diphoterine obrigatório no payload
+    const quimicosEstaAtivo = document.getElementById('quimicosAtivo')?.checked || false;
+
+    const payload = {
+        plantaArea: document.getElementById('plantaArea').value.trim().toUpperCase(),
+        turnoGrupo: document.getElementById('turnoGrupo').value.trim().toUpperCase(),
+        tag: document.getElementById('tag').value.trim().toUpperCase(),
+        ordemPj: document.getElementById('ordemPj').value.trim().toUpperCase(),
+        descricaoAtividade: document.getElementById('descricaoAtividade').value.trim().toUpperCase(),
+
+        areaAtuacao: desformatarParaEnum(valorAreaBruto),
+
+        solicitanteExecutante: atuarComoExecutante,
+        
+        requerTrabalhoQuente: document.getElementById('requerTrabalhoQuente').checked,
+        requerTrabalhoFrio: document.getElementById('requerTrabalhoFrio').checked,
+        requerTrabalhoAltura: document.getElementById('requerTrabalhoAltura').checked,
+        requerEspacoConfinado: document.getElementById('requerEspacoConfinado').checked,
+        requerRiscoEletrico: document.getElementById('requerRiscoEletrico').checked,
+        requerAltaTensaoSep: document.getElementById('requerAltaTensaoSep').checked,
+        requerAreaClassificada: document.getElementById('requerAreaClassificada').checked,
+        requerSegurancaMaquinas: document.getElementById('requerSegurancaMaquinas').checked,
+        requerLoto: document.getElementById('requerLoto').checked,
+        requerAtividadePintura: document.getElementById('requerAtividadePintura').checked,
+
+        ruido: {
+            ativo: document.getElementById('ruidoAtivo')?.checked || false,
+            opcoesSelecionadas: Array.from(document.querySelectorAll('input[name="ruido.opcoesSelecionadas"]:checked')).map(el => el.value),
+            textoComplementar: document.querySelector('input[name="ruido.textoComplementar"]')?.value.trim() || ""
+        },
+        vibracao: {
+            ativo: document.getElementById('vibracaoAtivo')?.checked || false,
+            opcoesSelecionadas: [],
+            textoComplementar: document.querySelector('input[name="vibracao.textoComplementar"]')?.value.trim() || ""
+        },
+        superficiesAquecidas: {
+            ativo: document.getElementById('superficiesAtivo')?.checked || false,
+            opcoesSelecionadas: [],
+            textoComplementar: document.querySelector('input[name="superficiesAquecidas.textoComplementar"]')?.value.trim() || ""
+        },
+        radiacaoNaoIonizante: {
+            ativo: document.getElementById('radiacaoAtivo')?.checked || false,
+            opcoesSelecionadas: [],
+            textoComplementar: document.querySelector('input[name="radiacaoNaoIonizante.textoComplementar"]')?.value.trim() || ""
+        },
+        agentesQuimicos: {
+            ativo: quimicosEstaAtivo,
+            opcoesSelecionadas: [],
+            textoComplementar: document.querySelector('input[name="agentesQuimicos.textoComplementar"]')?.value.trim() || ""
+        },
+        // 🟢 Diphoterine ativado automaticamente se houver risco químico
+        diphoterine: {
+            ativo: quimicosEstaAtivo,
+            opcoesSelecionadas: [],
+            textoComplementar: document.querySelector('input[name="diphoterine.textoComplementar"]')?.value.trim() || ""
+        },
+        isolamentoArea: {
+            ativo: document.getElementById('isolamentoAtivo')?.checked || false,
+            opcoesSelecionadas: [],
+            textoComplementar: document.querySelector('input[name="isolamentoArea.textoComplementar"]')?.value.trim() || ""
+        },
+
+        executantes: executantesPayload
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert(`Permissão de Trabalho #${ptId} atualizada com sucesso!`);
+            window.location.href = "dashboard.html";
+        } else {
+            const erroTxt = await response.text();
+            alert("Não foi possível salvar as alterações: " + erroTxt);
+        }
+    } catch (error) {
+        console.error("Erro na alteração da PT:", error);
+        alert("Falha de comunicação com o servidor.");
+    }
+}
+
+function setValorInput(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.value = valor || '';
+}
+
+function setValorInputTextoPorName(name, valor) {
+    const el = document.querySelector(`input[name="${name}"]`);
+    if (el) el.value = valor || '';
+}
+
+function setValorCheckbox(id, valor) {
+    const el = document.getElementById(id);
+    if (el) el.checked = Boolean(valor);
+}

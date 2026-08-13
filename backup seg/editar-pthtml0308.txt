@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar PT</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <div id="sidebar-wrapper"></div>
+
+    <main class="main-content">
+        <header class="header-pagina">
+            <h1 id="tituloPagina">Editar Permissão de Trabalho</h1>
+
+        </header>
+
+        <form id="formEditarPT" class="form-container">
+
+            <!-- SEÇÃO 1: DADOS GERAIS DA PT -->
+            <fieldset class="secao-form">
+                <legend>Dados Gerais da PT</legend>
+
+                <!-- LINHA 1: 4 COLUNAS -->
+                <div class="grid-form-4col">
+                    <div class="form-group">
+                        <label for="plantaArea">Planta / Área <span class="asterisco-obrigatorio">*</span></label>
+                        <input type="text" id="plantaArea" name="plantaArea" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="turnoGrupo">Turno / Grupo <span class="asterisco-obrigatorio">*</span></label>
+                        <input type="text" id="turnoGrupo" name="turnoGrupo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tag">TAG Equipamento</label>
+                        <input type="text" id="tag" name="tag">
+                    </div>
+                    <div class="form-group">
+                        <label for="ordemPj">Ordem / PJ</label>
+                        <input type="text" id="ordemPj" name="ordemPj">
+                    </div>
+                </div>
+
+                <!-- LINHA 2: DESCRIÇÃO DETALHADA (OCUPA 100% DA LINHA) -->
+                <div class="form-group full-width margin-topo">
+                    <label for="descricaoAtividade">Descrição Detalhada da Atividade <span
+                            class="asterisco-obrigatorio">*</span></label>
+                    <textarea id="descricaoAtividade" name="descricaoAtividade" rows="3"
+                        placeholder="Descreva as atividades executadas..." required></textarea>
+                </div>
+
+                <!-- LINHA 3: ÁREA DE ATUAÇÃO + SOLICITANTE EXECUTANTE (50% / 50%) -->
+                <div class="grid-form-2col margin-topo">
+                    <div class="form-group">
+                        <label for="areaAtuacao">Especialidade</label>
+                        <input type="text" id="areaAtuacao" name="areaAtuacao" readonly tabindex="-1"
+                            class="input-readonly">
+                    </div>
+
+                    <div class="form-group flex-end">
+                        <label class="checkbox-card">
+                            <input type="checkbox" id="solicitanteExecutante" name="solicitanteExecutante">
+                            <span>👤 <strong>O Solicitante também executará o trabalho?</strong></span>
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- AVALIAÇÃO DE RISCOS / FLIPS -->
+            <fieldset class="secao-form">
+                <legend>Avaliação de Riscos Envolvidos</legend>
+                <div class="grid-checkboxes">
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerTrabalhoQuente"> Trabalho a Quente
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerTrabalhoFrio"> Trabalho a Frio
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerTrabalhoAltura"> Trabalho em Altura
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerEspacoConfinado"> Espaço Confinado
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerRiscoEletrico"> Risco Elétrico
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerAltaTensaoSep"> Alta Tensão / SEP
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerAreaClassificada"> Área Classificada
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerSegurancaMaquinas"> Segurança em Máquinas
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerLoto"> Bloqueio LOTO
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerAtividadePintura"> Atividade de Pintura
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="acoes-form">
+                <button type="submit" class="btn-salvar">💾 Salvar Alterações</button>
+                <a href="dashboard.html" class="btn-cancelar">Cancelar &amp; Sair</a>
+            </div>
+        </form>
+    </main>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/editar-pt.js"></script>
+</body>
+
+</html>

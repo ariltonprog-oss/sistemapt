@@ -1,0 +1,188 @@
+//1. Atualização da Grade (Visual)
+function atualizarMatrizNRs() {
+    const funcao = document.getElementById('funcao').value;
+    const container = document.getElementById('containerMatrizNRs');
+    if (!container) return;
+
+    if (!funcao || !matrizNRsPorFuncao[funcao]) {
+        container.innerHTML = '<p>Selecione uma função para ver as NRs.</p>';
+        return;
+    }
+
+    let html = '<div class="grid-nrs">';
+    matrizNRsPorFuncao[funcao].forEach(nr => {
+        const d = bibliotecaRequisitos[nr];
+        html += `<div class="card-nr-item">
+            <label><strong>${nr}</strong></label>
+            <small>${d.nome}</small>
+            
+            <!-- Campo de Realização -->
+            <div class="form-group">
+                <input type="date" id="realizacao_${nr}" onchange="calcularVencimentoDireto('realizacao_${nr}', 'validade_${nr}', ${d.validade})">
+            </div>
+            
+            <!-- Campo de Validade (Agora com as classes para ocultar) -->
+            <div class="form-group bloco-validade campo-oculto">
+                <input type="date" id="validade_${nr}" readonly>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html + '</div>';
+
+    // Chama a função de configuração de tela logo após criar os elementos.
+    // Isso garante que, se estivermos no modo "Edição", os campos que 
+    // acabaram de nascer ocultos sejam imediatamente revelados.
+    if (typeof configurarModoDaTela === 'function') {
+        configurarModoDaTela();
+    }
+}
+
+
+// 2. Envio dos Dados (Compatível com Java)
+async function processarEnvioFormulario() {
+    const form = document.getElementById('formColaborador');
+    if (!form.checkValidity()) return form.reportValidity();
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+
+    const ehTerceiro = document.getElementById('ehTerceiro').value === "true"; // ou .checked (se for checkbox)
+    const empresaTerceiraId = document.getElementById('empresaTerceiraSelect')?.value;
+    const idEmpresaFinal = ehTerceiro
+        ? Number(empresaTerceiraId)
+        : usuarioLogado?.empresaId;
+
+    const data = {
+
+
+        // Dados básicos
+        nome: document.getElementById('nome').value.trim(),
+        matricula: document.getElementById('matricula').value.trim(),
+        funcao: document.getElementById('funcao').value,
+        perfil: document.getElementById('perfil').value,
+
+        // Login
+        usuario: document.getElementById('usuario').value.trim(),
+        // ATENÇÃO: Se não quiser trocar a senha, o backend precisa estar preparado para ignorar ou receber a senha atual
+        senha: document.getElementById('senha').value || "",
+
+        // --- DADOS ENVIADOS PARA A API ---
+        ehTerceiro: ehTerceiro,
+
+        empresa: idEmpresaFinal ? {
+            id: idEmpresaFinal
+        } : null,
+
+        // Permissões
+        podeEmitirPt: document.getElementById('podeEmitirPT')?.checked || false,
+        podeSolicitarPt: document.getElementById('perfil').value === "SOLICITANTE",
+
+        // ASO e Reciclagem
+        realizacaoASO: document.getElementById('realizacaoASO').value || null,
+        validadeASO: document.getElementById('validadeASO').value || null,
+        realizacaoReciclagemPt: document.getElementById('realizacaoReciclagemPt').value || null,
+        validadeReciclagemPt: document.getElementById('validadeReciclagemPt').value || null,
+
+        // Usuário que está editando
+        usuarioLogadoId: usuarioLogado ? usuarioLogado.id : null
+    };
+
+    // 3. Loop Dinâmico corrigido para o padrão da sua classe
+    document.querySelectorAll('.card-nr-item').forEach(card => {
+
+        const nr = card.querySelector("strong").innerText.trim();
+
+        const nomeCampo = obterNomeCampoJava(nr);
+
+        if (!nomeCampo)
+            return;
+
+        const realizacao = card.querySelector('input[id^="realizacao_"]');
+
+        const validade = card.querySelector('input[id^="validade_"]');
+
+        if (!realizacao || !validade)
+            return;
+
+        if (realizacao.value) {
+
+            data["realizacao" + nomeCampo] = realizacao.value;
+
+            data["validade" + nomeCampo] = validade.value;
+
+        }
+
+    });
+    console.log("Enviando funcionário:");
+    console.log(JSON.stringify(data, null, 2));
+    const url = "http://localhost:8080/api/funcionarios";
+
+    try {
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!resp.ok) {
+
+            const erro = await resp.text();
+
+            console.error("Erro do backend:");
+            console.error(erro);
+
+            throw new Error(erro);
+
+        }
+
+        const funcionarioSalvo = await resp.json();
+
+        console.log("Funcionário salvo:");
+        console.log(funcionarioSalvo);
+
+        alert("Funcionário cadastrado com sucesso!");
+    } catch (erro) {
+        console.error("Erro ao processar envio:", erro);
+        alert("Erro ao cadastrar funcionário. Verifique o console para mais detalhes.");
+    }
+}
+
+// 4. Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    // Vincula a mudança da função à atualização da grade
+    const selectFuncao = document.getElementById('funcao');
+    if (selectFuncao) selectFuncao.addEventListener('change', atualizarMatrizNRs);
+
+    // Vincula o clique do botão de salvar
+    const btnSalvar = document.getElementById('btnDispararSubmit');
+    if (btnSalvar) btnSalvar.addEventListener('click', processarEnvioFormulario);
+    configurarModoDaTela();
+});
+
+function toggleEmpresa() {
+    const ehTerceiro = document.getElementById('ehTerceiro').value === "true";
+    const grupoEmpresa = document.getElementById('grupoEmpresa');
+    if (grupoEmpresa) {
+        grupoEmpresa.style.display = ehTerceiro ? 'block' : 'none';
+    }
+}
+
+function ajustarCamposLogin() {
+    // Lógica para ajustar visibilidade de campos baseada no perfil, se necessário
+    console.log("Perfil alterado, ajustando campos...");
+}
+
+function configurarModoDaTela() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFuncionario = urlParams.get('id');
+
+    if (idFuncionario) {
+        // MODO EDIÇÃO: Remove a classe que esconde, fazendo os campos aparecerem
+        const blocosValidade = document.querySelectorAll('.bloco-validade');
+        blocosValidade.forEach(bloco => {
+            bloco.classList.remove('campo-oculto');
+
+        });
+    }
+}

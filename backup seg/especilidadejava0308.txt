@@ -1,0 +1,197 @@
+package com.gestaopt.sistemapt.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public enum Especialidade {
+
+    ELETRICA(
+            List.of("NR10", "NR10SEP", "NR12", "NR20", "NR35"),
+            List.of("Capacete classe B (isolação elétrica)", "Óculos de segurança incolor", "Luva de vaqueta", "Luva multitato", "Botina dielétrica sem partes metálicas")
+    ),
+    INSTRUMENTACAO(
+            List.of("NR10", "NR12", "NR20", "NR33", "NR35"),
+            List.of("Capacete classe B", "Óculos de segurança", "Luva de vaqueta", "Luva multitato", "Botina de segurança")
+    ),
+    AUTOMACAO(
+            List.of("NR10", "NR12", "NR20", "NR33", "NR35"),
+            List.of("Capacete classe B", "Óculos de segurança", "Luvas de proteção mecânica", "Botina de segurança")
+    ),
+    MECANICA(
+            List.of("NR12", "NR20", "NR33", "NR35"),
+            List.of("Capacete de segurança", "Óculos de segurança ou ampla visão", "Luvas de raspa/vaqueta", "Botina de segurança com biqueira e solado resistente a óleo")
+    ),
+    CALDEIRARIA_TUBULACAO(
+            List.of("NR12", "NR20", "NR33", "NR35"),
+            List.of("Capacete", "Óculos de segurança", "Luvas de raspa", "Botina de segurança com biqueira")
+    ),
+    SOLDA(
+            List.of("NR12", "NR20", "NR33", "NR35"),
+            List.of("Óculos de segurança para esmerilhamento", "Botina de segurança de couro sem cadarço exposto")
+    ),
+    PINTURA(
+            List.of("NR20", "NR33", "NR35"),
+            List.of("Capacete", "Óculos ampla visão ou viseira", "Botina de segurança resistente a solventes")
+    ),
+    CIVIL(
+            List.of("NR20", "NR33", "NR35"),
+            List.of("Capacete", "Óculos de segurança", "Luvas de couro ou nitrílica", "Botina de segurança com biqueira")
+    ),
+    ANDAIME(
+            List.of("NR20", "NR33", "NR35"),
+            List.of("Capacete com jugular", "Óculos de segurança", "Luvas de vaqueta", "Botina de segurança antiderrapante")
+    ),
+    ALPINISTA(
+            List.of("NR10", "NR12", "NR20", "NR33", "NR35"),
+            List.of("Capacete para trabalho em altura com jugular", "Óculos de segurança", "Luvas de proteção mecânica", "Botina de segurança leve e aderente")
+    ),
+    MERGULHO(
+            List.of("NR20", "NR33"),
+            List.of("Máscara facial ou full face", "Luvas de neoprene", "Botas de mergulho")
+    ),
+    OPERACAO_INDUSTRIAL(
+            List.of("NR10", "NR12", "NR20", "NR33", "NR35"),
+            List.of("Capacete", "Óculos de segurança", "Luvas de proteção mecânica", "Botina de segurança com solado antiderrapante")
+    );
+
+    private final List<String> nrsObrigatorias;
+    private final List<String> episBase;
+
+    Especialidade(List<String> nrsObrigatorias, List<String> episBase) {
+        this.nrsObrigatorias = nrsObrigatorias;
+        this.episBase = episBase;
+    }
+
+    public List<String> getNrsObrigatorias() {
+        return nrsObrigatorias;
+    }
+
+    public List<String> getEpisBase() {
+        return episBase;
+    }
+
+    /**
+     * Calcula os EPIs obrigatórios combinando a base da especialidade com os
+     * riscos e tarefas específicos informados na PT/Solicitação.
+     */
+    public List<String> calcularEpisDinamicos(List<String> riscosOuAtividades) {
+        List<String> episCalculados = new ArrayList<>(this.episBase);
+
+        if (riscosOuAtividades == null) {
+            return episCalculados;
+        }
+
+        // 1. Trabalho envolvendo SEP / Risco Elétrico Pesado
+        if (riscosOuAtividades.contains("NR10_SEP") && this == ELETRICA) {
+            episCalculados.add("Vestimenta antichama (ATP/V conforme energia incidente)");
+            episCalculados.add("Protetor facial para arco elétrico");
+            episCalculados.add("Luvas isolantes de borracha (classe adequada) + sobreluva de vaqueta");
+        }
+
+        // 2. Trabalho a Quente
+        if (riscosOuAtividades.contains("QUENTE") || this == SOLDA) {
+            episCalculados.add("Máscara de solda com filtro adequado");
+            episCalculados.add("Avental, perneiras e mangotes de raspa");
+            episCalculados.add("Vestimenta retardante a chamas");
+        }
+
+        // 3. Trabalho em Altura / Andaimes
+        if (riscosOuAtividades.contains("ALTURA") || this == ANDAIME || this == ALPINISTA) {
+            episCalculados.add("Cinturão tipo paraquedista com talabarte duplo e absorvedor de energia");
+
+            if (riscosOuAtividades.contains("TRAVA_QUEDAS")) {
+                episCalculados.add("Trava-quedas retrátil / deslizante para linha de vida");
+            }
+        }
+
+        // 4. Risco Químico (Ácido / Soda com Diphoterine)
+        if (riscosOuAtividades.contains("QUIMICO")) {
+            episCalculados.add("Macacão de proteção química / Vestimenta impermeável");
+            episCalculados.add("Luvas nitrílicas ou de neoprene de cano longo");
+            episCalculados.add("Frasco de Diphoterine (Descontaminação de emergência para ácidos/bases)");
+        }
+
+        // 5. Espaço Confinado (NR-33)
+        if (riscosOuAtividades.contains("CONFINADO")) {
+            episCalculados.add("Detector portátil de múltiplos gases (Monitoramento atmosférico obrigatório)");
+
+            if (riscosOuAtividades.contains("VENTILACAO") || riscosOuAtividades.contains("CONFINADO_COM_VENTILACAO")) {
+                episCalculados.add("Sistema de exaustão / ventilação forçada");
+            }
+
+            if (riscosOuAtividades.contains("AR_MANDADO") || riscosOuAtividades.contains("AUTONOMO")) {
+                episCalculados.add("Máscara facial completa com ar mandado / Cilindro autônomo (SCBA)");
+            } else {
+                episCalculados.add("Respirador semifacial/pff2 conforme contaminante (se aplicável)");
+            }
+
+            if (riscosOuAtividades.contains("RESGATE") || riscosOuAtividades.contains("CONFINADO_COM_RESGATE")) {
+                episCalculados.add("Sistema de resgate (Tripé, guincho e linha de vida)");
+            }
+        }
+
+        return episCalculados;
+    }
+
+    /**
+     * Converte a string do <select> da tela no Enum de Especialidade
+     * correspondente.
+     */
+    public static Especialidade fromCargo(String cargo) {
+        if (cargo == null || cargo.isBlank()) {
+            return CIVIL;
+        }
+
+        return switch (cargo.trim()) {
+            case "Operador Industrial" ->
+                OPERACAO_INDUSTRIAL;
+            case "Eletricista", "Encarregado de Instrumentação & Elétrica" ->
+                ELETRICA;
+            case "Instrumentista" ->
+                INSTRUMENTACAO;
+            case "Mecânico", "Encarregado de Mecânica" ->
+                MECANICA;
+            case "Caldeireiro", "Encanador Industrial", "Encarregado de Caldeiraria & Tubulação" ->
+                CALDEIRARIA_TUBULACAO;
+            case "Soldador" ->
+                SOLDA;
+            case "Pintor Industrial" ->
+                PINTURA;
+            case "Oficial da Construção Civil", "Encarregado de Civil & Pintura" ->
+                CIVIL;
+            case "Montador de Andaime" ->
+                ANDAIME;
+            case "Alpinista Industrial" ->
+                ALPINISTA;
+            case "Mergulhador" ->
+                MERGULHO;
+            default ->
+                CIVIL;
+        };
+    }
+
+    public enum Requisito {
+        NR01("NR-01 Gerenciamento de Riscos Ocupacionais"),
+        NR10("NR-10 Segurança em Eletricidade"),
+        NR10SEP("NR-10SEP Segurança no Sistema Elétrico de Potência"),
+        NR11("NR-11 Transporte e Movimentação de Cargas"),
+        NR12("NR-12 Segurança no Trabalho em Máquinas"),
+        NR13("NR-13 Caldeiras, Vasos de Pressão e Tubulações"),
+        NR18("NR-18 Segurança na Construção Civil"),
+        NR20("NR-20 Segurança em Inflamáveis e Combustíveis"),
+        NR33("NR-33 Segurança em Espaços Confinados"),
+        NR34("NR-34 Condições de Trabalho Naval/Quente"),
+        NR35("NR-35 Trabalho em Altura"),
+        BRIGADA("Brigada de Incêndio");
+
+        private final String nome;
+
+        Requisito(String nome) {
+            this.nome = nome;
+        }
+
+        public String getNome() {
+            return nome;
+        }
+    }
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css"> <!-- Onde fica o layout principal -->
+    <link rel="stylesheet" href="css/formularios.css"> <!-- Para manter o padrão de inputs -->
+    <title>Gerenciar Colaboradores</title>
+</head>
+<body>
+
+    <div id="sidebar-wrapper"></div> <!-- Sidebar será injetada aqui -->
+
+    <main class="main-content">
+        <h2>Gerenciamento de Colaboradores</h2>
+
+        <!-- Barra de Busca -->
+        <div class="busca-container">
+            <input type="text" id="campoBusca" placeholder="Pesquisar por nome ou matrícula..." class="input-busca">
+        </div>
+
+        <!-- Tabela de Dados -->
+        <div class="tabela-wrapper">
+            <table class="tabela-colaboradores">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Matrícula</th>
+                        <th>Função</th>
+                        <th>Empresa</th>
+                        <th>ASO</th>
+                        <th>Validade PT</th>
+                        <th>NRs Vencidas</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaCorpo">
+                    <!-- Os dados serão carregados aqui via JS -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="sidebar.js"></script>
+    <script src="gerenciar.js"></script> <!-- Lógica da busca e tabela -->
+</body>
+</html>

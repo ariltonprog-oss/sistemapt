@@ -1,0 +1,121 @@
+document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const ptId = params.get('id');
+
+    if (!ptId) {
+        alert("ID da PT não especificado para emissão do documento.");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}`);
+        if (!response.ok) {
+            alert("Erro ao buscar dados da PT.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const pt = await response.json();
+
+        // 1. Tenta pegar do objeto da PT vindo do backend
+        const empresaObj = pt.empresaGestora || pt.empresa;
+        let nomeEmpresa = null;
+
+        if (empresaObj) {
+            nomeEmpresa = empresaObj.nomeFantasia || empresaObj.nome || empresaObj.razaoSocial;
+        }
+
+        // 2. Se não veio no backend, busca do sessionStorage (mesma lógica da sidebar)
+        if (!nomeEmpresa) {
+            const logado = sessionStorage.getItem('usuarioLogado');
+            const usuario = logado ? JSON.parse(logado) : null;
+            nomeEmpresa = (usuario && usuario.empresaNome) ? usuario.empresaNome : 'Notlira';
+        }
+
+        // Exibe no cabeçalho do documento oficial
+        document.getElementById('valEmpresaHeader').textContent = nomeEmpresa;
+        // Cabeçalho básico
+        document.getElementById('docNumeroPt').textContent = `PT Nº: #${pt.id}`;
+        document.getElementById('valPlanta').textContent = pt.plantaArea || '-';
+        document.getElementById('valTurno').textContent = pt.turnoGrupo || '-';
+        document.getElementById('valTag').textContent = pt.tag || '-';
+        document.getElementById('valOrdem').textContent = pt.ordemPj || (pt.emergencial ? '🚨 Emergencial' : '-');
+        document.getElementById('valDescricao').textContent = pt.descricaoAtividade || '-';
+
+      // Obtém o emitente real da PT ou da sessão, sem valores padrões fictícios
+        let nomeEmitente = "";
+        let matriculaEmitente = "";
+
+        const emissorObj = pt.emitidoPor || pt.usuarioEmissor || pt.responsavelEmissao;
+
+        if (emissorObj) {
+            if (typeof emissorObj === 'string') {
+                nomeEmitente = emissorObj;
+            } else if (typeof emissorObj === 'object') {
+                nomeEmitente = emissorObj.nome || emissorObj.nomeCompleto || emissorObj.usuario || "";
+                matriculaEmitente = emissorObj.matricula || "";
+            }
+        } 
+
+        // Se o backend não preencheu no objeto da PT, busca os dados da sessão
+        if (!nomeEmitente) {
+            const usuarioLogadoStr = sessionStorage.getItem('usuarioLogado');
+            if (usuarioLogadoStr) {
+                const usuarioLogado = JSON.parse(usuarioLogadoStr);
+                nomeEmitente = usuarioLogado.nome || usuarioLogado.usuario || "";
+                matriculaEmitente = usuarioLogado.matricula || "";
+            }
+        }
+
+        document.getElementById('valEmitente').textContent = nomeEmitente;
+        document.getElementById('valMatriculaEmitente').textContent = matriculaEmitente;
+
+        // Data e Hora da Emissão
+        const dataEmissaoRaw = pt.dataEmissao || pt.createdAt || pt.dataCriacao;
+        if (dataEmissaoRaw) {
+            document.getElementById('valDataEmissao').textContent = new Date(dataEmissaoRaw).toLocaleString('pt-BR');
+        } else {
+            document.getElementById('valDataEmissao').textContent = "";
+        };
+
+        // Mapeando apenas os Riscos Ativos
+        const riscosContainer = document.getElementById('listaRiscosDoc');
+        const riscosMapeados = [
+            { label: 'Trabalho a Quente', ativo: pt.requerTrabalhoQuente },
+            { label: 'Trabalho a Frio', ativo: pt.requerTrabalhoFrio },
+            { label: 'Trabalho em Altura', ativo: pt.requerTrabalhoAltura },
+            { label: 'Espaço Confinado', ativo: pt.requerEspacoConfinado },
+            { label: 'Risco Elétrico', ativo: pt.requerRiscoEletrico },
+            { label: 'Alta Tensão / SEP', ativo: pt.requerAltaTensaoSep },
+            { label: 'Área Classificada', ativo: pt.requerAreaClassificada },
+            { label: 'Segurança em Máquinas', ativo: pt.requerSegurancaMaquinas },
+            { label: 'Bloqueio e LOTO', ativo: pt.requerLoto },
+            { label: 'Atividade de Pintura', ativo: pt.requerAtividadePintura }
+        ];
+
+        const riscosAtivos = riscosMapeados.filter(r => r.ativo);
+
+        if (riscosAtivos.length > 0) {
+            riscosContainer.innerHTML = riscosAtivos.map(r => `
+                <div class="checkbox-item">
+                    <i class="fa-solid fa-square-check"></i> ${r.label}
+                </div>
+            `).join('');
+        } else {
+            riscosContainer.innerHTML = '<div class="checkbox-item">Nenhum risco específico marcado para esta atividade.</div>';
+        }
+
+        // Preenchendo EPIs Obrigatórios
+        const episContainer = document.getElementById('listaEpisDoc');
+        if (pt.episObrigatorios && Array.isArray(pt.episObrigatorios) && pt.episObrigatorios.length > 0) {
+            episContainer.innerHTML = pt.episObrigatorios.map(epi => `<span style="display: inline-block; background: #e2e3e5; color: #000; padding: 3px 8px; margin: 2px; border-radius: 3px; font-weight: bold;">[X] ${epi}</span>`).join(' ');
+        } else {
+            episContainer.innerHTML = 'Nenhum EPI específico cadastrado ou calculado.';
+        }
+
+    } catch (error) {
+        console.error("Erro ao carregar documento da PT:", error);
+        alert("Falha ao gerar o documento oficial da PT.");
+    }
+});

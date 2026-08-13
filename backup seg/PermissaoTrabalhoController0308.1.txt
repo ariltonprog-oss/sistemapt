@@ -1,0 +1,353 @@
+package com.gestaopt.sistemapt.controller;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.gestaopt.sistemapt.dto.EmitirPermissaoRequestDTO;
+import com.gestaopt.sistemapt.model.Especialidade;
+import com.gestaopt.sistemapt.model.Funcionario;
+import com.gestaopt.sistemapt.model.PermissaoTrabalho;
+import com.gestaopt.sistemapt.repository.FuncionarioRepository;
+import com.gestaopt.sistemapt.repository.PermissaoTrabalhoRepository;
+import com.gestaopt.sistemapt.service.PermissaoTrabalhoService;
+
+@RestController
+@RequestMapping("/api/permissoes-trabalho")
+public class PermissaoTrabalhoController {
+
+    private final PermissaoTrabalhoRepository repository;
+    private final FuncionarioRepository funcionarioRepository;
+    private final PermissaoTrabalhoService service;
+
+    public PermissaoTrabalhoController(PermissaoTrabalhoRepository repository,
+            FuncionarioRepository funcionarioRepository,
+            PermissaoTrabalhoService service) {
+        this.repository = repository;
+        this.funcionarioRepository = funcionarioRepository;
+        this.service = service;
+    }
+
+    // 1. LISTAR TODAS AS PTs
+    @GetMapping
+    public List<PermissaoTrabalho> listarTodas() {
+        return repository.findAll();
+    }
+
+    private PermissaoTrabalho ultimaPtRegistrada;
+    private long instanteUltimoRegistro = 0;
+
+    // 2. SALVAR NOVA PT COM VALIDAÇÃO DEFENSIVA
+    @PostMapping
+    public ResponseEntity<?> criar(@RequestBody PermissaoTrabalho pt) {
+        if (pt == null) {
+            return ResponseEntity.badRequest().body("❌ Erro: O corpo da requisição está vazio.");
+        }
+
+        long instanteAtual = System.currentTimeMillis();
+
+        // 🛡️ TRAVA ANTI-DUPLICIDADE
+        if (ultimaPtRegistrada != null && (instanteAtual - instanteUltimoRegistro < 5000)) {
+            if (pt.getPlantaArea() != null && pt.getPlantaArea().equals(ultimaPtRegistrada.getPlantaArea())
+                    && pt.getTag() != null && pt.getTag().equals(ultimaPtRegistrada.getTag())
+                    && pt.getOrdemPj() != null && pt.getOrdemPj().equals(ultimaPtRegistrada.getOrdemPj())) {
+
+                return ResponseEntity.status(409).body("Solicitação em duplicidade bloqueada pelo servidor.");
+            }
+        }
+
+        // 🛡️ TRAVA: EXCLUSÃO MÚTUA DA MATRIZ DE RISCO (QUENTE vs FRIO)
+        if (pt.isRequerTrabalhoQuente() && pt.isRequerTrabalhoFrio()) {
+            return ResponseEntity.badRequest().body("🚫 BLOQUEIO SESMT: A atividade não pode ser classificada como Trabalho a Quente e Trabalho a Frio simultaneamente.");
+        }
+
+        // 👮‍♂️ FILTRO DO SOLICITANTE
+        if (pt.getSolicitante() == null || pt.getSolicitante().getId() == null) {
+            return ResponseEntity.badRequest().body("Erro: Solicitante não especificado na requisição.");
+        }
+
+        // 👮‍♂️ FILTRO DO SOLICITANTE
+        if (pt.getSolicitante() == null || pt.getSolicitante().getId() == null) {
+            return ResponseEntity.badRequest().body("Erro: Solicitante não especificado na requisição.");
+        }
+
+        // Armazenar em variável local elimina o alerta de nulidade do Eclipse
+        // 👮‍♂️ FILTRO DO SOLICITANTE
+        if (pt.getSolicitante() == null || pt.getSolicitante().getId() == null) {
+            return ResponseEntity.badRequest().body("Erro: Solicitante não especificado na requisição.");
+        }
+
+        // Objects.requireNonNull informa explicitamente ao Eclipse que o ID não é nulo aqui
+        Long solicitanteId = java.util.Objects.requireNonNull(pt.getSolicitante().getId());
+        Funcionario solicitante = funcionarioRepository.findById(solicitanteId).orElse(null);
+
+        pt.setSolicitante(solicitante);
+
+        LocalDate hoje = LocalDate.now();
+
+        // Regra 1: ASO do Solicitante Vencido
+        if (solicitante.getValidadeASO() != null && solicitante.getValidadeASO().isBefore(hoje)) {
+            return ResponseEntity.status(403).body("🚫 SOLICITAÇÃO BARRADA: O ASO do solicitante (" + solicitante.getNome() + ") está vencido.");
+        }
+
+        // Regra 2: Reciclagem de PT do Solicitante Vencida
+        if (solicitante.getValidadeReciclagemPt() != null && solicitante.getValidadeReciclagemPt().isBefore(hoje)) {
+            return ResponseEntity.status(403).body("🚫 SOLICITAÇÃO BARRADA: A Reciclagem de PT do solicitante está vencida.");
+        }
+
+        // Regra 3: Se for Área Classificada, exige data da NR-20 válida
+        if (pt.isRequerAreaClassificada()) {
+            if (solicitante.getValidadeNr20() == null || solicitante.getValidadeNr20().isBefore(hoje)) {
+                return ResponseEntity.status(403).body("🚫 SOLICITAÇÃO BARRADA: Trabalho em Área Classificada requer treinamento de NR-20 ativo para o solicitante.");
+            }
+        }
+
+        if (pt.getStatus() == null || pt.getStatus().isBlank()) {
+            pt.setStatus("SOLICITADA");
+        }
+
+        if (pt.getEmpresaGestora() == null || pt.getEmpresaGestora().isBlank()) {
+            if (solicitante.getEmpresa() != null) {
+                pt.setEmpresaGestora(solicitante.getEmpresa().toString());
+            }
+        }
+
+        // 🪖 PROCESSAMENTO INTELIGENTE DA MATRIZ DE EPIs E ESPECIALIDADE
+        try {
+            Especialidade esp = pt.getAreaAtuacao();
+            if (esp != null) {
+                List<String> atividades = new ArrayList<>();
+
+                // Mapeia as flags ativas na requisição para o motor de cálculo da Especialidade
+                if (pt.isRequerAltaTensaoSep()) {
+                    atividades.add("NR10_SEP");
+                }
+                if (pt.isRequerTrabalhoQuente()) {
+                    atividades.add("QUENTE");
+                }
+                if (pt.isRequerTrabalhoAltura()) {
+                    atividades.add("ALTURA");
+                }
+                if (pt.isRequerEspacoConfinado()) {
+                    atividades.add("CONFINADO");
+                }
+                if (pt.isRequerAtividadePintura()) {
+                    atividades.add("QUIMICO");
+                }
+
+                List<String> episCalculados = esp.calcularEpisDinamicos(atividades);
+                pt.setEpisObrigatorios(episCalculados);
+            }
+        } catch (Exception e) {
+            System.err.println("Aviso: Não foi possível calcular os EPIs automaticamente: " + e.getMessage());
+        }
+
+        PermissaoTrabalho novaPt = repository.save(pt);
+
+        this.ultimaPtRegistrada = novaPt;
+        this.instanteUltimoRegistro = instanteAtual;
+
+        return ResponseEntity.ok(novaPt);
+    }
+
+    // 3. ATUALIZAR STATUS PARA EMITIDA (COM VALIDAÇÃO DE ID NULO)
+    @PatchMapping("/{id}/emitir")
+    public ResponseEntity<?> emitirPermissao(
+            @PathVariable Long id,
+            @RequestParam(name = "emitenteId", required = false) Long emitenteId,
+            @RequestBody EmitirPermissaoRequestDTO dto) {
+
+        if (id == null) {
+            return ResponseEntity.badRequest().body("❌ O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+
+        return repository.findById(id)
+                .map(pt -> {
+                    try {
+                        if (emitenteId != null) {
+                            Funcionario emitenteObj = funcionarioRepository.findById(emitenteId)
+                                    .orElseThrow(() -> new RuntimeException("Funcionário emitente não localizado."));
+                            pt.setEmitente(emitenteObj);
+                        } else if (pt.getEmitente() == null) {
+                            return ResponseEntity.badRequest().body("❌ Erro SESMT: Nenhum emitente foi identificado para esta operação.");
+                        }
+
+                        // Mapeia os dados do DTO específico de emissão para a Entidade
+                        pt.setDataHoraInicio(dto.getDataHoraInicio());
+
+                        pt.setRecomendacoesEmissor(dto.getRecomendacoesEmissor());
+                        pt.setLotoDetalhes(dto.getLotoDetalhes());
+                        pt.setAlturaDetalhes(dto.getAlturaDetalhes());
+                        pt.setNomeAst(dto.getNomeAst());
+                        pt.setMonitoramentoAmbiental(dto.getMonitoramentoAmbiental());
+
+                        PermissaoTrabalho ptEmitida = service.validarEEmitirPT(pt);
+                        return ResponseEntity.ok(ptEmitida);
+                    } catch (Exception e) {
+                        return ResponseEntity.badRequest().body("❌ " + e.getMessage());
+                    }
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 4. BAIXA DA PT COM RELATÓRIO DE COMPLIANCE E VALIDAÇÃO DE LISTA
+    @PutMapping("/{id}/baixar")
+    public ResponseEntity<?> baixarPermissao(@PathVariable Long id, @RequestBody List<Long> executantesIds) {
+        if (id == null) {
+            return ResponseEntity.badRequest().body("❌ O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+        if (executantesIds == null || executantesIds.isEmpty()) {
+            return ResponseEntity.badRequest().body("❌ A lista de executantes não pode ser nula ou vazia.");
+        }
+
+        return repository.findById(id)
+                .map(pt -> {
+                    LocalDate hoje = LocalDate.now();
+                    StringBuilder relatorio = new StringBuilder();
+                    relatorio.append("=== AUDITORIA DE COMPLIANCE SESMT ===\n");
+                    relatorio.append("PT #").append(pt.getId()).append(" | OM: ").append(pt.getOrdemPj()).append("\n");
+
+                    boolean temDesvio = false;
+                    List<Funcionario> equipeCampo = funcionarioRepository.findAllById(executantesIds);
+
+                    for (Funcionario f : equipeCampo) {
+                        if (f.getValidadeASO() != null && f.getValidadeASO().isBefore(hoje)) {
+                            relatorio.append("⚠️ DESVIO: Executante ").append(f.getNome()).append(" trabalhou com ASO VENCIDO.\n");
+                            temDesvio = true;
+                        }
+
+                        if (pt.isRequerTrabalhoAltura()) {
+                            if (f.getValidadeNr35() == null || f.getValidadeNr35().isBefore(hoje)) {
+                                relatorio.append("⚠️ DESVIO: Executante ").append(f.getNome()).append(" atuou em Altura sem treinamento de NR-35 ativo ou vencido.\n");
+                                temDesvio = true;
+                            }
+                        }
+
+                        if (pt.isRequerEspacoConfinado()) {
+                            if (f.getValidadeNr33() == null || f.getValidadeNr33().isBefore(hoje)) {
+                                relatorio.append("⚠️ DESVIO: Executante ").append(f.getNome()).append(" entrou em Espaço Confinado sem treinamento de NR-33 ativo ou vencido.\n");
+                                temDesvio = true;
+                            }
+                        }
+                    }
+
+                    if (!temDesvio) {
+                        relatorio.append("🟢 Operação finalizada em total conformidade legal.\n");
+                    }
+
+                    pt.setExecutantes(equipeCampo);
+                    pt.setStatus("ENCERRADA");
+                    repository.save(pt);
+
+                    return ResponseEntity.ok(new RespostaCompliance(relatorio.toString(), temDesvio));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 5. BUSCAR PT POR ID COM GUARDA DE NULIDADE
+    @GetMapping("/{id}")
+    public ResponseEntity<PermissaoTrabalho> buscarPorId(@PathVariable Long id) {
+        if (id == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return repository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 6. ATUALIZAR DADOS DA PT SOLICITADA COM VALIDAÇÕES
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarPT(@PathVariable Long id, @RequestBody PermissaoTrabalho ptAtualizada) {
+        if (id == null) {
+            return ResponseEntity.badRequest().body("❌ O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+        if (ptAtualizada == null) {
+            return ResponseEntity.badRequest().body("❌ Os dados para atualização são obrigatórios.");
+        }
+
+        return repository.findById(id)
+                .map(ptExistente -> {
+                    if ("EMITIDA".equalsIgnoreCase(ptExistente.getStatus()) || "ENCERRADA".equalsIgnoreCase(ptExistente.getStatus())) {
+                        return ResponseEntity.badRequest().body("🚫 Apenas PTs no status SOLICITADA podem ser editadas.");
+                    }
+
+                    ptExistente.setPlantaArea(ptAtualizada.getPlantaArea());
+                    ptExistente.setTurnoGrupo(ptAtualizada.getTurnoGrupo());
+                    ptExistente.setTag(ptAtualizada.getTag());
+                    ptExistente.setOrdemPj(ptAtualizada.getOrdemPj());
+                    ptExistente.setDescricaoAtividade(ptAtualizada.getDescricaoAtividade());
+                    ptExistente.setAreaAtuacao(ptAtualizada.getAreaAtuacao());
+                    ptExistente.setSolicitanteExecutante(ptAtualizada.isSolicitanteExecutante());
+
+                    ptExistente.setRequerTrabalhoQuente(ptAtualizada.isRequerTrabalhoQuente());
+                    ptExistente.setRequerTrabalhoFrio(ptAtualizada.isRequerTrabalhoFrio());
+                    ptExistente.setRequerTrabalhoAltura(ptAtualizada.isRequerTrabalhoAltura());
+                    ptExistente.setRequerEspacoConfinado(ptAtualizada.isRequerEspacoConfinado());
+                    ptExistente.setRequerRiscoEletrico(ptAtualizada.isRequerRiscoEletrico());
+                    ptExistente.setRequerAltaTensaoSep(ptAtualizada.isRequerAltaTensaoSep());
+                    ptExistente.setRequerAreaClassificada(ptAtualizada.isRequerAreaClassificada());
+                    ptExistente.setRequerSegurancaMaquinas(ptAtualizada.isRequerSegurancaMaquinas());
+                    ptExistente.setRequerLoto(ptAtualizada.isRequerLoto());
+                    ptExistente.setRequerAtividadePintura(ptAtualizada.isRequerAtividadePintura());
+
+                    if (ptAtualizada.getExecutantes() != null) {
+                        ptExistente.setExecutantes(ptAtualizada.getExecutantes());
+                    }
+
+                    // 🪖 RECALCULO DOS EPIs DINÂMICOS COM BASE NAS FLAGS ATUALIZADAS
+                    try {
+                        Especialidade esp = ptExistente.getAreaAtuacao();
+                        if (esp != null) {
+                            List<String> atividades = new ArrayList<>();
+                            if (ptExistente.isRequerAltaTensaoSep()) {
+                                atividades.add("NR10_SEP");
+                            }
+                            if (ptExistente.isRequerTrabalhoQuente()) {
+                                atividades.add("QUENTE");
+                            }
+                            if (ptExistente.isRequerTrabalhoAltura()) {
+                                atividades.add("ALTURA");
+                            }
+                            if (ptExistente.isRequerEspacoConfinado()) {
+                                atividades.add("CONFINADO");
+                            }
+                            if (ptExistente.isRequerAtividadePintura()) {
+                                atividades.add("QUIMICO");
+                            }
+
+                            ptExistente.setEpisObrigatorios(esp.calcularEpisDinamicos(atividades));
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Aviso: Não foi possível recalcular os EPIs na atualização: " + e.getMessage());
+                    }
+
+                    PermissaoTrabalho salva = repository.save(ptExistente);
+                    return ResponseEntity.ok(salva);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // CLASSE AUXILIAR DE RESPOSTA
+    public static class RespostaCompliance {
+
+        public String relatorio;
+        public boolean possuiDesvios;
+
+        public RespostaCompliance(String r, boolean d) {
+            this.relatorio = r;
+            this.possuiDesvios = d;
+        }
+    }
+}

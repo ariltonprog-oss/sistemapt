@@ -1,0 +1,45 @@
+ private void calcularValidadesNR(Funcionario f) {
+        if (f == null) {
+            return;
+        }
+
+        // Requisitos com validade de 12 meses
+        if (f.getRealizacaoASO() != null) {
+            f.setValidadeASO(f.getRealizacaoASO().plusMonths(12));
+        }
+        if (f.getRealizacaoReciclagemPt() != null) {
+            f.setValidadeReciclagemPt(f.getRealizacaoReciclagemPt().plusMonths(12));
+        }
+        if (f.getRealizacaoNr20() != null) {
+            f.setValidadeNr20(f.getRealizacaoNr20().plusMonths(12));
+        }
+        if (f.getRealizacaoNr33() != null) {
+            f.setValidadeNr33(f.getRealizacaoNr33().plusMonths(12));
+        }
+        if (f.getRealizacaoBrigada() != null) {
+            f.setValidadeBrigada(f.getRealizacaoBrigada().plusMonths(12));
+        }
+
+        // Requisitos com validade de 24 meses
+        if (f.getRealizacaoNr01() != null) {
+            f.setValidadeNr01(f.getRealizacaoNr01().plusMonths(24));
+        }
+        if (f.getRealizacaoNr10() != null) {
+            f.setValidadeNr10(f.getRealizacaoNr10().plusMonths(24));
+        }
+        if (f.getRealizacaoNr10Sep() != null) {
+            f.setValidadeNr10Sep(f.getRealizacaoNr10Sep().plusMonths(24));
+        }
+        if (f.getRealizacaoNr12() != null) {
+            f.setValidadeNr12(f.getRealizacaoNr12().plusMonths(24));
+        }
+        if (f.getRealizacaoNr13() != null) {
+            f.setValidadeNr13(f.getRealizacaoNr13().plusMonths(24));
+        }
+        if (f.getRealizacaoNr18() != null) {
+            f.setValidadeNr18(f.getRealizacaoNr18().plusMonths(24));
+        }
+        if (f.getRealizacaoNr35() != null) {
+            f.setValidadeNr35(f.getRealizacaoNr35().plusMonths(24));
+        }
+    }

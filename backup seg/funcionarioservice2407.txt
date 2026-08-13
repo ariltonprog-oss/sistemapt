@@ -1,0 +1,327 @@
+package com.gestaopt.sistemapt.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.gestaopt.sistemapt.dto.RequisitoDTO;
+import com.gestaopt.sistemapt.model.Especialidade; // <-- Importação do Enum!
+import com.gestaopt.sistemapt.model.Funcionario;
+import com.gestaopt.sistemapt.repository.FuncionarioRepository;
+
+@Service
+public class FuncionarioService {
+
+    private final FuncionarioRepository funcionarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public FuncionarioService(FuncionarioRepository funcionarioRepository) {
+        this.funcionarioRepository = funcionarioRepository;
+    }
+
+    /**
+     * CADASTRA OU ATUALIZA UM FUNCIONÁRIO
+     */
+    public Funcionario salvarFuncionario(Funcionario funcionario) throws Exception {
+        if (funcionario.getNome() == null || funcionario.getNome().trim().isEmpty()) {
+            throw new Exception("O nome do funcionário é obrigatório!");
+        }
+        if (funcionario.getFuncao() == null || funcionario.getFuncao().trim().isEmpty()) {
+            throw new Exception("A função do funcionário é obrigatória!");
+        }
+        if (funcionario.getRealizacaoASO() == null) {
+            throw new Exception("Todo funcionário precisa ter a data de validade do ASO cadastrada!");
+        }
+        if (funcionario.getMatricula() == null || funcionario.getMatricula().trim().isEmpty()) {
+            throw new Exception("A matrícula do funcionário é obrigatória!");
+        }
+
+        // =========================================================================
+// TRAVA DE SEGURANÇA E GERADOR AUTOMÁTICO DE LOGIN
+// =========================================================================
+        String perfil = funcionario.getPerfil() != null ? funcionario.getPerfil().toUpperCase() : "";
+
+// 1. Se for perfil operacional, LIMPA e IMPEDE a criação de login/senha
+        if ("EXECUTANTE".equals(perfil) || "OFICIAL".equals(perfil)) {
+            funcionario.setUsuario(null);
+            funcionario.setSenha(null);
+
+// 2. Para os demais perfis, executa o Gerador Automático se o usuário não foi informado
+        } else {
+            if (funcionario.getId() == null && (funcionario.getUsuario() == null || funcionario.getUsuario().trim().isEmpty())) {
+                if (funcionario.getNome() != null && !funcionario.getNome().trim().isEmpty()) {
+                    String nomeCompleto = funcionario.getNome().trim().toLowerCase();
+                    String[] partesDoNome = nomeCompleto.split("\\s+");
+
+                    if (partesDoNome.length >= 2) {
+                        String primeiroNome = partesDoNome[0];
+                        String ultimoSobrenome = partesDoNome[partesDoNome.length - 1];
+                        String loginGerado = primeiroNome + "." + ultimoSobrenome;
+
+                        String loginFinal = loginGerado;
+                        int contador = 1;
+                        while (funcionarioRepository.findByUsuario(loginFinal).isPresent()) {
+                            loginFinal = loginGerado + contador;
+                            contador++;
+                        }
+
+                        funcionario.setUsuario(loginFinal);
+                    } else if (partesDoNome.length == 1) {
+                        funcionario.setUsuario(partesDoNome[0]);
+                    }
+                }
+            }
+        }
+
+        // --- VALIDAÇÃO DE MATRÍCULA ÚNICA ---
+        String matriculaLimpa = funcionario.getMatricula().trim();
+        funcionario.setMatricula(matriculaLimpa);
+
+        if (funcionario.getId() == null) {
+            if (funcionarioRepository.existsByMatricula(matriculaLimpa)) {
+                throw new Exception("⚠️ Erro: Já existe um colaborador cadastrado com a matrícula " + matriculaLimpa + "!");
+            }
+        } else {
+            Optional<Funcionario> comMesmaMatricula = funcionarioRepository.findAllByOrderByMatriculaAsc().stream()
+                    .filter(f -> matriculaLimpa.equals(f.getMatricula()) && !java.util.Objects.equals(f.getId(), funcionario.getId()))
+                    .findFirst();
+
+            if (comMesmaMatricula.isPresent()) {
+                throw new Exception("⚠️ Erro: A matrícula " + matriculaLimpa + " já está sendo usada por outro colaborador!");
+            }
+        }
+
+        funcionario.setFuncao(funcionario.getFuncao().trim());
+
+        if (funcionario.getId() != null) {
+            Optional<Funcionario> funcionarioExistente = funcionarioRepository.findById(funcionario.getId());
+            if (funcionarioExistente.isPresent()) {
+                Funcionario antigo = funcionarioExistente.get();
+
+                if (funcionario.getSenha() == null || funcionario.getSenha().trim().isEmpty()) {
+                    funcionario.setSenha(antigo.getSenha());
+                }
+                if (funcionario.getUsuario() == null || funcionario.getUsuario().trim().isEmpty()) {
+                    funcionario.setUsuario(antigo.getUsuario());
+                }
+            }
+        }
+
+        if (funcionario.getSenha() != null && !funcionario.getSenha().trim().isEmpty()) {
+            String senhaAtual = funcionario.getSenha().trim();
+            if (!senhaAtual.startsWith("$2a$") && !senhaAtual.startsWith("$2b$") && !senhaAtual.startsWith("$2y$")) {
+                funcionario.setSenha(passwordEncoder.encode(senhaAtual));
+            } else {
+                funcionario.setSenha(senhaAtual);
+            }
+        }
+
+        if (!Funcionario.PERFIL_ADMIN_SISTEMA.equals(funcionario.getPerfil())
+                && funcionario.getEmpresa() == null) {
+            throw new Exception("Usuários deste perfil devem estar vinculados a uma empresa.");
+        }
+
+        // =========================================================================
+        // 🚀 ADICIONADO AQUI: CALCULA AS VALIDADES DAS NRS ANTES DE SALVAR
+        // =========================================================================
+        calcularValidadesNR(funcionario);
+
+        return funcionarioRepository.save(funcionario);
+    }
+
+    /**
+     * BUSCA TODOS OS FUNCIONÁRIOS CADASTRADOS (Exceto Admin)
+     */
+    public List<Funcionario> listarTodos() {
+        return funcionarioRepository.findAll().stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA COM FILTRO DE NOME OU MATRÍCULA (Exceto Admin)
+     */
+    public List<Funcionario> buscarPorFiltro(String filtro) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            return listarTodos();
+        }
+        return funcionarioRepository.buscarPorFiltroETerceiros(null, filtro).stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA FUNCIONÁRIOS POR EMPRESA + TERCEIRIZADOS (Exceto Admin)
+     */
+    public List<Funcionario> listarPorEmpresaETerceiros(Long empresaId, String filtro) {
+        List<Funcionario> lista;
+
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            lista = funcionarioRepository.buscarPorFiltroETerceiros(empresaId, filtro.trim());
+        } else {
+            lista = funcionarioRepository.findAllPorEmpresaOuTerceiros(empresaId);
+        }
+
+        return lista.stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA FUNCIONÁRIOS POR EMPRESA (Método legado mantido para
+     * compatibilidade)
+     */
+    public List<Funcionario> listarPorEmpresa(Long empresaId) {
+        return funcionarioRepository.findAllByEmpresaId(empresaId).stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA APENAS OS QUE PODEM EMITIR PT (EMITENTES)
+     */
+    public List<Funcionario> listarEmitentes() {
+        return funcionarioRepository.findAll().stream()
+                .filter(f -> isNotAdminSistema(f) && f.isPodeEmitirPt())
+                .toList();
+    }
+
+    /**
+     * BUSCA APENAS OS QUE PODEM SOLICITAR PT (SOLICITANTES/FISCAIS)
+     */
+    public List<Funcionario> listarSolicitantes() {
+        return funcionarioRepository.findAll().stream()
+                .filter(f -> isNotAdminSistema(f) && f.isPodeSolicitarPt())
+                .toList();
+    }
+
+    /**
+     * BUSCA UM FUNCIONÁRIO PELO ID
+     */
+    public Optional<Funcionario> buscarPorId(Long id) {
+        return funcionarioRepository.findById(id);
+    }
+
+    /**
+     * DELETA UM FUNCIONÁRIO DO SISTEMA
+     */
+    public void deletarFuncionario(Long id) {
+        funcionarioRepository.deleteById(id);
+    }
+
+    // =========================================================================
+    // 🚀 NOVOS MÉTODOS ADICIONADOS PARA A REGRA DAS NRS
+    // =========================================================================
+    /**
+     * RETORNA AS NRS OBRIGATÓRIAS COM BASE NO CARGO SELECIONADO
+     */
+    public List<String> obterNrsPorCargo(String cargo) {
+        Especialidade especialidade = Especialidade.fromCargo(cargo);
+        return especialidade.getNrsObrigatorias();
+    }
+
+    /**
+     * MÉTODO AUXILIAR: Calcula e preenche as datas de validade das NRs (+12 ou
+     * +24 meses) com base exata nos atributos da classe Funcionario.java.
+     */
+    private void calcularValidadesNR(Funcionario f) {
+        if (f == null) {
+            return;
+        }
+
+        // Requisitos com validade de 12 meses
+        if (f.getRealizacaoASO() != null) {
+            f.setValidadeASO(f.getRealizacaoASO().plusMonths(12));
+        }
+        if (f.getRealizacaoReciclagemPt() != null) {
+            f.setValidadeReciclagemPt(f.getRealizacaoReciclagemPt().plusMonths(12));
+        }
+        if (f.getRealizacaoNr20() != null) {
+            f.setValidadeNr20(f.getRealizacaoNr20().plusMonths(12));
+        }
+        if (f.getRealizacaoNr33() != null) {
+            f.setValidadeNr33(f.getRealizacaoNr33().plusMonths(12));
+        }
+        if (f.getRealizacaoBrigada() != null) {
+            f.setValidadeBrigada(f.getRealizacaoBrigada().plusMonths(12));
+        }
+
+        // Requisitos com validade de 24 meses
+        if (f.getRealizacaoNr01() != null) {
+            f.setValidadeNr01(f.getRealizacaoNr01().plusMonths(24));
+        }
+        if (f.getRealizacaoNr10() != null) {
+            f.setValidadeNr10(f.getRealizacaoNr10().plusMonths(24));
+        }
+        if (f.getRealizacaoNr10Sep() != null) {
+            f.setValidadeNr10Sep(f.getRealizacaoNr10Sep().plusMonths(24));
+        }
+        if (f.getRealizacaoNr12() != null) {
+            f.setValidadeNr12(f.getRealizacaoNr12().plusMonths(24));
+        }
+        if (f.getRealizacaoNr13() != null) {
+            f.setValidadeNr13(f.getRealizacaoNr13().plusMonths(24));
+        }
+        if (f.getRealizacaoNr18() != null) {
+            f.setValidadeNr18(f.getRealizacaoNr18().plusMonths(24));
+        }
+        if (f.getRealizacaoNr35() != null) {
+            f.setValidadeNr35(f.getRealizacaoNr35().plusMonths(24));
+        }
+    }
+
+    /**
+     * MÉTODO AUXILIAR: Verifica se o funcionário NÃO é o Admin do Sistema.
+     */
+    private boolean isNotAdminSistema(Funcionario f) {
+        if (f == null) {
+            return false;
+        }
+        return !Funcionario.PERFIL_ADMIN_SISTEMA.equalsIgnoreCase(f.getPerfil());
+    }
+
+    // Método no FuncionarioService.java
+    public List<RequisitoDTO> obterRequisitosPorCargo(String cargo) {
+        // 1. Busca as siglas que pertencem ao cargo (ex: ["NR10", "NR12"])
+        List<String> siglas = obterNrsPorCargo(cargo);
+
+        // 2. Transforma cada sigla no objeto RequisitoDTO com o nome completo
+        return siglas.stream()
+                .map(sigla -> new RequisitoDTO(sigla, obterNomeAmigavelNr(sigla)))
+                .toList();
+    }
+
+// Mapeamento simples dos nomes amigáveis
+    private String obterNomeAmigavelNr(String sigla) {
+        return switch (sigla) {
+            case "NR01" ->
+                "NR-01 Gerenciamento de Riscos Ocupacionais";
+            case "NR10" ->
+                "NR-10 Segurança em Eletricidade";
+            case "NR10SEP" ->
+                "NR-10SEP Segurança no Sistema Elétrico de Potência";
+            case "NR11" ->
+                "NR-11 Transporte e Movimentação de Cargas";
+            case "NR12" ->
+                "NR-12 Segurança no Trabalho em Máquinas";
+            case "NR13" ->
+                "NR-13 Caldeiras, Vasos de Pressão e Tubulações";
+            case "NR18" ->
+                "NR-18 Segurança na Construção Civil";
+            case "NR20" ->
+                "NR-20 Segurança em Inflamáveis e Combustíveis";
+            case "NR33" ->
+                "NR-33 Segurança em Espaços Confinados";
+            case "NR34" ->
+                "NR-34 Condições de Trabalho Naval/Quente";
+            case "NR35" ->
+                "NR-35 Trabalho em Altura";
+            case "BRIGADA" ->
+                "Brigada de Incêndio";
+            default ->
+                sigla;
+        };
+    }
+}

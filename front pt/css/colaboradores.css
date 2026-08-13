@@ -1,0 +1,56 @@
+/* Estilização da barra de busca na tela de gerenciamento */
+.busca-container {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.input-busca {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid var(--borda);
+    background-color: var(--cor-card);
+    color: #cbd5e1;
+    font-size: 1rem;
+}
+
+.input-busca::placeholder {
+    color: #64748b;
+}
+
+/* Deixar o botão de editar padronizado */
+.btn-editar {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-editar:hover {
+    background-color: #2563eb;
+}
+/* Opcional: Já aproveite e defina o estilo da tabela que comentamos */
+.tabela-colaboradores {
+    width: 100% !important;
+    border-collapse: collapse !important;
+}
+
+.tabela-colaboradores th, .tabela-colaboradores td {
+    padding: 12px !important;
+    text-align: left !important;
+    border-bottom: 1px solid #475569 !important;
+}
+/* Padrão para ocultar elementos mantendo a acessibilidade técnica */
+.campo-oculto {
+    display: none !important;
+}
+#containerMatrizNRs { width: 100%; margin-top: 20px; }
+.grid-nrs { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; width: 100%; }
+
+.card-nr-item { background: var(--cor-card); padding: 18px; border-radius: 6px; border: 1px solid var(--borda); display: flex; flex-direction: column; gap: 12px; }
+.card-nr-item .form-group { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 10px; }
+.card-nr-item label { font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0; }

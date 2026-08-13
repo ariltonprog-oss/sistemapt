@@ -1,0 +1,133 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const tabelaCorpo = document.getElementById('tabelaCorpo');
+    const campoBusca = document.getElementById('campoBusca');
+
+    // 1. Função para buscar colaboradores no Back-end
+    async function carregarColaboradores(termo = "") {
+        try {
+            const response = await fetch(`http://localhost:8080/api/funcionarios?filtro=${termo}`);
+
+            if (!response.ok) {
+                throw new Error(`Erro na API: ${response.status}`);
+            }
+
+            const dados = await response.json();
+
+            tabelaCorpo.innerHTML = "";
+
+            dados.forEach(colaborador => {
+                console.log("Objeto Colaborador recebido:", colaborador);
+                const tr = document.createElement('tr');
+                
+                // Fallback para caso o ID no Java tenha outro nome
+                const idColaborador = colaborador.id || colaborador.idFuncionario || colaborador.matricula;
+
+                tr.innerHTML = `
+                    <td>${colaborador.nome || '---'}</td>
+                    <td>${colaborador.matricula || '---'}</td>
+                    <td>${colaborador.funcao || '---'}</td>
+                    <td>${colaborador.empresa ? colaborador.empresa.nomeFantasia : '---'}</td>
+                    <td>${colaborador.validadeASO || '---'}</td>
+                    <td>${colaborador.validadeReciclagemPt || '---'}</td>
+                    <td>${colaborador.nrVencida || "---"}</td>
+                    <td>
+                        <button class="btn-editar" onclick="editarColaborador('${idColaborador}')">✏️ Editar</button>
+                    </td>
+                `;
+                tabelaCorpo.appendChild(tr);
+            });
+        } catch (error) {
+            console.error("Erro ao carregar colaboradores:", error);
+        }
+    }
+
+    // 2. Filtro em tempo real ao digitar
+    if (campoBusca) {
+        campoBusca.addEventListener('input', (e) => {
+            carregarColaboradores(e.target.value);
+        });
+    }
+
+    // Carrega todos ao iniciar
+    carregarColaboradores();
+});
+
+// 3. Função de edição associada ao escopo global (window)
+window.editarColaborador = function(id) {
+    if (!id || id === 'undefined') {
+        alert("Erro: Não foi possível identificar o ID deste colaborador.");
+        return;
+    }
+    // Redireciona para a página de edição
+    window.location.href = `editar-colaborador.html?id=${id}`;
+};
+// --- LÓGICA DO MODAL DE REVALIDAÇÃO ---
+    const modalReval = document.getElementById('modalRevalidacao');
+    const btnAbrirModalReval = document.getElementById('btnAbrirModalReval');
+    const btnFecharModal = document.getElementById('btnFecharModal');
+    const formRevalInterno = document.getElementById('formRevalInterno');
+
+    // 1. Abrir o modal
+    if (btnAbrirModalReval) {
+        btnAbrirModalReval.addEventListener('click', () => {
+            // Puxa o solicitante da PT carregada ou usa um fallback
+            const solicitanteNome = (ptAtual && ptAtual.solicitante) ? ptAtual.solicitante : "Não informado";
+            document.getElementById('modalSolicitante').value = solicitanteNome;
+            
+            // Sugere a data e hora atuais
+            const agora = new Date();
+            document.getElementById('revalData').value = agora.toISOString().split('T')[0];
+            document.getElementById('revalHora').value = agora.toTimeString().slice(0, 5);
+
+            modalReval.style.display = 'flex';
+        });
+    }
+
+    // 2. Fechar o modal
+    if (btnFecharModal) {
+        btnFecharModal.addEventListener('click', () => {
+            modalReval.style.display = 'none';
+        });
+    }
+
+    // 3. Envio dos dados de revalidação
+    if (formRevalInterno) {
+        formRevalInterno.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!ptAtual || !ptAtual.id) {
+                alert("Erro: ID da PT não identificada.");
+                return;
+            }
+
+            const payload = {
+                etapa: document.getElementById('revalEtapa').value,
+                data: document.getElementById('revalData').value,
+                hora: document.getElementById('revalHora').value,
+                solicitante: document.getElementById('modalSolicitante').value,
+                emitente: document.getElementById('modalEmitente').value
+            };
+
+            try {
+                const response = await fetch(`http://localhost:8080/api/pts/${ptAtual.id}/revalidar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("Revalidação salva com sucesso!");
+                    modalReval.style.display = 'none';
+                    location.reload();
+                } else {
+                    alert("Erro ao salvar a revalidação no servidor.");
+                }
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                alert("Falha de comunicação com o servidor.");
+            }
+        });
+    }

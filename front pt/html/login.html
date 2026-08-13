@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema PT - Login</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="page-login">
+
+    <div class="login-container">
+        <h2>Permissão de Trabalho</h2>
+        <p class="subtitle">Controle de Acesso Operacional</p>
+
+        <!-- 🟢 Formulário com id="formLogin" -->
+        <form id="formLogin" autocomplete="off">
+            <!-- 🪤 ARMADILHA CONTRA AUTOFILL -->
+            <input type="text" name="chrome-user-fake" class="oculto-seguranca" inert>
+            <input type="password" name="chrome-password-fake" class="oculto-seguranca" inert>
+
+            <div class="form-group">
+                <label for="usrAcesso">Usuário de Rede</label>
+                <!-- Mudamos o ID para que o Chrome não saiba o que este campo armazena -->
+                <input type="text" id="usrAcesso" required placeholder="Digite o usuário" autocomplete="new-password">
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="text" id="senha" required placeholder="Digite a senha" autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn-submit">Acessar Sistema</button>
+        </form>
+
+        <div id="msg" class="message"></div>
+    </div>
+
+    <script src="../js/login.js"></script>
+</body>
+
+</html> 

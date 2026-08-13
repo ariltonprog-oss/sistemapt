@@ -1,0 +1,314 @@
+// =========================================================================
+// SOLICITAÇÃO DE PT - FRONTEND INTEGRADO AO BACKEND JAVA
+// =========================================================================
+
+// Armazena a lista total de colaboradores da API e os selecionados na tabela
+let listaColaboradoresAPI = [];
+let equipeExecutantesSelecionados = [];
+let colaboradorEncontradoAtual = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Carrega dados do Usuário Logado e valida a sessão
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    
+    if (!usuarioLogado) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // 2. Preenche o nome da Empresa Gestora no cabeçalho
+    const elEmpresa = document.getElementById('displayEmpresaGestora') || document.getElementById('nomeEmpresaHeader');
+    if (elEmpresa) {
+        let nomeEmpresa = "Empresa Principal";
+
+        if (typeof usuarioLogado.empresa === 'object' && usuarioLogado.empresa !== null) {
+            nomeEmpresa = usuarioLogado.empresa.nomeFantasia || usuarioLogado.empresa.nome || nomeEmpresa;
+        } else if (usuarioLogado.empresaNome) {
+            nomeEmpresa = usuarioLogado.empresaNome;
+        } else if (typeof usuarioLogado.empresa === 'string') {
+            nomeEmpresa = usuarioLogado.empresa;
+        }
+
+        elEmpresa.innerText = nomeEmpresa;
+    }
+
+    // 3. Regra de negócio: Trabalho a Quente vs Frio
+    configurarRegraQuenteFrio();
+
+    // 4. Regra de negócio SESMT: OS Obrigatória vs Emergencial (NOVO)
+    configurarRegraEmergencial();
+
+    // 5. Carrega os colaboradores para busca por Matrícula
+    await carregarBaseColaboradores();
+
+    // 6. Configura a busca ao digitar a Matrícula
+    const inputMatricula = document.getElementById('inputMatricula');
+    if (inputMatricula) {
+        inputMatricula.addEventListener('input', buscarPorMatricula);
+    }
+
+    // 7. Configura o botão de Adicionar Executante
+    const btnAdicionar = document.getElementById('btnAdicionarExecutante');
+    if (btnAdicionar) {
+        btnAdicionar.addEventListener('click', adicionarExecutanteNaEquipe);
+    }
+
+    // 8. Configura o Checkbox "Eu (Solicitante) também vou atuar como Executante"
+    const chkSolicitante = document.getElementById('solicitanteExecutante');
+    if (chkSolicitante) {
+        chkSolicitante.addEventListener('change', tratarSolicitanteComoExecutante);
+    }
+
+    // 9. Configura o envio do Formulário
+    const form = document.getElementById('formSolicitarPT') || document.getElementById('formSolicitarPt');
+    if (form) {
+        form.addEventListener('submit', enviarSolicitacaoPT);
+    }
+});
+
+// =========================================================================
+// REGRA DE NEGÓCIO SESMT: OS OBRIGATÓRIA vs ATENDIMENTO EMERGENCIAL (NOVO)
+// =========================================================================
+function configurarRegraEmergencial() {
+    const chkEmergencial = document.getElementById('emergencial');
+    const inputOS = document.getElementById('ordemPj');
+    const asteriscoOS = document.getElementById('asteriscoOS') || document.getElementById('labelObrigatorioOS');
+
+    if (!chkEmergencial || !inputOS) return;
+
+    chkEmergencial.addEventListener('change', () => {
+        if (chkEmergencial.checked) {
+            inputOS.required = false;
+            inputOS.placeholder = "Opcional (Atendimento Emergencial)";
+            if (asteriscoOS) asteriscoOS.style.display = 'none';
+        } else {
+            inputOS.required = true;
+            inputOS.placeholder = "Ex: OS-98421";
+            if (asteriscoOS) asteriscoOS.style.display = 'inline';
+        }
+    });
+}
+
+// =========================================================================
+// REGRA DE NEGÓCIO SESMT: TRABALHO A QUENTE vs FRIO (EXCLUSÃO MÚTUA)
+// =========================================================================
+function configurarRegraQuenteFrio() {
+    const chkQuente = document.getElementById('requerTrabalhoQuente');
+    const chkFrio = document.getElementById('requerTrabalhoFrio');
+
+    if (!chkQuente || !chkFrio) return;
+
+    chkQuente.addEventListener('change', () => {
+        if (chkQuente.checked) {
+            chkFrio.checked = false;
+        }
+    });
+
+    chkFrio.addEventListener('change', () => {
+        if (chkFrio.checked) {
+            chkQuente.checked = false;
+        }
+    });
+}
+
+// =========================================================================
+// BUSCA E GERENCIAMENTO DE EXECUTANTES POR MATRÍCULA
+// =========================================================================
+async function carregarBaseColaboradores() {
+    try {
+        const response = await fetch('http://localhost:8080/api/funcionarios');
+        if (response.ok) {
+            listaColaboradoresAPI = await response.json();
+        }
+    } catch (error) {
+        console.error("Erro ao carregar colaboradores do sistema:", error);
+    }
+}
+
+function buscarPorMatricula() {
+    const matriculaDigitada = document.getElementById('inputMatricula').value.trim();
+    const inputNome = document.getElementById('inputNomeExecutante');
+    const msgStatus = document.getElementById('msgMatriculaStatus');
+
+    if (!matriculaDigitada) {
+        inputNome.value = '';
+        msgStatus.textContent = '';
+        msgStatus.className = 'msg-status-matricula';
+        colaboradorEncontradoAtual = null;
+        return;
+    }
+
+    // Procura o colaborador na base
+    const localizado = listaColaboradoresAPI.find(c => c.matricula && c.matricula.trim() === matriculaDigitada);
+
+    if (localizado) {
+        inputNome.value = localizado.nome;
+        msgStatus.textContent = '✓ Colaborador localizado!';
+        msgStatus.className = 'msg-status-matricula sucesso';
+        colaboradorEncontradoAtual = localizado;
+    } else {
+        inputNome.value = '';
+        msgStatus.textContent = '⚠️ Nenhum colaborador encontrado com esta matrícula.';
+        msgStatus.className = 'msg-status-matricula erro';
+        colaboradorEncontradoAtual = null;
+    }
+}
+
+function adicionarExecutanteNaEquipe() {
+    if (!colaboradorEncontradoAtual) {
+        alert("Digite uma matrícula válida antes de adicionar.");
+        return;
+    }
+
+    const jaExiste = equipeExecutantesSelecionados.some(e => e.id === colaboradorEncontradoAtual.id);
+    if (jaExiste) {
+        alert("Este colaborador já faz parte da equipe de executantes.");
+        return;
+    }
+
+    equipeExecutantesSelecionados.push(colaboradorEncontradoAtual);
+    renderizarTabelaExecutantes();
+
+    // Reset dos campos de busca
+    document.getElementById('inputMatricula').value = '';
+    document.getElementById('inputNomeExecutante').value = '';
+    document.getElementById('msgMatriculaStatus').textContent = '';
+    colaboradorEncontradoAtual = null;
+}
+
+function removerExecutante(idColaborador) {
+    equipeExecutantesSelecionados = equipeExecutantesSelecionados.filter(e => e.id !== idColaborador);
+    
+    // Se o usuário remover a si mesmo da tabela, desmarca o checkbox do solicitante
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (usuarioLogado && usuarioLogado.id === idColaborador) {
+        const chkSolicitante = document.getElementById('solicitanteExecutante');
+        if (chkSolicitante) chkSolicitante.checked = false;
+    }
+
+    renderizarTabelaExecutantes();
+}
+
+function tratarSolicitanteComoExecutante(event) {
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (!usuarioLogado) return;
+
+    if (event.target.checked) {
+        const jaExiste = equipeExecutantesSelecionados.some(e => e.id === usuarioLogado.id);
+        if (!jaExiste) {
+            equipeExecutantesSelecionados.push(usuarioLogado);
+        }
+    } else {
+        equipeExecutantesSelecionados = equipeExecutantesSelecionados.filter(e => e.id !== usuarioLogado.id);
+    }
+
+    renderizarTabelaExecutantes();
+}
+
+function renderizarTabelaExecutantes() {
+    const tbody = document.getElementById('tbodyExecutantes');
+    if (!tbody) return;
+
+    if (equipeExecutantesSelecionados.length === 0) {
+        tbody.innerHTML = `
+            <tr class="linha-vazia">
+                <td colspan="4">Nenhum executante adicionado à equipe até o momento.</td>
+            </tr>`;
+        return;
+    }
+
+    tbody.innerHTML = equipeExecutantesSelecionados.map(e => `
+        <tr>
+            <td><strong>${e.matricula || 'N/A'}</strong></td>
+            <td>${e.nome}</td>
+            <td>${e.funcao || 'Operacional'}</td>
+            <td style="text-align: center;">
+                <button type="button" class="btn-remover-executante" onclick="removerExecutante(${e.id})" title="Remover da equipe">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// =========================================================================
+// ENVIO DA PT PARA O BACKEND (POST /api/permissoes-trabalho)
+// =========================================================================
+async function enviarSolicitacaoPT(event) {
+    event.preventDefault();
+
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    const btnSalvar = document.getElementById('btnSalvarPT');
+
+    // Mapeia os executantes da tabela para a estrutura de DTO do Java [{ id: 1 }, { id: 2 }]
+    const executantesPayload = equipeExecutantesSelecionados.map(e => ({ id: e.id }));
+
+    // Monta o payload completo da PermissaoTrabalho.java
+    const payload = {
+        plantaArea: document.getElementById('plantaArea')?.value.trim(),
+        turnoGrupo: document.getElementById('turnoGrupo')?.value.trim(),
+        tag: document.getElementById('tag')?.value.trim().toUpperCase(),
+        ordemPj: document.getElementById('ordemPj')?.value.trim(),
+        emergencial: document.getElementById('emergencial')?.checked || false, // <-- CAMPO EMERGENCIAL
+        descricaoAtividade: document.getElementById('descricaoAtividade')?.value.trim(),
+        areaAtuacao: document.getElementById('areaAtuacao')?.value,
+        empresaGestora: document.getElementById('displayEmpresaGestora')?.innerText,
+
+        // Status inicial
+        status: "SOLICITADA",
+
+        // Checkbox Solicitante no time
+        solicitanteExecutante: document.getElementById('solicitanteExecutante')?.checked || false,
+
+        // Flips de Riscos Críticos (Booleans)
+        requerTrabalhoQuente: document.getElementById('requerTrabalhoQuente')?.checked || false,
+        requerTrabalhoFrio: document.getElementById('requerTrabalhoFrio')?.checked || false,
+        requerTrabalhoAltura: document.getElementById('requerTrabalhoAltura')?.checked || false,
+        requerEspacoConfinado: document.getElementById('requerEspacoConfinado')?.checked || false,
+        requerRiscoEletrico: document.getElementById('requerRiscoEletrico')?.checked || false,
+        requerAltaTensaoSep: document.getElementById('requerAltaTensaoSep')?.checked || false,
+        requerAreaClassificada: document.getElementById('requerAreaClassificada')?.checked || false,
+        requerSegurancaMaquinas: document.getElementById('requerSegurancaMaquinas')?.checked || false,
+        requerLoto: document.getElementById('requerLoto')?.checked || false,
+        requerAtividadePintura: document.getElementById('requerAtividadePintura')?.checked || false,
+
+        // Solicitante Logado
+        solicitante: { id: usuarioLogado.id },
+
+        // Equipe Executante
+        executantes: executantesPayload
+    };
+
+    try {
+        if (btnSalvar) {
+            btnSalvar.disabled = true;
+            btnSalvar.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando solicitação...`;
+        }
+
+        const response = await fetch('http://localhost:8080/api/permissoes-trabalho', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const mensagemErro = await response.text();
+            throw new Error(mensagemErro);
+        }
+
+        const ptSalva = await response.json();
+        alert(`✅ Permissão de Trabalho (PT #${ptSalva.id}) solicitada com sucesso!`);
+        
+        window.location.href = "dashboard.html";
+
+    } catch (error) {
+        console.error("Erro ao solicitar PT:", error);
+        alert("⚠️ " + error.message);
+    } finally {
+        if (btnSalvar) {
+            btnSalvar.disabled = false;
+            btnSalvar.innerHTML = `🚀 SOLICITAR PERMISSÃO DE TRABALHO`;
+        }
+    }
+}

@@ -1,0 +1,145 @@
+/* =========================================================================
+   CARD DE ALÇADA DE EMISSÃO (PERMISSÃO ESPECIAL DE PT)
+   ========================================================================= */
+.container-alcada-emissao {
+    /* 🚀 OCUPA A LARGURA TOTAL DO GRID DO FORMULÁRIO */
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    /* Espaçamentos e Margens Generosas */
+    padding: 16px 20px;
+    margin-top: 25px;
+    margin-bottom: 30px; /* 🚀 Afasta do título de Requisitos Obrigatórios */
+    
+    /* Visual de Card Dark em Destaque */
+    background-color: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-left: 5px solid #f59e0b;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Estilo do Texto/Label */
+.container-alcada-emissao label {
+    color: #fef08a;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin: 0;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Estilo do Checkbox */
+.container-alcada-emissao input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #f59e0b;
+    margin: 0;
+}
+
+/* Utilitário para Esconder */
+.elemento-escondido {
+    display: none !important;
+}
+.btn-acao-emitir {
+    background-color: #059669;
+    color: #ffffff !important;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 4px;
+    display: inline-block;
+}
+
+.btn-acao-emitir:hover {
+    background-color: #10b981;
+}
+/* Estilo básico para os novos botões */
+.btn-acao-revalidar {
+    background-color: #3498db; /* Azul */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85em;
+    margin-right: 5px;
+}
+
+.btn-acao-baixar {
+    background-color: #e67e22; /* Laranja */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85em;
+    margin-right: 5px;
+}
+/* Garante que a coluna de ações tenha largura suficiente e não quebre o layout */
+.tabela-pts td.coluna-acoes, th.coluna-acoes {
+    white-space: nowrap; /* Mantém os botões na mesma linha */
+    min-width: 180px;    /* Dá espaço mínimo adequado */
+    text-align: center;
+}
+
+/* Ajustes gerais dos botões de ação para ficarem limpos e padronizados */
+.coluna-acoes a {
+    display: inline-block;
+    padding: 6px 10px;
+    font-size: 0.85em;
+    font-weight: 500;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-right: 4px;
+    color: #ffffff !important; /* Força texto branco para excelente leitura */
+    transition: opacity 0.2s;
+}
+
+.coluna-acoes a:hover {
+    opacity: 0.85;
+}
+
+/* 👁️ Botão Visualizar (Com cores de alto contraste para o tema escuro) */
+.btn-acao-visualizar {
+    background-color: #34495e !important; 
+    border: 1px solid #4e6d8c;
+}
+
+/* 🖨️ Botão Imprimir (Azul claro/Cyan corporativo de alto destaque) */
+.btn-acao-imprimir {
+    background-color: #00b894 !important; /* Verde água vibrante ou use #0984e3 para azul */
+    border: 1px solid #55efc4;
+}
+
+/* 🛡️ Emitir */
+.btn-acao-emitir {
+    background-color: #00b894 !important;
+}
+
+/* ✏️ Editar / Detalhes */
+.btn-acao-editar {
+    background-color: #0984e3 !important;
+}
+
+/* 🔄 Revalidar */
+.btn-acao-revalidar {
+    background-color: #e17055 !important;
+}
+
+/* 🏁 Baixar */
+.btn-acao-baixar {
+    background-color: #d63031 !important;
+}
+
+/* Ajuste para garantir que fiquem alinhados se necessário */
+.coluna-acoes {
+    white-space: nowrap;
+}

@@ -1,0 +1,134 @@
+package com.gestaopt.sistemapt.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.gestaopt.sistemapt.model.Funcionario;
+import com.gestaopt.sistemapt.service.FuncionarioService;
+
+@RestController
+@RequestMapping("/api/funcionarios")
+public class FuncionarioController {
+
+    private final FuncionarioService funcionarioService;
+
+    // O Spring Boot injeta o nosso Service aqui automaticamente
+    public FuncionarioController(FuncionarioService funcionarioService) {
+        this.funcionarioService = funcionarioService;
+    }
+
+    /**
+     * ROTA PARA CADASTRAR UM NOVO FUNCIONÁRIO URL: POST
+     * http://localhost:8080/api/funcionarios
+     */
+    @PostMapping
+    public ResponseEntity<?> cadastrarFuncionario(@RequestBody Funcionario funcionario) {
+        try {
+            Funcionario salvo = funcionarioService.salvarFuncionario(funcionario);
+            return ResponseEntity.ok(salvo);
+        } catch (Exception e) {
+            // Se o ASO estiver vencido ou faltar dados, devolve o motivo do erro na tela
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * ROTA PARA ATUALIZAR UM FUNCIONÁRIO EXISTENTE (EDIÇÃO) URL: PUT
+     * http://localhost:8080/api/funcionarios/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarFuncionario(@PathVariable Long id, @RequestBody Funcionario funcionario) {
+        try {
+            System.out.println("DEBUG JAVA - Matricula que chegou do JS: " + funcionario.getMatricula());
+            System.out.println("DEBUG JAVA - Funcionario completo: " + funcionario);
+            funcionario.setId(id);
+            Funcionario atualizado = funcionarioService.salvarFuncionario(funcionario);
+            return ResponseEntity.ok(atualizado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
+     * ROTA PARA BUSCAR UM FUNCIONÁRIO PELO ID (ESSENCIAL PARA CARREGAR A TELA
+     * DE EDIÇÃO) URL: GET http://localhost:8080/api/funcionarios/{id}
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        System.out.println("DEBUG JAVA - ID que chegou do JS: " + id);
+        return funcionarioService.buscarPorId(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * ROTA PARA LISTAR OS FUNCIONÁRIOS DE UMA EMPRESA URL: GET
+     * http://localhost:8080/api/funcionarios/empresa/{empresaId}
+     */
+    @GetMapping("/empresa/{empresaId}")
+    public List<Funcionario> listarPorEmpresa(
+            @PathVariable Long empresaId,
+            @RequestParam(value = "filtro", required = false) String filtro) {
+        System.out.println("DEBUG JAVA - ID da empresa: " + empresaId + " | Filtro: " + filtro);
+        return funcionarioService.listarPorEmpresaETerceiros(empresaId, filtro);
+    }
+
+    /**
+     * ROTA PARA LISTAR TODOS OS FUNCIONÁRIOS URL: GET
+     * http://localhost:8080/api/funcionarios
+     */
+    @GetMapping
+    public List<Funcionario> listarTodos(@RequestParam(value = "filtro", required = false) String filtro) {
+        System.out.println("DEBUG JAVA - Listando todos os funcionários. Filtro recebido: " + filtro);
+
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            return funcionarioService.buscarPorFiltro(filtro.trim());
+        }
+
+        return funcionarioService.listarTodos();
+    }
+
+    /**
+     * ROTA PARA LISTAR APENAS OS EMITENTES (OPERADORES AUTORIZADOS) URL: GET
+     * http://localhost:8080/api/funcionarios/emitentes
+     */
+    @GetMapping("/emitentes")
+    public List<Funcionario> listarEmitentes() {
+        System.out.println("DEBUG JAVA - Listando emitentes");
+        return funcionarioService.listarEmitentes();
+    }
+
+    /**
+     * ROTA PARA LISTAR APENAS OS SOLICITANTES (SUPERVISORES/FISCAIS) URL: GET
+     * http://localhost:8080/api/funcionarios/solicitantes
+     */
+    @GetMapping("/solicitantes")
+    public List<Funcionario> listarSolicitantes() {
+        System.out.println("DEBUG JAVA - Listando solicitantes");
+        return funcionarioService.listarSolicitantes();
+    }
+
+    /**
+     * ROTA PARA DELETAR UM FUNCIONÁRIO URL: DELETE
+     * http://localhost:8080/api/funcionarios/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletar(@PathVariable Long id) {
+        try {
+            funcionarioService.deletarFuncionario(id);
+            return ResponseEntity.ok("Funcionário removido com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao remover: " + e.getMessage());
+        }
+    }
+}

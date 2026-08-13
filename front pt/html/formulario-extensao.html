@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Extensão de Revalidação</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-formulario-extensao">
+
+    <table class="header-table">
+        <tr>
+            <td colspan="4" class="title-secao">Formulário de Extensão de Revalidação de Permissão</td>
+        </tr>
+        <tr>
+            <td width="20%">
+                <span class="label">Nº DA PERMISSÃO</span>
+                <span class="valor">#[[${permissao.id}]]</span>
+            </td>
+            <td width="30%">
+                <span class="label">PLANTA / ÁREA</span>
+                <span class="valor">[[${permissao.plantaArea}]]</span>
+            </td>
+            <td width="30%">
+                <span class="label">EMPRESA GESTORA</span>
+                <span class="valor">[[${permissao.empresaGestora}]]</span>
+            </td>
+            <td width="20%">
+                <span class="label">TAG DO EQUIPAMENTO</span>
+                <span class="valor">[[${permissao.tag != null ? permissao.tag : 'N/A'}]]</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <span class="label">DESCRIÇÃO DA TAREFA / ATIVIDADE</span>
+                <span class="valor">[[${permissao.descricaoAtividade}]]</span>
+            </td>
+        </tr>
+    </table>
+
+    <p class="nota-informativa">
+        * Este documento é um anexo obrigatório à Permissão original e estende a sua validade por turnos sucessivos até o limite regulamentar de 5 dias.
+    </p>
+    
+    <div class="bloco-revalidacao">
+        <div class="sub-title-secao">
+            REGISTRO DE REVALIDAÇÃO OPERACIONAL — JORNADA ADICIONAL
+        </div>
+        
+        <div class="grid-3">
+            <div class="cell-border">
+                <span class="label">DATA DA JORNADA</span>
+                <div class="espaco-preenchimento"></div>
+            </div>
+            <div class="cell-border">
+                <span class="label">HORA INÍCIO JORNADA</span>
+                <div class="espaco-preenchimento"></div>
+            </div>
+            <div class="cell-border">
+                <span class="label">HORA TÉRMINO JORNADA</span>
+                <div class="espaco-preenchimento"></div>
+            </div>
+        </div>
+
+        <div class="grid-3 bg-gases">
+            <div class="cell-border">
+                <span class="label">OXIGÊNIO (% O₂)</span>
+                <span class="label font-normal">Limite: 19.5% a 23%</span>
+                <div class="espaco-gases"></div>
+            </div>
+            <div class="cell-border">
+                <span class="label">EXPLOSIVIDADE (% LEL)</span>
+                <span class="label font-normal">Limite: &lt; 10%</span>
+                <div class="espaco-gases"></div>
+            </div>
+            <div class="cell-border">
+                <span class="label">TOXICIDADE (ppm)</span>
+                <span class="label font-normal">Conforme o contaminante</span>
+                <div class="espaco-gases"></div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="cell-border espaco-assinatura">
+                <span class="label">AUTORIZAÇÃO DE INÍCIO (EMITENTE DA ÁREA)</span>
+                <div class="Assinatura-linha">Nome, Matrícula e Assinatura</div>
+            </div>
+            <div class="cell-border espaco-assinatura">
+                <span class="label">CIÊNCIA DE TRABALHO (RESPONSÁVEL EXECUTANTE)</span>
+                <div class="Assinatura-linha">Nome, Matrícula e Assinatura</div>
+            </div>
+        </div>
+
+        <div class="grid-2 bg-encerramento">
+            <div class="cell-border espaco-assinatura">
+                <span class="label">BAIXA DO TURNO (EMITENTE DA ÁREA)</span>
+                <div class="Assinatura-linha">Liberação / Devolução da Área</div>
+            </div>
+            <div class="cell-border espaco-assinatura">
+                <span class="label">ENTREGA DE AREA (RESPONSÁVEL EXECUTANTE)</span>
+                <div class="Assinatura-linha">Organização e Limpeza Concluídas</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

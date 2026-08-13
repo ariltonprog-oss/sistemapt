@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revalidar Permissão de Trabalho - SESMT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- Ícones (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="sidebar-wrapper"></div>
+
+    <main class="main-content">
+        <header class="header-pagina">
+            <h1><i class="fa-solid fa-calendar-check"></i> Revalidação da Permissão de Trabalho</h1>
+        </header>
+
+        <form id="formRevalidacao" class="form-container">
+
+            <!-- SEÇÃO 1: RESUMO DOS DADOS GERAIS DA PT -->
+            <fieldset class="secao-form">
+                <legend>Dados da PT em Revalidação</legend>
+
+                <div class="grid-form-4col">
+                    <div class="form-group">
+                        <label for="plantaArea">Planta / Área</label>
+                        <input type="text" id="plantaArea" readonly class="input-readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="turnoGrupo">Turno / Grupo</label>
+                        <input type="text" id="turnoGrupo" readonly class="input-readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="tag">TAG Equipamento</label>
+                        <input type="text" id="tag" readonly class="input-readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="ordemPj">Ordem / PJ</label>
+                        <input type="text" id="ordemPj" readonly class="input-readonly">
+                    </div>
+                </div>
+
+                <div class="form-group full-width margin-topo">
+                    <label for="descricaoAtividade">Descrição Atividade</label>
+                    <textarea id="descricaoAtividade" rows="2" readonly class="input-readonly"></textarea>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 2: DADOS DA REVALIDAÇÃO E TÉRMINO DE JORNADA (EM 1 SÓ LINHA) -->
+            <fieldset class="secao-form">
+                <legend><i class="fa-solid fa-clock-rotate-left"></i> Informações do Término de Jornada e Revalidação
+                </legend>
+
+                <div class="grid-form-4col">
+                    <div class="form-group">
+                        <label for="revalEtapa">Etapa / Ciclo</label>
+                        <input type="text" id="revalEtapa" readonly class="input-readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="revalEmitente">Emitente Responsável</label>
+                        <input type="text" id="revalEmitente" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="revalData">Data Término <span class="asterisco-obrigatorio">*</span></label>
+                        <input type="date" id="revalData" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="revalHora">Hora Término <span class="asterisco-obrigatorio">*</span></label>
+                        <input type="time" id="revalHora" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group full-width margin-topo">
+                    <label for="statusTurno">Status do Turno / Destino da PT: <span
+                            class="asterisco-obrigatorio">*</span></label>
+                    <select id="statusTurno" class="form-control" required>
+                        <option value="EM_ANDAMENTO" selected>Não - Serviço em Andamento (Revalidar para Próximo Turno)
+                        </option>
+                        <option value="CONCLUIDO">Sim - Serviço Totalmente Concluído (Liberar para Baixa)</option>
+                        <option value="INTERROMPIDO">Não - Serviço Interrompido / Encerrar (Baixa sem Conclusão)
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width margin-topo">
+                    <label for="revalObservacoes">Observações da Revalidação / Condições de Segurança</label>
+                    <textarea id="revalObservacoes" rows="3"
+                        placeholder="Informe detalhes operacionais, restrições ou ajustes do turno..."></textarea>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 3: EQUIPE REAL EXECUTANTE (CONFERÊNCIA DE CAMPO) -->
+            <fieldset class="secao-form">
+                <legend><i class="fa-solid fa-users"></i> Auditoria de Executantes Reais (Conferência de Campo)</legend>
+                <p class="texto-instrucao">
+                    Adicione abaixo os colaboradores que **efetivamente** atuaram na execução da tarefa neste turno para
+                    validação das NRs pelo SESMT.
+                </p>
+
+                <div class="input-matricula-group">
+                    <div class="form-group col-matricula">
+                        <label for="inputMatricula">Matrícula do Executante</label>
+                        <input type="text" id="inputMatricula" placeholder="Digite a matrícula...">
+                    </div>
+
+                    <div class="form-group col-nome">
+                        <label for="inputNomeExecutante">Nome do Colaborador</label>
+                        <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..."
+                            readonly>
+                    </div>
+
+                    <div class="form-group col-btn">
+                        <button type="button" id="btnAdicionarExecutante" class="btn-adicionar-executante">
+                            <i class="fa-solid fa-plus"></i> ADICIONAR
+                        </button>
+                    </div>
+                </div>
+
+                <span id="msgMatriculaStatus" class="msg-status-matricula"></span>
+
+                <div class="container-tabela-executantes">
+                    <table class="tabela-executantes">
+                        <thead>
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nome Completo</th>
+                                <th>Função / Cargo</th>
+                                <th class="col-acao">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyExecutantes">
+                            <tr class="linha-vazia">
+                                <td colspan="4">Nenhum executante real adicionado para auditoria.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </fieldset>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="acoes-form">
+                <button type="submit" class="btn-salvar btn-azul-custom">
+                    <i class="fa-solid fa-check"></i> Salvar Revalidação
+                </button>
+                <a href="dashboard.html" id="linkVoltar" class="btn-cancelar">Cancelar &amp; Voltar</a>
+            </div>
+        </form>
+    </main>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/revalidar-pt.js"></script>
+</body>
+
+</html>

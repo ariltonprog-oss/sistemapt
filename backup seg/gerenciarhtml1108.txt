@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento e Baixa de PT - SESMT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- Ícones (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="sidebar-wrapper"></div>
+
+    <main class="main-content">
+        <header class="header-pagina">
+            <h1 id="tituloPagina"><i class="fa-solid fa-clipboard-check"></i> Gerenciamento e Encerramento (Baixa) da PT
+            </h1>
+        </header>
+
+        <form id="formGerenciarPT" class="form-container">
+
+            <!-- SEÇÃO 1: RESUMO DOS DADOS GERAIS DA PT (APENAS LEITURA) -->
+            <fieldset class="secao-form">
+                <legend>Dados da PT em Execução</legend>
+
+                <div class="grid-form-4col">
+                    <div class="form-group">
+                        <label for="plantaArea">Planta / Área</label>
+                        <input type="text" id="plantaArea" readonly class="input-readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="turnoGrupo">Turno / Grupo</label>
+                        <input type="text" id="turnoGrupo" readonly class="input-readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="tag">TAG Equipamento</label>
+                        <input type="text" id="tag" readonly class="input-readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="ordemPj">Ordem / PJ</label>
+                        <input type="text" id="ordemPj" readonly class="input-readonly">
+                    </div>
+                </div>
+
+                <div class="form-group full-width margin-topo">
+                    <label for="descricaoAtividade">Descrição Atividade</label>
+                    <textarea id="descricaoAtividade" rows="2" readonly class="input-readonly"></textarea>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 2: FORMULÁRIO DE BAIXA E ENCERRAMENTO -->
+            <fieldset class="secao-form">
+                <legend><i class="fa-solid fa-flag-checkered"></i> Critérios de Encerramento e Baixa</legend>
+
+                <!-- Status de Conclusão -->
+                <div class="grid-form-2col">
+                    <div class="form-group">
+                        <label for="servicoConcluido">O serviço foi totalmente concluído? <span
+                                class="asterisco-obrigatorio">*</span></label>
+                        <select id="servicoConcluido" name="servicoConcluido" class="form-control" required>
+                            <option value="true">Sim - Serviço Finalizado</option>
+                            <option value="false" selected>Não - Serviço Incompleto / Parcial</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="revalidacaoParaContinuidade">Haverá continuidade no próximo turno? <span
+                                class="asterisco-obrigatorio">*</span></label>
+                        <select id="revalidacaoParaContinuidade" name="revalidacaoParaContinuidade" class="form-control"
+                            required>
+                            <option value="false" selected>Não</option>
+                            <option value="true">Sim - Aguardando Revalidação</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Equipamento Testado (Texto livre ou N/A) -->
+                <div class="form-group margin-topo">
+                    <label for="equipamentoTestado">Status do Equipamento / Teste Operacional</label>
+                    <input type="text" id="equipamentoTestado" name="equipamentoTestado"
+                        placeholder="Ex: Testado com sucesso, sem teste (pintura/andaime), etc...">
+                    <small class="texto-ajuda">Deixe em branco ou informe N/A caso a atividade não exija teste.</small>
+                </div>
+
+                <!-- Justificativa (Obrigatória se não concluído e sem revalidação) -->
+                <div class="form-group full-width margin-topo" id="containerJustificativa">
+                    <label for="justificativaNaoConclusao">Justificativa da Não Conclusão <span
+                            class="asterisco-obrigatorio">*</span></label>
+                    <textarea id="justificativaNaoConclusao" name="justificativaNaoConclusao" rows="3"
+                        placeholder="Explique o motivo de o serviço não ter sido concluído..."></textarea>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO 3: EQUIPE REAL EXECUTANTE (CONFERÊNCIA DE CAMPO) -->
+            <fieldset class="secao-form">
+                <legend><i class="fa-solid fa-users"></i> Auditoria de Executantes Reais (Conferência de Campo)</legend>
+                <p class="texto-instrucao">
+                    Adicione abaixo os colaboradores que **efetivamente** atuaram na execução da tarefa para validação
+                    das NRs (ASO, NR-35, NR-33) pelo SESMT.
+                </p>
+
+                <!-- CAMPO DE BUSCA E ADIÇÃO POR MATRÍCULA -->
+                <div class="input-matricula-group">
+                    <div class="form-group col-matricula">
+                        <label for="inputMatricula">Matrícula do Executante</label>
+                        <input type="text" id="inputMatricula" placeholder="Digite a matrícula...">
+                    </div>
+
+                    <div class="form-group col-nome">
+                        <label for="inputNomeExecutante">Nome do Colaborador</label>
+                        <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..."
+                            readonly>
+                    </div>
+
+                    <div class="form-group col-btn">
+                        <button type="button" id="btnAdicionarExecutante" class="btn-adicionar-executante">
+                            <i class="fa-solid fa-plus"></i> ADICIONAR
+                        </button>
+                    </div>
+                </div>
+
+                <span id="msgMatriculaStatus" class="msg-status-matricula"></span>
+
+                <!-- TABELA DE EXECUTANTES REAIS -->
+                <div class="container-tabela-executantes">
+                    <table class="tabela-executantes">
+                        <thead>
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nome Completo</th>
+                                <th>Função / Cargo</th>
+                                <th class="col-acao">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyExecutantes">
+                            <tr class="linha-vazia">
+                                <td colspan="4">Nenhum executante real adicionado para auditoria.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </fieldset>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="acoes-form">
+                <!-- Botão de Revalidar -->
+                <!-- Botão de Revalidar -->
+                <button type="button" id="btnAbrirModalReval" class="btn-revalidar-custom">
+                    <i class="fa-solid fa-calendar-check"></i> Revalidar PT
+                </button>
+
+                <button type="submit" class="btn-salvar btn-verde-custom"><i class="fa-solid fa-check"></i> Processar
+                    Baixa da PT</button>
+                <a href="dashboard.html" class="btn-cancelar">Cancelar &amp; Voltar</a>
+            </div>
+        </form>
+    </main>
+
+    <!-- Modal de Revalidação (Deve ficar aqui antes do fechamento do body) -->
+    <div id="modalRevalidacao" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-titulo"><i class="fa-solid fa-calendar-plus"></i> Revalidar PT</h3>
+            <form id="formRevalInterno">
+                <div class="form-group">
+                    <label for="revalEtapa">Revalidação:</label>
+                    <select id="revalEtapa" class="form-control" required>
+                        <option value="1">1ª Revalidação (2º Dia)</option>
+                        <option value="2">2ª Revalidação (3º Dia)</option>
+                        <option value="3">3ª Revalidação (4º Dia)</option>
+                        <option value="4">4ª Revalidação (5º Dia - Limite)</option>
+                    </select>
+                </div>
+
+                <div class="modal-row-flex">
+                    <div class="form-group flex-1">
+                        <label for="revalData">Data:</label>
+                        <input type="date" id="revalData" class="form-control" required>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="revalHora">Hora:</label>
+                        <input type="time" id="revalHora" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalSolicitante">Solicitante (Fixo):</label>
+                    <input type="text" id="modalSolicitante" readonly class="form-control input-readonly">
+                </div>
+
+                <div class="form-group">
+                    <label for="modalEmitente">Emitente (Operador do Turno):</label>
+                    <input type="text" id="modalEmitente" class="form-control" required
+                        placeholder="Digite nome/matrícula...">
+                </div>
+
+                <div class="modal-acoes">
+                    <button type="button" id="btnFecharModal" class="btn-fechar-modal">Fechar</button>
+                    <button type="submit" class="btn-salvar-modal">Salvar Revalidação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/gerenciar-pt.js?v=2"></script>
+</body>
+
+</html>

@@ -1,0 +1,359 @@
+// 1. Definições de Matriz e Requisitos
+const matrizNRsPorFuncao = {
+
+    "Operador Industrial": [
+        "NR20",
+        "NR10",
+        "NR12",
+        "NR33",
+        "NR35"
+        
+    ],
+
+    "Mecânico": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Eletricista": [
+        "NR10",
+        "NR10SEP",
+        "NR12",
+        "NR20",
+        "NR35"
+    ],
+
+    "Instrumentista": [
+        "NR10",
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Pintor Industrial": [
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Oficial da Construção Civil": [
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Caldeireiro": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Encanador Industrial": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Instrumentação/Elétrica": [
+        "NR10",
+        "NR10SEP",
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Mecânica": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Caldeiraria/Tubulação": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Civil/Pintura": [
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Soldador": [
+        "NR12",
+        "NR20",
+        "NR35",
+        "NR33"
+    ]
+
+};
+
+const bibliotecaRequisitos = {
+    "ASO": { nome: "Exame ASO", validade: 12 },
+    "ReciclagemPt": { nome: "Reciclagem PT", validade: 12 },
+    "NR10": { nome: "NR-10 Segurança em Eletricidade", validade: 24 },
+    "NR10": { nome: "NR-10 Segurança em Eletricidade", validade: 24 },
+    "NR10SEP": { nome: "NR-10SEP Segurança em Eletricidade", validade: 24 },
+    "NR11": { nome: "NR-11 Transporte e Movimentação", validade: 12 },
+    "NR12": { nome: "NR-12 Segurança em Máquinas", validade: 24 },
+    "NR20": { nome: "NR-20 Segurança em Inflamáveis e Combustíveis", validade: 12 },
+    "NR33": { nome: "NR-33 Espaço Confinado", validade: 12 },
+    "NR34": { nome: "NR-34 Condições de Trabalho Naval/Quente", validade: 12 },
+    "NR35": { nome: "NR-35 Trabalho em Altura", validade: 24 }
+};
+// O script abaixo percorre sua biblioteca e configura tudo sozinho
+Object.keys(bibliotecaRequisitos).forEach(key => {
+    const idRealizacao = `realizacao${key}`;
+    const idValidade = `validade${key}`;
+    const meses = bibliotecaRequisitos[key].validade;
+
+    const inputRealizacao = document.getElementById(idRealizacao);
+
+    if (inputRealizacao) {
+        inputRealizacao.addEventListener('change', () => {
+            calcularVencimentoDireto(idRealizacao, idValidade, meses);
+        });
+    }
+});
+
+// 2. Função de Cálculo (Única)
+function calcularVencimentoDireto(idRealizacao, idValidade, meses) {
+    const inputR = document.getElementById(idRealizacao);
+    const inputV = document.getElementById(idValidade);
+    if (!inputR || !inputR.value || !inputV) return;
+
+    const d = new Date(inputR.value + 'T00:00:00');
+    d.setMonth(d.getMonth() + parseInt(meses));
+    inputV.value = d.toISOString().split('T')[0];
+}
+
+// 3. Atualização da Grade (Visual)
+function atualizarMatrizNRs() {
+    const funcao = document.getElementById('funcao').value;
+    const container = document.getElementById('containerMatrizNRs');
+    if (!container) return;
+
+    if (!funcao || !matrizNRsPorFuncao[funcao]) {
+        container.innerHTML = '<p>Selecione uma função para ver as NRs.</p>';
+        return;
+    }
+
+    let html = '<div class="grid-nrs">';
+    matrizNRsPorFuncao[funcao].forEach(nr => {
+        const d = bibliotecaRequisitos[nr];
+        html += `<div class="card-nr-item">
+            <label><strong>${nr}</strong></label>
+            <small>${d.nome}</small>
+            
+            <!-- Campo de Realização -->
+            <div class="form-group">
+                <input type="date" id="realizacao_${nr}" onchange="calcularVencimentoDireto('realizacao_${nr}', 'validade_${nr}', ${d.validade})">
+            </div>
+            
+            <!-- Campo de Validade (Agora com as classes para ocultar) -->
+            <div class="form-group bloco-validade campo-oculto">
+                <input type="date" id="validade_${nr}" readonly>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html + '</div>';
+
+    // Chama a função de configuração de tela logo após criar os elementos.
+    // Isso garante que, se estivermos no modo "Edição", os campos que 
+    // acabaram de nascer ocultos sejam imediatamente revelados.
+    if (typeof configurarModoDaTela === 'function') {
+        configurarModoDaTela();
+    }
+}
+
+function obterNomeCampoJava(nr) {
+
+    switch (nr) {
+
+        case "NR10SEP":
+            return "Nr10Sep";
+
+        case "NR01":
+            return "Nr01";
+
+        case "NR10":
+            return "Nr10";
+
+        case "NR12":
+            return "Nr12";
+
+        case "NR13":
+            return "Nr13";
+
+        case "NR18":
+            return "Nr18";
+
+        case "NR20":
+            return "Nr20";
+
+        case "NR33":
+            return "Nr33";
+
+        case "NR35":
+            return "Nr35";
+
+        case "BRIGADA":
+            return "Brigada";
+
+        default:
+            return null;
+
+    }
+
+}
+
+// 4. Envio dos Dados (Compatível com Java)
+async function processarEnvioFormulario() {
+    const form = document.getElementById('formColaborador');
+    if (!form.checkValidity()) return form.reportValidity();
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+    const data = {
+        // Dados básicos
+        nome: document.getElementById('nome').value.trim(),
+        matricula: document.getElementById('matricula').value.trim(),
+        funcao: document.getElementById('funcao').value,
+        perfil: document.getElementById('perfil').value,
+
+        // Login
+        usuario: document.getElementById('usuario').value.trim(),
+        senha: document.getElementById('senha').value,
+
+        // Empresa
+        ehTerceiro: document.getElementById('ehTerceiro').value === "true",
+
+        // Empresa vinculada ao usuário logado
+        empresa: usuarioLogado ? {
+            id: usuarioLogado.empresaId
+        } : null,
+
+        // Permissões
+        podeEmitirPt: document.getElementById('podeEmitirPT')?.checked || false,
+
+        podeSolicitarPt:
+            document.getElementById('perfil').value === "SOLICITANTE",
+
+        // ASO
+        realizacaoASO: document.getElementById('realizacaoASO').value || null,
+        validadeASO: document.getElementById('validadeASO').value || null,
+
+        // Reciclagem PT
+        realizacaoReciclagemPt: document.getElementById('realizacaoReciclagemPt').value || null,
+        validadeReciclagemPt: document.getElementById('validadeReciclagemPt').value || null,
+
+        // Usuário que está realizando o cadastro
+        usuarioLogadoId: usuarioLogado ? usuarioLogado.id : null
+
+
+    };
+
+    // 2. Loop Dinâmico corrigido para o padrão da sua classe
+    document.querySelectorAll('.card-nr-item').forEach(card => {
+
+        const nr = card.querySelector("strong").innerText.trim();
+
+        const nomeCampo = obterNomeCampoJava(nr);
+
+        if (!nomeCampo)
+            return;
+
+        const realizacao = card.querySelector('input[id^="realizacao_"]');
+
+        const validade = card.querySelector('input[id^="validade_"]');
+
+        if (!realizacao || !validade)
+            return;
+
+        if (realizacao.value) {
+
+            data["realizacao" + nomeCampo] = realizacao.value;
+
+            data["validade" + nomeCampo] = validade.value;
+
+        }
+
+    });
+    console.log("Enviando funcionário:");
+    console.log(JSON.stringify(data, null, 2));
+    const url = "http://localhost:8080/api/funcionarios";
+
+    try {
+        const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!resp.ok) {
+
+            const erro = await resp.text();
+
+            console.error("Erro do backend:");
+            console.error(erro);
+
+            throw new Error(erro);
+
+        }
+
+        const funcionarioSalvo = await resp.json();
+
+        console.log("Funcionário salvo:");
+        console.log(funcionarioSalvo);
+
+        alert("Funcionário cadastrado com sucesso!");
+    } catch (erro) {
+        console.error("Erro ao processar envio:", erro);
+        alert("Erro ao cadastrar funcionário. Verifique o console para mais detalhes.");
+    }
+}
+
+// 5. Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    // Vincula a mudança da função à atualização da grade
+    const selectFuncao = document.getElementById('funcao');
+    if (selectFuncao) selectFuncao.addEventListener('change', atualizarMatrizNRs);
+
+    // Vincula o clique do botão de salvar
+    const btnSalvar = document.getElementById('btnDispararSubmit');
+    if (btnSalvar) btnSalvar.addEventListener('click', processarEnvioFormulario);
+    configurarModoDaTela();
+});
+
+function toggleEmpresa() {
+    const ehTerceiro = document.getElementById('ehTerceiro').value === "true";
+    const grupoEmpresa = document.getElementById('grupoEmpresa');
+    if (grupoEmpresa) {
+        grupoEmpresa.style.display = ehTerceiro ? 'block' : 'none';
+    }
+}
+
+function ajustarCamposLogin() {
+    // Lógica para ajustar visibilidade de campos baseada no perfil, se necessário
+    console.log("Perfil alterado, ajustando campos...");
+}
+
+function configurarModoDaTela() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFuncionario = urlParams.get('id');
+
+    if (idFuncionario) {
+        // MODO EDIÇÃO: Remove a classe que esconde, fazendo os campos aparecerem
+        const blocosValidade = document.querySelectorAll('.bloco-validade');
+        blocosValidade.forEach(bloco => {
+            bloco.classList.remove('campo-oculto');
+
+        });
+    }
+}

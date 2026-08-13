@@ -1,0 +1,337 @@
+package com.gestaopt.sistemapt.service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.gestaopt.sistemapt.model.Especialidade;
+import com.gestaopt.sistemapt.model.Funcionario;
+import com.gestaopt.sistemapt.model.PermissaoTrabalho;
+import com.gestaopt.sistemapt.model.RevalidaPermissao;
+import com.gestaopt.sistemapt.repository.PermissaoTrabalhoRepository;
+import com.gestaopt.sistemapt.repository.RevalidaPermissaoRepository;
+
+@Service
+public class PermissaoTrabalhoService {
+
+    private final PermissaoTrabalhoRepository ptRepository;
+    private final RevalidaPermissaoRepository revalidaRepository; // Injetado para gerenciar as revalidações
+
+    // Construtor atualizado com a nova dependência
+    public PermissaoTrabalhoService(PermissaoTrabalhoRepository ptRepository, RevalidaPermissaoRepository revalidaRepository) {
+        this.ptRepository = ptRepository;
+        this.revalidaRepository = revalidaRepository;
+    }
+
+    /**
+     * VALIDA E EMITE A PT (Trava contra riscos e perfis em tempo real)
+     */
+    /**
+     * VALIDA E EMITE A PT (Trava contra riscos e perfis em tempo real)
+     */
+    public PermissaoTrabalho validarEEmitirPT(PermissaoTrabalho pt) throws Exception {
+        LocalDate hoje = LocalDate.now();
+
+        // --- NOVA TRAVA: EXCLUSÃO MÚTUA QUENTE vs FRIO ---
+        if (pt.isRequerTrabalhoQuente() && pt.isRequerTrabalhoFrio()) {
+            throw new Exception("Bloqueio SESMT: A atividade não pode ser classificada como Trabalho a Quente e Trabalho a Frio simultaneamente!");
+        }
+
+        Funcionario solicitante = pt.getSolicitante();
+        Funcionario emitente = pt.getEmitente();
+
+        // 1. VALIDAÇÃO DO EMITENTE
+        if (emitente == null || !emitente.isPodeEmitirPt()) {
+            throw new Exception("O funcionário não possui perfil de EMITENTE autorizado!");
+        }
+        if (emitente.getValidadeASO() == null || emitente.getValidadeASO().isBefore(hoje)) {
+            throw new Exception("O ASO do Emitente (" + (emitente.getNome() != null ? emitente.getNome() : "Não Informado") + ") está vencido ou ausente!");
+        }
+
+        // 2. VALIDAÇÃO DO SOLICITANTE
+        if (solicitante == null) {
+            throw new Exception("Toda PT precisa ter um Solicitante definido.");
+        }
+        if (solicitante.getValidadeASO() == null || solicitante.getValidadeASO().isBefore(hoje)) {
+            throw new Exception("O ASO do Solicitante (" + solicitante.getNome() + ") está vencido ou ausente!");
+        }
+        if (solicitante.getValidadeReciclagemPt() == null || solicitante.getValidadeReciclagemPt().isBefore(hoje)) {
+            throw new Exception("A Reciclagem de PT do Solicitante (" + solicitante.getNome() + ") está vencida ou ausente!");
+        }
+
+        // 3. REGRAS AUTOMÁTICAS BASEADAS NA ESPECIALIDADE DA TAREFA
+        if (pt.getAreaAtuacao() == Especialidade.SOLDA) {
+            pt.setRequerTrabalhoQuente(true); // Solda herda automaticamente risco quente
+            pt.setRequerTrabalhoFrio(false);   // Garante que se for solda, desmarca o frio
+        }
+
+        // Descobre se o solicitante vai executar ou só fiscalizar
+        boolean solicitanteEhExecutante = false;
+        if (pt.getExecutantes() != null) {
+            for (Funcionario exec : pt.getExecutantes()) {
+                if (exec.getId() != null && exec.getId().equals(solicitante.getId())) {
+                    solicitanteEhExecutante = true;
+                    break;
+                }
+            }
+        }
+
+        // Aplica a matriz de NRs no solicitante
+        if (solicitanteEhExecutante) {
+            validarMatrizNrsRigorosa(solicitante, pt);
+        } else {
+            validarMatrizNrsAcessoFiscal(solicitante, pt);
+        }
+
+        // =========================================================================
+        // 4. PROCESSAMENTO DOS RISCOS DETALHADOS E CÁLCULO DINÂMICO DE EPIs
+        // =========================================================================
+        List<String> riscosMapeados = extrairRiscosEAtividades(pt);
+        if (pt.getAreaAtuacao() != null) {
+            List<String> episCalculados = pt.getAreaAtuacao().calcularEpisDinamicos(riscosMapeados);
+            pt.setEpisObrigatorios(episCalculados);
+        }
+
+        pt.setStatus("EMITIDA");
+        return ptRepository.save(pt);
+    }
+
+    /**
+     * Método auxiliar para traduzir as flags e a nova matriz JSON em tags de
+     * regras de negócio
+     */
+    private List<String> extrairRiscosEAtividades(PermissaoTrabalho pt) {
+        List<String> atividades = new ArrayList<>();
+
+        // Riscos tradicionais (Flags booleanas)
+        if (pt.isRequerTrabalhoQuente()) {
+            atividades.add("QUENTE");
+        }
+        if (pt.isRequerTrabalhoAltura()) {
+            atividades.add("ALTURA");
+        }
+        if (pt.isRequerEspacoConfinado()) {
+            atividades.add("CONFINADO");
+        }
+        if (pt.isRequerAltaTensaoSep()) {
+            atividades.add("NR10_SEP");
+        }
+        if (pt.isRequerRiscoEletrico()) {
+            atividades.add("ELETRICO");
+        }
+        if (pt.isRequerAreaClassificada()) {
+            atividades.add("AREA_CLASSIFICADA");
+        }
+        if (pt.isRequerAtividadePintura()) {
+            atividades.add("PINTURA");
+        }
+        if (pt.isRequerSegurancaMaquinas()) {
+            atividades.add("MAQUINAS");
+        }
+
+        // Matriz Detalhada (RiskControlItem)
+        if (pt.getRuido() != null && pt.getRuido().isAtivo()) {
+            atividades.add("RUIDO");
+            if (pt.getRuido().getOpcoesSelecionadas() != null) {
+                for (String opcao : pt.getRuido().getOpcoesSelecionadas()) {
+                    String opLower = opcao.toLowerCase();
+                    if (opLower.contains("dupla")) {
+                        atividades.add("RUIDO_DUPLA");
+                    } else if (opLower.contains("simples")) {
+                        atividades.add("RUIDO_SIMPLES");
+                    }
+                }
+            }
+        }
+
+        if (pt.getVibracao() != null && pt.getVibracao().isAtivo()) {
+            atividades.add("VIBRACAO");
+        }
+
+        if (pt.getSuperficiesAquecidas() != null && pt.getSuperficiesAquecidas().isAtivo()) {
+            atividades.add("SUPERFICIES_AQUECIDAS");
+        }
+
+        if (pt.getRadiacaoNaoIonizante() != null && pt.getRadiacaoNaoIonizante().isAtivo()) {
+            atividades.add("RADIACAO_NAO_IONIZANTE");
+        }
+
+        if (pt.getAgentesQuimicos() != null && pt.getAgentesQuimicos().isAtivo()) {
+            atividades.add("QUIMICO");
+        }
+
+        if (pt.getDiphoterine() != null && pt.getDiphoterine().isAtivo()) {
+            atividades.add("DIPHOTERINE");
+            atividades.add("QUIMICO");
+        }
+
+        if (pt.getIsolamentoArea() != null && pt.getIsolamentoArea().isAtivo()) {
+            atividades.add("ISOLAMENTO_AREA");
+        }
+
+        return atividades;
+    }
+
+    /**
+     * PROCESSO DE REVALIDAÇÃO - PASSO 1: Fim do Turno / Jornada Sinaliza que a
+     * atividade continuará no dia seguinte mudando o status para
+     * "EM_REVALIDACAO".
+     */
+    @Transactional
+    public PermissaoTrabalho solicitarRevalidacao(Long id) throws Exception {
+        if (id == null) {
+            throw new Exception("O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
+
+        if (!pt.podeRevalidar()) {
+            throw new Exception("⚠️ Limite de 5 dias/campos atingido para esta permissão. É obrigatório ENCERRAR a atividade ou emitir um novo documento!");
+        }
+
+        pt.setStatus("EM_REVALIDACAO");
+        return ptRepository.save(pt);
+    }
+
+    /**
+     * PROCESSO DE REVALIDAÇÃO - PASSO 2: Início da Próxima Jornada Confirma os
+     * dados da nova folha de revalidação, aplicando regras de monitoramento
+     * ambiental.
+     */
+    @Transactional
+    public RevalidaPermissao confirmarAberturaJornada(Long id, RevalidaPermissao novaJornada) throws Exception {
+        if (id == null) {
+            throw new Exception("O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
+
+        // 1. Validação de limite máximo de revalidações
+        if (!pt.podeRevalidar()) {
+            throw new Exception("⚠️ Limite máximo de 5 dias operacionais esgotado.");
+        }
+
+        // 2. Validação Condicional do Monitoramento Ambiental (Gases)
+        if (pt.requerMonitoramentoAmbiental()) {
+            if (novaJornada.getGasOxigenio() == null
+                    || novaJornada.getGasExplosividade() == null
+                    || novaJornada.getGasToxicidade() == null) {
+                throw new Exception("⚠️ Bloqueio de Segurança: Monitoramento de Gases obrigatório para Espaço Confinado / Trabalho a Quente em Área Classificada!");
+            }
+        }
+
+        // 3. Vinculação e Atualização de Estado
+        novaJornada.setPermissaoTrabalho(pt);
+        novaJornada.setDataHoraRevalidacao(LocalDateTime.now());
+        novaJornada.setInicioJornada(LocalDateTime.now());
+
+        // Incrementa o contador do controle diário e reativa a permissão para o turno atual
+        pt.setQtdRevalidadas(pt.getQtdRevalidadas() + 1);
+        pt.setStatus("EMITIDA");
+
+        ptRepository.save(pt);
+        return revalidaRepository.save(novaJornada);
+    }
+
+    /**
+     * MATRIZ RIGOROSA (Executantes): Analisa o Sim/Não dos riscos da PT contra
+     * as datas das NRs do funcionário
+     */
+    private void validarMatrizNrsRigorosa(Funcionario f, PermissaoTrabalho pt) throws Exception {
+        String nome = f.getNome();
+        LocalDate hoje = LocalDate.now();
+
+        // TRAVA Inteligente de Área Classificada (Exige NR-20)
+        if (pt.isRequerAreaClassificada() && (f.getValidadeNr20() == null || f.getValidadeNr20().isBefore(hoje))) {
+            throw new Exception(nome + " vai executar serviço em ÁREA CLASSIFICADA mas não possui NR-20 válida!");
+        }
+
+        // Trava para Trabalho em Altura (Exige NR-35)
+        if (pt.isRequerTrabalhoAltura() && (f.getValidadeNr35() == null || f.getValidadeNr35().isBefore(hoje))) {
+            throw new Exception(nome + " vai executar o serviço mas não possui NR-35 (Altura) válida!");
+        }
+
+        // Trava para Espaço Confinado (Exige NR-33)
+        if (pt.isRequerEspacoConfinado() && (f.getValidadeNr33() == null || f.getValidadeNr33().isBefore(hoje))) {
+            throw new Exception(nome + " vai executar o serviço mas não possui NR-33 (Espaço Confinado) válida!");
+        }
+
+        // Trava para Risco Elétrico (Exige NR-10)
+        if (pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
+            throw new Exception(nome + " vai intervir em circuitos mas não possui NR-10 válida!");
+        }
+
+        // Trava para Alta Tensão (Exige NR-10 SEP)
+        if (pt.isRequerAltaTensaoSep() && (f.getValidadeNr10Sep() == null || f.getValidadeNr10Sep().isBefore(hoje))) {
+            throw new Exception(nome + " vai intervir em alta tensão mas não possui NR-10 SEP válida!");
+        }
+
+        // Trava para Trabalho a Quente
+        if (pt.isRequerTrabalhoQuente() && (f.getValidadeReciclagemPt() == null || f.getValidadeReciclagemPt().isBefore(hoje))) {
+            throw new Exception(nome + " vai executar Trabalho a Quente mas sua reciclagem/treinamento está inválido!");
+        }
+
+        // TRAVA ADICIONAL: Automação / Instrumentação mexendo em painel elétrico
+        if ((pt.getAreaAtuacao() == Especialidade.AUTOMACAO || pt.getAreaAtuacao() == Especialidade.INSTRUMENTACAO)
+                && pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
+            throw new Exception("Bloqueio: Intervenção de " + pt.getAreaAtuacao() + " em painéis exige NR-10 ativa!");
+        }
+    }
+
+    /**
+     * MATRIZ FLEXÍVEL (Fiscal): Permite acompanhar o trabalho, bloqueia apenas
+     * se não puder pisar na área
+     */
+    private void validarMatrizNrsAcessoFiscal(Funcionario f, PermissaoTrabalho pt) throws Exception {
+        String nome = f.getNome();
+        LocalDate hoje = LocalDate.now();
+
+        if (pt.isRequerAreaClassificada() && (f.getValidadeNr20() == null || f.getValidadeNr20().isBefore(hoje))) {
+            throw new Exception("Bloqueio de Acesso: O Fiscal " + nome + " não pode entrar na Área Classificada pois não possui NR-20 válida!");
+        }
+
+        if (pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
+            throw new Exception("Bloqueio de Acesso: O Fiscal " + nome + " não pode entrar na sala elétrica/CCM pois não possui NR-10 válida!");
+        }
+    }
+
+    /**
+     * BAIXA DA PT: Auditoria final da equipe real e geração de advertências
+     */
+    public String encerrarEAuditarPT(PermissaoTrabalho pt, List<Funcionario> executantesReais) {
+        StringBuilder relatorioAdvertencias = new StringBuilder();
+
+        for (Funcionario exec : executantesReais) {
+            try {
+                validarMatrizNrsRigorosa(exec, pt);
+            } catch (Exception e) {
+                relatorioAdvertencias.append("⚠️ ADVERTÊNCIA para [")
+                        .append(exec.getNome())
+                        .append("] da empresa [")
+                        .append(exec.getEmpresa() != null ? exec.getEmpresa() : "Próprio")
+                        .append("]. Motivo: Trabalhou irregularmente. ")
+                        .append(e.getMessage())
+                        .append("\n");
+            }
+        }
+
+        pt.setStatus("ENCERRADA");
+        ptRepository.save(pt);
+
+        if (relatorioAdvertencias.length() == 0) {
+            return "PT encerrada com 100% de conformidade de segurança!";
+        } else {
+            return relatorioAdvertencias.toString();
+        }
+    }
+
+    public List<PermissaoTrabalho> listarTodas() {
+        return ptRepository.findAll();
+    }
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - SESMT</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div id="sidebar-wrapper"></div>
+
+    <main class="main-content">
+
+
+
+        <header>
+            <h1>👷‍♂️ Gerenciamento de Colaboradores (SESMT)</h1>
+        </header>
+
+        <form id="formColaborador" autocomplete="off" onsubmit="return false;">
+    <!-- Linha 1: Dados Pessoais -->
+    <div class="linha-formulario-tres-colunas">
+        <div class="form-group">
+            <label for="nome">Nome Completo</label>
+            <input type="text" id="nome" required placeholder="Ex: João Silva">
+        </div>
+        <div class="form-group">
+            <label for="matricula">Matrícula</label>
+            <input type="text" id="matricula" required placeholder="Ex: 1000857">
+        </div>
+        <div class="form-group">
+            <label for="funcao">Função Operacional</label>
+            <select id="funcao" class="form-control">
+                <option value="">Selecione...</option>
+                <!-- ... suas opções ... -->
+            </select>
+        </div>
+    </div>
+
+    <!-- Linha 2: Credenciais -->
+    <div class="linha-formulario-tres-colunas">
+        <div class="form-group">
+            <label for="perfil">Perfil Operacional</label>
+            <select id="perfil" required>
+                <!-- ... suas opções ... -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="usuario" id="labelUsuario">Usuário (Login)</label>
+            <input type="text" id="usuario" readonly placeholder="Gerado automaticamente">
+        </div>
+        <div class="form-group">
+            <label for="senha" id="labelSenha">Senha de Acesso *</label>
+            <input type="text" id="senha" placeholder="Digite a senha">
+        </div>
+    </div>
+
+    <!-- Linha 3: Tipo e Empresa -->
+    <div class="linha-formulario-tres-colunas">
+        <div class="form-group">
+            <label for="ehTerceiro">Tipo de Colaborador</label>
+            <select id="ehTerceiro">
+                <option value="false">Funcionário Próprio</option>
+                <option value="true">Colaborador Terceiro</option>
+            </select>
+        </div>
+        <div class="form-group" id="grupoEmpresa">
+            <label for="empresa">Empresa Parceira</label>
+            <input type="text" id="empresa" placeholder="Nome da empresa">
+        </div>
+        <!-- O terceiro slot aqui pode ficar com o checkbox de emissão ou vazio -->
+        <div id="containerAlcadaEmissao" class="container-alcada-emissao">
+            <input type="checkbox" id="podeEmitirPT">
+            <label for="podeEmitirPT">Permitir Emitir PT</label>
+        </div>
+    </div>
+
+    <!-- Linha 4: Datas (ASO e Reciclagem) -->
+    <div class="linha-formulario-tres-colunas">
+        <div class="form-group">
+            <label for="realizacaoAso">ASO Médico</label>
+            <input type="date" id="realizacaoAso">
+        </div>
+        <div class="form-group">
+            <label for="realizacaoReciclagemPt">Reciclagem PT</label>
+            <input type="date" id="realizacaoReciclagemPt">
+        </div>
+        <!-- Vazio proposital para alinhar -->
+        <div></div> 
+    </div>
+    
+    <!-- Seção de NRs e Botões abaixo (fora das colunas) -->
+    <div class="secao-nrs">...</div>
+</form>
+
+    </main>
+
+    <script src="sidebar.js"></script>
+    <script src="auth.js"></script>
+    <script src="cadastro.js"></script>
+</body>
+
+</html>

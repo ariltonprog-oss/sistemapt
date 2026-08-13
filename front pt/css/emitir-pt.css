@@ -1,0 +1,84 @@
+/* Grid de 5 colunas para Planta, Turno, TAG, OS e Outros */
+.grid-form-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Grid de 2 colunas para Solicitante e Executante / Validade */
+.grid-form-2 {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+/* Grid de 3 colunas para Solicitante e Executante / Validade */
+.grid-form-3 {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+
+/* Estilização individual dos blocos de info para dar respiro */
+.campo-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.label-info-titulo {
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.label-info-valor {
+    font-size: 14px;
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
+.margin-topo {
+    margin-top: 15px;
+}
+.linha-ruido-grupo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.linha-ruido-grupo .risco-subcontainer-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    border: none;
+    padding: 0;
+    background: none;
+}
+
+.linha-ruido-grupo .sub-input-flex {
+    flex: 1;
+    min-width: 220px;
+    margin: 0;
+    border: none;
+    padding: 0;
+    background: none;
+}
+
+.linha-ruido-grupo .sub-input-flex input {
+    width: 100%;
+}
+.grid-form-31 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+.input-uppercase {
+    text-transform: uppercase;
+}

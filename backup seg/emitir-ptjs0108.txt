@@ -1,0 +1,84 @@
+let ptId = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Recupera o ID da PT na URL (?id=X)
+    const urlParams = new URLSearchParams(window.location.search);
+    ptId = urlParams.get('id');
+
+    if (!ptId) {
+        alert("Nenhuma Permissão de Trabalho selecionada!");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
+    document.getElementById('labelPtId').textContent = ptId;
+
+    // Define data/hora atual como padrão para o início
+    preencherDatasPadrao();
+
+    // Carrega os dados da solicitação do backend
+    carregarDadosParaEmissao(ptId);
+});
+
+// Preenche o campo de início com o momento atual (formato datetime-local)
+function preencherDatasPadrao() {
+    const agora = new Date();
+    agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+    document.getElementById('dataHoraInicio').value = agora.toISOString().slice(0, 16);
+}
+
+// Busca os detalhes da PT no Spring Boot
+async function carregarDadosParaEmissao(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}`);
+        if (!response.ok) {
+            alert("Erro ao carregar dados da PT.");
+            window.location.href = "dashboard.html";
+            return;
+        }
+
+        const pt = await response.json();
+
+        // Popula os campos do resumo visual
+        document.getElementById('infoPlantaArea').textContent = pt.plantaArea || '-';
+        document.getElementById('infoTurnoGrupo').textContent = pt.turnoGrupo || '-';
+        document.getElementById('infoTag').textContent = pt.tag || '-';
+        document.getElementById('infoOrdemPj').textContent = pt.ordemPj || '-';
+        document.getElementById('infoDescricao').textContent = pt.descricaoAtividade || '-';
+
+    } catch (error) {
+        console.error("Erro ao carregar PT:", error);
+        alert("Falha de comunicação com o servidor.");
+    }
+}
+
+// Envia a confirmação de emissão para o backend
+async function confirmarEmissaoPT(event) {
+    event.preventDefault();
+
+    const payload = {
+        dataHoraInicio: document.getElementById('dataHoraInicio').value,
+        dataHoraFim: document.getElementById('dataHoraFim').value,
+        recomendacoesEmissor: document.getElementById('recomendacoesEmissor').value.trim(),
+        status: 'EMITIDA'
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/emitir`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert(`Permissão de Trabalho #${ptId} emitida com sucesso!`);
+            window.location.href = "dashboard.html";
+        } else {
+            const erroTexto = await response.text();
+            alert("Não foi possível emitir a PT: " + erroTexto);
+        }
+    } catch (error) {
+        console.error("Erro na emissão da PT:", error);
+        alert("Falha de comunicação com o servidor ao emitir a PT.");
+    }
+}

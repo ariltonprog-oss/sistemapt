@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitação de Permissão de Trabalho - SESMT</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/solicitar-pt.css">
+
+    <!-- Ícones (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- CONTAINER DA SIDEBAR (Renderizada Dinamicamente via sidebar.js) -->
+    <div id="sidebar-container"></div>
+
+    <!-- CONTEÚDO PRINCIPAL DA PÁGINA -->
+    <div class="main-content">
+
+        <!-- BARRA DE TÍTULO SUPERIOR -->
+        <div class="topo-pagina-sesmt">
+            <i class="fa-solid fa-file-signature"></i>
+            <span>Gerenciamento de PT / Solicitação de Permissão de Trabalho (SESMT)</span>
+        </div>
+
+        <div class="container-form">
+            <div class="card-pt">
+
+                <!-- CABEÇALHO DO CARD -->
+                <div class="card-titulo-amarelo">
+                    <span><i class="fa-solid fa-file-pen"></i> Inserir Nova Solicitação de PT</span>
+                    
+                </div>
+
+                <form id="formSolicitarPT">
+
+                    <!-- SEÇÃO 1: DADOS LOCAIS DA ATIVIDADE -->
+                    <div class="grid-form">
+                        <div class="form-group">
+                            <label for="plantaArea">Planta / Área <span class="asterisco-obrigatorio">*</span></label>
+                            <input type="text" id="plantaArea" name="plantaArea" placeholder="Ex: Utilidades / Caldeira"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="turnoGrupo">Turno / Grupo</label>
+                            <input type="text" id="turnoGrupo" name="turnoGrupo" placeholder="Ex: Turno A">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tag">TAG / Equipamento</label>
+                            <input type="text" id="tag" name="tag" placeholder="Ex: TQ-1002">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ordemPj">Ordem de Serviço (OS / OM) <span id="asteriscoOS"
+                                    class="asterisco-obrigatorio">*</span></label>
+                            <input type="text" id="ordemPj" name="ordemPj" placeholder="Ex: OS-98421" required>
+                        </div>
+                    </div> <!-- Fechamento correto do grid-form dos 4 primeiros campos -->
+
+                    <!-- LINHA DUPLA: ESPECIALIDADE + ATENDIMENTO EMERGENCIAL -->
+                    <div class="grid-form-2col">
+                        <div class="form-group">
+                            <label for="areaAtuacao">Especialidade <span class="asterisco-obrigatorio">*</span></label>
+                            <select id="areaAtuacao" name="areaAtuacao" required>
+                                <option value="">Selecione...</option>
+                                <option value="MECANICA">Mecânica</option>
+                                <option value="ELETRICA">Elétrica</option>
+                                <option value="INSTRUMENTACAO">Instrumentação</option>
+                                <option value="CIVIL">Civil</option>
+                                <option value="CALDEIRARIA">Caldeiraria</option>
+                                <option value="GERAL">Geral</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label-vazia">&nbsp;</label>
+                            <label class="checkbox-card card-emergencial">
+                                <input type="checkbox" id="emergencial" class="checkbox-emergencial">
+                                <span class="texto-emergencial">🚨 <strong>Atendimento Emergencial</strong> (Dispensa
+                                    OS)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- DESCRIÇÃO DETALHADA -->
+                    <div class="form-group full-width margin-topo">
+                        <label for="descricaoAtividade">Descrição Detalhada da Atividade <span
+                                class="asterisco-obrigatorio">*</span></label>
+                        <textarea id="descricaoAtividade" name="descricaoAtividade" rows="3"
+                            placeholder="Descreva os trabalhos que serão executados..." required></textarea>
+                    </div>
+
+                    <!-- SEÇÃO 2: AVALIAÇÃO DE RISCOS CRÍTICOS -->
+                    <div class="box-destaque-dark">
+                        <div class="box-titulo">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Requisitos Obrigatórios de Segurança
+                            (Atividades Críticas)
+                        </div>
+                        <div class="grid-checkboxes">
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="riscos" value="TRABALHO_QUENTE"> 🔥 Trabalho a Quente
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="riscos" value="TRABALHO_FRIO"> 🧊 Trabalho a Frio
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="riscos" value="NR35"> 🧗 Trabalho em Altura (NR-35)
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="riscos" value="NR33"> 🕳️ Espaço Confinado (NR-33)
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="riscos" value="NR10"> ⚡ Risco Elétrico (NR-10)
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="riscos" value="NR20"> 🧪 Área Classificada / Inflamáveis
+                                (NR-20)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO 3: EQUIPE ENVOLVIDA (EXECUTANTES POR MATRÍCULA) -->
+                    <div class="box-destaque-dark">
+                        <div class="box-titulo">
+                            <i class="fa-solid fa-users"></i> Equipe Executante
+                        </div>
+
+                        <label class="label-solicitante">
+                            <input type="checkbox" id="atuarComoExecutante" class="chk-solicitante">
+                            Eu (Solicitante) também vou atuar como EXECUTANTE nesta PT
+                        </label>
+
+                        <!-- CAMPO DE BUSCA E ADIÇÃO POR MATRÍCULA -->
+                        <div class="input-matricula-group">
+                            <div class="form-group col-matricula">
+                                <label for="inputMatricula">Matrícula do Executante</label>
+                                <input type="text" id="inputMatricula" placeholder="Digite a matrícula (ex: 1000236)">
+                            </div>
+
+                            <div class="form-group col-nome">
+                                <label for="inputNomeExecutante">Nome do Colaborador</label>
+                                <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..."
+                                    readonly>
+                            </div>
+
+                            <div class="form-group col-btn">
+                                <label>&nbsp;</label>
+                                <button type="button" id="btnAdicionarExecutante" class="btn-adicionar-executante">
+                                    <i class="fa-solid fa-plus"></i> ADICIONAR
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- MENSAGEM DE STATUS DA BUSCA DA MATRÍCULA -->
+                        <span id="msgMatriculaStatus" class="msg-status-matricula"></span>
+
+                        <!-- TABELA DE EXECUTANTES INCLUÍDOS -->
+                        <div class="container-tabela-executantes">
+                            <table class="tabela-executantes">
+                                <thead>
+                                    <tr>
+                                        <th>Matrícula</th>
+                                        <th>Nome Completo</th>
+                                        <th>Função / Especialidade</th>
+                                        <th class="col-acao">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyExecutantes">
+                                    <tr class="linha-vazia">
+                                        <td colspan="4">Nenhum executante adicionado à equipe até o momento.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- BOTÕES DE AÇÃO -->
+                    <div class="form-actions">
+                        <button type="submit" id="btnSalvarPT" class="btn-solicitar">
+                            🚀 SOLICITAR PERMISSÃO DE TRABALHO
+                        </button>
+                        <a href="dashboard.html" class="btn-cancelar">
+                            CANCELAR
+                        </a>
+                    </div>
+
+                </form>
+            </div> <!-- Fechamento card-pt -->
+        </div> <!-- Fechamento container-form -->
+    </div> <!-- Fechamento main-content -->
+
+    <!-- SCRIPTS JAVASCRIPT -->
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/solicitar-pt.js"></script>
+</body>
+
+</html>

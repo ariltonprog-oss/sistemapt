@@ -1,0 +1,186 @@
+// =========================================================================
+// SOLICITAÇÃO DE PT - FRONTEND INTEGRADO AO BACKEND JAVA
+// =========================================================================
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Carrega dados do Usuário Logado e valida a sessão
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    
+    if (!usuarioLogado) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // 2. Preenche o nome da Empresa Gestora no cabeçalho (CORREÇÃO DO [object Object])
+    const elEmpresa = document.getElementById('nomeEmpresaHeader') || document.getElementById('displayEmpresaGestora');
+    if (elEmpresa) {
+        // Extrai o nome se 'empresa' for um objeto ou uma string simples
+        let nomeEmpresa = "Empresa Principal";
+
+        if (typeof usuarioLogado.empresa === 'object' && usuarioLogado.empresa !== null) {
+            nomeEmpresa = usuarioLogado.empresa.nomeFantasia || usuarioLogado.empresa.nome || nomeEmpresa;
+        } else if (usuarioLogado.empresaNome) {
+            nomeEmpresa = usuarioLogado.empresaNome;
+        } else if (typeof usuarioLogado.empresa === 'string') {
+            nomeEmpresa = usuarioLogado.empresa;
+        }
+
+        elEmpresa.innerText = nomeEmpresa;
+    }
+
+    // 3. Trava de Exclusão Mútua: Quente vs Frio
+    if (typeof configurarRegraQuenteFrio === 'function') {
+        configurarRegraQuenteFrio();
+    }
+
+    // 4. Carrega a lista de colaboradores disponíveis para compor os Executantes
+    if (typeof carregarExecutantesDisponiveis === 'function') {
+        await carregarExecutantesDisponiveis();
+    }
+
+    // 5. Configura o envio do Formulário (Suporta 'formSolicitarPt' e 'formSolicitarPT')
+    const form = document.getElementById('formSolicitarPt') || document.getElementById('formSolicitarPT');
+    if (form) {
+        form.addEventListener('submit', enviarSolicitacaoPT);
+    }
+});
+
+// =========================================================================
+// REGRA DE NEGÓCIO SESMT: TRABALHO A QUENTE vs FRIO (EXCLUSÃO MÚTUA)
+// =========================================================================
+function configurarRegraQuenteFrio() {
+    const chkQuente = document.getElementById('requerTrabalhoQuente');
+    const chkFrio = document.getElementById('requerTrabalhoFrio');
+
+    if (!chkQuente || !chkFrio) return;
+
+    chkQuente.addEventListener('change', () => {
+        if (chkQuente.checked) {
+            chkFrio.checked = false;
+        }
+    });
+
+    chkFrio.addEventListener('change', () => {
+        if (chkFrio.checked) {
+            chkQuente.checked = false;
+        }
+    });
+}
+
+// =========================================================================
+// CARREGAMENTO DOS COLABORADORES PARA A SELEÇÃO DE EXECUTANTES
+// =========================================================================
+async function carregarExecutantesDisponiveis() {
+    const container = document.getElementById('containerListaExecutantes');
+    if (!container) return;
+
+    try {
+        const response = await fetch('http://localhost:8080/api/funcionarios');
+        if (!response.ok) throw new Error("Erro ao buscar lista de colaboradores.");
+
+        const colaboradores = await response.json();
+        container.innerHTML = "";
+
+        if (colaboradores.length === 0) {
+            container.innerHTML = "<p class='texto-carregando'>Nenhum colaborador cadastrado.</p>";
+            return;
+        }
+
+        colaboradores.forEach(func => {
+            const item = document.createElement('label');
+            item.className = "executante-item";
+            item.innerHTML = `
+                <input type="checkbox" class="chk-executante" value="${func.id}">
+                <span>${func.nome} <small>(${func.funcao || 'Operacional'})</small></span>
+            `;
+            container.appendChild(item);
+        });
+
+    } catch (error) {
+        console.error(error);
+        container.innerHTML = "<p class='texto-erro'>Erro ao carregar colaboradores.</p>";
+    }
+}
+
+// =========================================================================
+// ENVIO DA PT PARA O BACKEND (POST /api/permissoes-trabalho)
+// =========================================================================
+async function enviarSolicitacaoPT(event) {
+    event.preventDefault();
+
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    const btnSalvar = document.getElementById('btnSalvarPT');
+
+    // Coleta dos Executantes Selecionados
+    const executantesIds = Array.from(document.querySelectorAll('.chk-executante:checked'))
+                                .map(input => ({ id: parseInt(input.value) }));
+
+    // Monta o payload exato da classe PermissaoTrabalho.java
+    const payload = {
+        plantaArea: document.getElementById('plantaArea')?.value.trim(),
+        turnoGrupo: document.getElementById('turnoGrupo')?.value.trim(),
+        tag: document.getElementById('tag')?.value.trim(),
+        ordemPj: document.getElementById('ordemPj')?.value.trim(),
+        descricaoAtividade: document.getElementById('descricaoAtividade')?.value.trim(),
+        areaAtuacao: document.getElementById('areaAtuacao')?.value,
+        empresaGestora: document.getElementById('displayEmpresaGestora')?.innerText,
+
+        // Status inicial da criação
+        status: "RASCUNHO",
+
+        // Indicador se o solicitante faz parte da execução
+        solicitanteExecutante: document.getElementById('solicitanteExecutante')?.checked || false,
+
+        // Flips de Riscos Críticos (Booleans)
+        requerTrabalhoQuente: document.getElementById('requerTrabalhoQuente')?.checked || false,
+        requerTrabalhoFrio: document.getElementById('requerTrabalhoFrio')?.checked || false,
+        requerTrabalhoAltura: document.getElementById('requerTrabalhoAltura')?.checked || false,
+        requerEspacoConfinado: document.getElementById('requerEspacoConfinado')?.checked || false,
+        requerRiscoEletrico: document.getElementById('requerRiscoEletrico')?.checked || false,
+        requerAltaTensaoSep: document.getElementById('requerAltaTensaoSep')?.checked || false,
+        requerAreaClassificada: document.getElementById('requerAreaClassificada')?.checked || false,
+        requerSegurancaMaquinas: document.getElementById('requerSegurancaMaquinas')?.checked || false,
+        requerLoto: document.getElementById('requerLoto')?.checked || false,
+        requerAtividadePintura: document.getElementById('requerAtividadePintura')?.checked || false,
+
+        // Vínculo do Solicitante Logado
+        solicitante: { id: usuarioLogado.id },
+
+        // Lista de Objetos Executantes [{ id: 1 }, { id: 2 }]
+        executantes: executantesIds
+    };
+
+    try {
+        if (btnSalvar) {
+            btnSalvar.disabled = true;
+            btnSalvar.innerText = "Enviando solicitação...";
+        }
+
+        const response = await fetch('http://localhost:8080/api/permissoes-trabalho', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const mensagemErro = await response.text();
+            throw new Error(mensagemErro);
+        }
+
+        const ptSalva = await response.json();
+        alert(`✅ Permissão de Trabalho (PT #${ptSalva.id}) solicitada com sucesso!`);
+        
+        // Redireciona para o painel de gerenciamento
+        window.location.href = "gerenciar.html";
+
+    } catch (error) {
+        console.error("Erro ao solicitar PT:", error);
+        alert("⚠️ " + error.message);
+    } finally {
+        if (btnSalvar) {
+            btnSalvar.disabled = false;
+            btnSalvar.innerText = "🚀 SOLICITAR PERMISSÃO DE TRABALHO";
+        }
+    }
+}

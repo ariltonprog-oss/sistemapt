@@ -1,0 +1,176 @@
+// 1. Definições de Matriz e Requisitos
+
+
+const matrizNRsPorFuncao = {
+
+    "Operador Industrial": [
+        "NR20",
+        "NR10",
+        "NR12",
+        "NR33",
+        "NR35"
+        
+    ],
+
+    "Mecânico": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Eletricista": [
+        "NR10",
+        "NR10SEP",
+        "NR12",
+        "NR20",
+        "NR35"
+    ],
+
+    "Instrumentista": [
+        "NR10",
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Pintor Industrial": [
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Oficial da Construção Civil": [
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Caldeireiro": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Encanador Industrial": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Instrumentação/Elétrica": [
+        "NR10",
+        "NR10SEP",
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Mecânica": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Caldeiraria/Tubulação": [
+        "NR12",
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+    "Encarregado de Civil/Pintura": [
+        "NR20",
+        "NR33",
+        "NR35"
+    ],
+
+    "Soldador": [
+        "NR12",
+        "NR20",
+        "NR35",
+        "NR33"
+    ]
+
+};
+
+const bibliotecaRequisitos = {
+    "ASO": { nome: "Exame ASO", validade: 12 },
+    "ReciclagemPt": { nome: "Reciclagem PT", validade: 12 },
+    "NR10": { nome: "NR-10 Segurança em Eletricidade", validade: 24 },
+    "NR10": { nome: "NR-10 Segurança em Eletricidade", validade: 24 },
+    "NR10SEP": { nome: "NR-10SEP Segurança em Eletricidade", validade: 24 },
+    "NR11": { nome: "NR-11 Transporte e Movimentação", validade: 12 },
+    "NR12": { nome: "NR-12 Segurança em Máquinas", validade: 24 },
+    "NR20": { nome: "NR-20 Segurança em Inflamáveis e Combustíveis", validade: 12 },
+    "NR33": { nome: "NR-33 Espaço Confinado", validade: 12 },
+    "NR34": { nome: "NR-34 Condições de Trabalho Naval/Quente", validade: 12 },
+    "NR35": { nome: "NR-35 Trabalho em Altura", validade: 24 }
+};
+// O script abaixo percorre sua biblioteca e configura tudo sozinho
+Object.keys(bibliotecaRequisitos).forEach(key => {
+    const idRealizacao = `realizacao${key}`;
+    const idValidade = `validade${key}`;
+    const meses = bibliotecaRequisitos[key].validade;
+
+    const inputRealizacao = document.getElementById(idRealizacao);
+
+    if (inputRealizacao) {
+        inputRealizacao.addEventListener('change', () => {
+            calcularVencimentoDireto(idRealizacao, idValidade, meses);
+        });
+    }
+});
+
+// 2. Função de Cálculo (Única)
+function calcularVencimentoDireto(idRealizacao, idValidade, meses) {
+    const inputR = document.getElementById(idRealizacao);
+    const inputV = document.getElementById(idValidade);
+    if (!inputR || !inputR.value || !inputV) return;
+
+    const d = new Date(inputR.value + 'T00:00:00');
+    d.setMonth(d.getMonth() + parseInt(meses));
+    inputV.value = d.toISOString().split('T')[0];
+}
+
+function obterNomeCampoJava(nr) {
+
+    switch (nr) {
+
+        case "NR10SEP":
+            return "Nr10Sep";
+
+        case "NR01":
+            return "Nr01";
+
+        case "NR10":
+            return "Nr10";
+
+        case "NR12":
+            return "Nr12";
+
+        case "NR13":
+            return "Nr13";
+
+        case "NR18":
+            return "Nr18";
+
+        case "NR20":
+            return "Nr20";
+
+        case "NR33":
+            return "Nr33";
+
+        case "NR35":
+            return "Nr35";
+
+        case "BRIGADA":
+            return "Brigada";
+
+        default:
+            return null;
+
+    }
+
+}

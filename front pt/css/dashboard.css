@@ -1,0 +1,200 @@
+/* =========================================
+   DASHBOARD.CSS - Tabelas, Cabeçalhos e Ações
+   ========================================= */
+
+/* Container da Tabela */
+.tabela-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 15px;
+    border-radius: 8px;
+    background-color: #1a2234;
+    border: 1px solid #2d3748;
+}
+
+/* Tabelas */
+.tabela-pts, 
+table, 
+.tabela-estilizada {
+    width: 100% !important;
+    border-collapse: collapse;
+    table-layout: auto;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+}
+
+.tabela-estilizada thead tr,
+.tabela-pts thead tr {
+    background-color: #0f172a;
+    border-bottom: 2px solid #334155;
+}
+
+.tabela-estilizada th,
+.tabela-pts th {
+    padding: 12px 10px;
+    font-weight: bold;
+    color: #f1f5f9;
+    white-space: nowrap;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.tabela-estilizada td,
+.tabela-pts td {
+    padding: 12px 10px;
+    vertical-align: middle;
+    white-space: normal;
+}
+
+.tabela-estilizada tbody tr,
+.tabela-pts tbody tr {
+    border-bottom: 1px solid #1e293b;
+    transition: background-color 0.2s;
+}
+
+.tabela-estilizada tbody tr:hover,
+.tabela-pts tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Coluna de Ações com Largura Controlada e Flex Organizado */
+.tabela-pts td.coluna-acoes, 
+.tabela-estilizada td.coluna-acoes {
+    width: 210px !important;
+    min-width: 190px;
+    white-space: normal !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    border-bottom: none;
+    min-height: 65px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.tabela-pts th.coluna-acoes,
+.tabela-estilizada th.coluna-acoes {
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* =========================================
+   BADGES DE STATUS
+   ========================================= */
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.status-solicitada, .status-pendente, .badge-solicitada {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.status-aprovada, .badge-emitida, .badge-revalidacao {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.badge-encerrada {
+    background-color: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+    border: 1px solid #64748b;
+}
+
+/* =========================================
+   BOTÕES DE AÇÃO NA TABELA
+   ========================================= */
+.coluna-acoes a,
+[class^="btn-acao-"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #ffffff !important;
+    transition: opacity 0.2s, transform 0.1s;
+    margin: 0 !important;
+}
+
+[class^="btn-acao-"]:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.btn-acao-editar {
+    background-color: #2563eb;
+}
+.btn-acao-emitir {
+    background-color: #00b894;
+}
+.btn-acao-revalidar {
+    background-color: #e17055;
+}
+.btn-acao-baixar {
+    background-color: #d63031;
+}
+.btn-acao-imprimir {
+    background-color: #0984e3;
+}
+.btn-acao-visualizar {
+    background-color: #34495e;
+    border: 1px solid #4e6d8c;
+}
+
+/* =========================================
+   INPUTS E FORMULÁRIOS INLINE
+   ========================================= */
+.input-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.input-group-inline select {
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-add-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 38px;
+    background-color: #2b5c8f;
+    color: #ffffff;
+    border: 1px solid #4172a3;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;
+}
+
+.btn-add-inline:hover {
+    background-color: #3b7ac2;
+    border-color: #538cc6;
+    transform: translateY(-1px);
+}
+
+.btn-add-inline:active {
+    transform: translateY(0);
+}

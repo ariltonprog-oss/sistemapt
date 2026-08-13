@@ -1,0 +1,213 @@
+/* 1. Estruturas Gerais de Layout */
+body {
+    display: flex;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.conteudo-principal {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: calc(100% - 250px);
+}
+
+header {
+    width: 100%;
+    display: block;
+    padding: 20px 30px;
+    background-color: #1e293b;
+    border-bottom: 4px solid #eab308;
+}
+
+header h1 {
+    color: #eab308; 
+    font-size: 24px;
+    margin: 0;
+}
+
+.container {
+    width: 100%;
+    padding: 20px;
+}
+
+/* 2. Grids de Formulário */
+.linha-formulario-cinco-colunas {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important; /* Exatamente 5 colunas */
+    gap: 15px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+}
+
+/* 3. Estilização dos Grupos e Inputs */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: visible !important; /* Mantém visibilidade para dropdowns */
+    position: relative;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: var(--cor-cinza);
+    font-weight: 500;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--borda);
+    border: 1px solid #475569;
+    color: var(--cor-texto);
+    border-radius: 10px;
+}
+
+/* 4. Correção de Visibilidade (Selects) */
+select {
+    overflow: visible !important;
+}
+
+.alinhamento-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 5. Botões e Ocultos */
+/* Container para alinhar os botões lado a lado */
+.btn-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px !important;
+    margin-top: 30px !important;
+}
+
+/* Ajuste da sua classe existente para ficar profissional */
+.btn-submit {
+    width: auto !important; /* Permite que o botão tenha o tamanho do texto */
+    min-width: 250px !important; /* Garante um tamanho mínimo confortável */
+    background: var(--cor-primaria) !important;
+    color: var(--cor-fundo) !important;
+    border: none !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important; /* Arredondado para combinar com os inputs */
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+}
+
+/* Link de Cancelar */
+.btn-group a {
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+}
+
+/* 6. Sobrescreve o estilo global apenas para os campos dentro das NRs */
+.secao-nrs .form-group input {
+    padding: 8px 6px !important; /* Padding menor para sobrar espaço */
+    font-size: 13px !important;  /* Fonte ligeiramente menor para caber a data */
+    width: 100% !important;
+}
+
+/* Opcional: Garante que os containers de input não tenham margens extras */
+.secao-nrs .inputs-alinhados-historico {
+    gap: 5px !important;
+}
+
+.busca-container {
+    margin-bottom: 20px !important;
+}
+
+.tabela-wrapper {
+    overflow-x: auto !important;
+}
+
+/* --- CLASSES UTILITÁRIAS --- */
+.oculto {
+    display: none;
+}
+
+.campo-com-botao {
+    display: flex;
+    gap: 8px;
+}
+
+/* --- ESTILOS DO MODAL --- */
+/* Fundo escuro do Modal - Nascendo oculto por padrão */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: none; /* <-- Mude para 'none' para ele nascer escondido! */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-card {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-card h3 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.modal-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+.dashboard-filtros .btn-filtro {
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #475569;
+    transition: all 0.2s ease;
+}
+
+.dashboard-filtros .btn-filtro:hover {
+    background-color: #e2e8f0;
+}
+
+.dashboard-filtros .btn-filtro.ativo {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+/* Destaque suave para prazo (+24h) */
+tr.linha-alerta-prazo {
+    background-color: rgba(231, 76, 60, 0.08) !important; /* Vermelho translúcido muito suave */
+    border-left: 4px solid #e74c3c;
+}
+
+/* Destaque suave para limite de 5 dias atingido */
+tr.linha-alerta-limite {
+    background-color: rgba(230, 126, 34, 0.08) !important; /* Laranja translúcido muito suave */
+    border-left: 4px solid #e67e22;
+}
+
+/* Garante que o texto dentro da linha permaneça escuro e legível no tema */
+tr.linha-alerta-prazo td, 
+tr.linha-alerta-limite td {
+    color: #ffffff; /* Ou mantenha a cor padrão legível do seu painel */
+}

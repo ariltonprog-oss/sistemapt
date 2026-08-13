@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - SESMT</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Evita uso de estilos inline: centra conteúdos de form-group quando necessário */
+        .form-group-center {
+            justify-content: center;
+        }
+
+        .linha-formulario-margem-top {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="sidebar-wrapper"></div>
+    <div class="conteudo-principal">
+        <header class="header-geral">
+            <h1>👷‍♂️ Gerenciamento de Colaboradores (SESMT)</h1>
+        </header>
+
+        <main class="container">
+            <div class="card">
+                <h2 class="titulo-secao">📝 Inserir Novo Colaborador no Sistema</h2>
+
+                <form id="formColaborador" autocomplete="off" onsubmit="return false;">
+
+                    <!-- LINHA 1: Dados do Colaborador (5 campos) -->
+                    <div class="linha-formulario-cinco-colunas">
+                        <div class="form-group">
+                            <label for="nome">Nome Completo</label>
+                            <input type="text" id="nome" required placeholder="Ex: João Silva">
+                        </div>
+                        <div class="form-group">
+                            <label for="matricula">Matrícula</label>
+                            <input type="text" id="matricula" required placeholder="Ex: 1000857">
+                        </div>
+                        <div class="form-group">
+                            <label for="funcao">Função Operacional</label>
+                            <select id="funcao" onchange="atualizarMatrizNRs()">
+                                <option value="">Selecione...</option>
+                                <option value="Mecânico">Mecânico</option>
+                                <option value="Eletricista">Eletricista</option>
+                                <option value="Instrumentista">Instrumentista</option>
+                                <option value="Pintor Industrial">Pintor Industrial</option>
+                                <option value="Caldeireiro">Caldeireiro</option>
+                                <option value="Encanador Industrial">Encanador Industrial</option>
+                                <option value="Soldador">Soldador</option>
+                                <option value="Oficial de Construção Civil">Oficial de Construção Civil</option>
+                                <option value="Operador Industrial">Operador Industrial</option>
+                                <option value="Encarregado de Instrumentação/Elétrica">Encarregado de
+                                    Instrumentação/Elétrica</option>
+                                <option value="Encarregado de Caldeiraria/Tubulação">Encarregado de
+                                    Caldeiraria/Tubulação
+                                </option>
+                                <option value="Encarregado de Mecânica">Encarregado de Mecânica</option>
+                                <option value="Encarregado de Civil e Pintura">Encarregado de Civil e Pintura</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ehTerceiro">Tipo de Colaborador</label>
+                            <select id="ehTerceiro" onchange="toggleEmpresa()">
+                                <option value="false">Funcionário Próprio</option>
+                                <option value="true">Colaborador Terceiro</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="grupoEmpresa">
+                            <label for="empresa">Empresa Parceira</label>
+                            <input type="text" id="empresa" placeholder="Nome da empresa">
+                        </div>
+                    </div>
+
+                    <!-- LINHA 2: Acesso e Validades (5 campos) -->
+                    <div class="linha-formulario-cinco-colunas">
+                        <div class="form-group">
+                            <label for="perfil">Perfil Operacional</label>
+                            <select id="perfil" required onchange="ajustarCamposLogin()">
+                                <option value="">Selecione...</option>
+                                <option value="EXECUTANTE">EXECUTANTE (Sem Login - Apenas Fiscalização de NRs)</option>
+                                <option value="OFICIAL">OFICIAL / TÉCNICO (Solicitante e Executante de PT)</option>
+                                <option value="OPERADOR_INDUSTRIAL">OPERADOR INDUSTRIAL (Emitente de PT)</option>
+                                <option value="ENCARREGADO">ENCARREGADO (Solicitante / Emitente Opcional de PT)</option>
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuario">Usuário (Login)</label>
+                            <input type="text" id="usuario" placeholder="Gerado ao salvar">
+                        </div>
+                        <div class="form-group">
+                            <label for="senha">Senha de Acesso</label>
+                            <input type="text" id="senha" placeholder="Digite a senha">
+                        </div>
+                        <div class="form-group">
+                            <label for="realizacaoAso">ASO Médico</label>
+                            <div class="inputs-alinhados-historico">
+                                <input type="date" id="realizacaoAso">
+                                <input type="number" id="mesesAso" value="12" placeholder="Meses" title="Duração em meses">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="realizacaoReciclagemPt">Reciclagem PT</label>
+                            <div class="inputs-alinhados-historico">
+                                <input type="date" id="realizacaoReciclagemPt">
+                                <input type="number" id="mesesReciclagemPt" value="12" placeholder="Meses" title="Duração em meses">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Elementos de controle que ocupam a largura total -->
+                    <div id="containerAlcadaEmissao" class="container-alcada-emissao elemento-escondido">
+                        <input type="checkbox" id="podeEmitirPT">
+                        <label for="podeEmitirPT">⚠️ Permitir que este Encarregado atue como EMITENTE de PT</label>
+                    </div>
+
+                    <div class="secao-nrs">
+                        <h3 class="titulo-nrs">📋 Requisitos Obrigatórios de Segurança</h3>
+                        <div id="containerMatrizNRs">
+                            <p>Selecione uma função para carregar as NRs obrigatórias...</p>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" id="btnDispararSubmit" class="btn-submit">SALVAR E CERTIFICAR
+                            COLABORADOR</button>
+                        <a href="/admin.html">CANCELAR</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <script src="sidebar.js"></script>
+        <script src="auth.js"></script>
+        <script src="cadastro.js"></script>
+</body>
+
+</html>

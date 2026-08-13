@@ -1,0 +1,202 @@
+package com.gestaopt.sistemapt.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.gestaopt.sistemapt.model.Funcionario;
+import com.gestaopt.sistemapt.repository.FuncionarioRepository;
+
+@Service
+public class FuncionarioService {
+
+    private final FuncionarioRepository funcionarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public FuncionarioService(FuncionarioRepository funcionarioRepository) {
+        this.funcionarioRepository = funcionarioRepository;
+    }
+
+    /**
+     * CADASTRA OU ATUALIZA UM FUNCIONÁRIO
+     */
+    public Funcionario salvarFuncionario(Funcionario funcionario) throws Exception {
+        if (funcionario.getNome() == null || funcionario.getNome().trim().isEmpty()) {
+            throw new Exception("O nome do funcionário é obrigatório!");
+        }
+        if (funcionario.getFuncao() == null || funcionario.getFuncao().trim().isEmpty()) {
+            throw new Exception("A função do funcionário é obrigatória!");
+        }
+        if (funcionario.getValidadeASO() == null) {
+            throw new Exception("Todo funcionário precisa ter a data de validade do ASO cadastrada!");
+        }
+        if (funcionario.getMatricula() == null || funcionario.getMatricula().trim().isEmpty()) {
+            throw new Exception("A matrícula do funcionário é obrigatória!");
+        }
+
+        // --- GERADOR AUTOMÁTICO DE LOGIN (primeiro.ultimo) ---
+        if (funcionario.getId() == null && (funcionario.getUsuario() == null || funcionario.getUsuario().trim().isEmpty())) {
+            String nomeCompleto = funcionario.getNome().trim().toLowerCase();
+            String[] partesDoNome = nomeCompleto.split("\\s+");
+
+            if (partesDoNome.length >= 2) {
+                String primeiroNome = partesDoNome[0];
+                String ultimoSobrenome = partesDoNome[partesDoNome.length - 1];
+                String loginGerado = primeiroNome + "." + ultimoSobrenome;
+
+                String loginFinal = loginGerado;
+                int contador = 1;
+                while (funcionarioRepository.findByUsuario(loginFinal).isPresent()) {
+                    loginFinal = loginGerado + contador;
+                    contador++;
+                }
+
+                funcionario.setUsuario(loginFinal);
+            } else {
+                funcionario.setUsuario(partesDoNome[0]);
+            }
+        }
+
+        // --- VALIDAÇÃO DE MATRÍCULA ÚNICA ---
+        String matriculaLimpa = funcionario.getMatricula().trim();
+        funcionario.setMatricula(matriculaLimpa);
+
+        if (funcionario.getId() == null) {
+            if (funcionarioRepository.existsByMatricula(matriculaLimpa)) {
+                throw new Exception("⚠️ Erro: Já existe um colaborador cadastrado com a matrícula " + matriculaLimpa + "!");
+            }
+        } else {
+            Optional<Funcionario> comMesmaMatricula = funcionarioRepository.findAllByOrderByMatriculaAsc().stream()
+                    .filter(f -> matriculaLimpa.equals(f.getMatricula()) && !java.util.Objects.equals(f.getId(), funcionario.getId()))
+                    .findFirst();
+
+            if (comMesmaMatricula.isPresent()) {
+                throw new Exception("⚠️ Erro: A matrícula " + matriculaLimpa + " já está sendo usada por outro colaborador!");
+            }
+        }
+
+        funcionario.setFuncao(funcionario.getFuncao().trim());
+
+        if (funcionario.getId() != null) {
+            Optional<Funcionario> funcionarioExistente = funcionarioRepository.findById(funcionario.getId());
+            if (funcionarioExistente.isPresent()) {
+                Funcionario antigo = funcionarioExistente.get();
+
+                if (funcionario.getSenha() == null || funcionario.getSenha().trim().isEmpty()) {
+                    funcionario.setSenha(antigo.getSenha());
+                }
+                if (funcionario.getUsuario() == null || funcionario.getUsuario().trim().isEmpty()) {
+                    funcionario.setUsuario(antigo.getUsuario());
+                }
+            }
+        }
+
+        if (funcionario.getSenha() != null && !funcionario.getSenha().trim().isEmpty()) {
+            String senhaAtual = funcionario.getSenha().trim();
+            if (!senhaAtual.startsWith("$2a$") && !senhaAtual.startsWith("$2b$") && !senhaAtual.startsWith("$2y$")) {
+                funcionario.setSenha(passwordEncoder.encode(senhaAtual));
+            } else {
+                funcionario.setSenha(senhaAtual);
+            }
+        }
+
+        if (!Funcionario.PERFIL_ADMIN_SISTEMA.equals(funcionario.getPerfil())
+                && funcionario.getEmpresa() == null) {
+            throw new Exception("Usuários deste perfil devem estar vinculados a uma empresa.");
+        }
+
+        return funcionarioRepository.save(funcionario);
+    }
+
+    /**
+     * BUSCA TODOS OS FUNCIONÁRIOS CADASTRADOS (Exceto Admin)
+     */
+    public List<Funcionario> listarTodos() {
+        return funcionarioRepository.findAll().stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA COM FILTRO DE NOME OU MATRÍCULA (Exceto Admin)
+     */
+    public List<Funcionario> buscarPorFiltro(String filtro) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            return listarTodos();
+        }
+        return funcionarioRepository.buscarPorFiltroETerceiros(null, filtro).stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA FUNCIONÁRIOS POR EMPRESA + TERCEIRIZADOS (Exceto Admin)
+     */
+    public List<Funcionario> listarPorEmpresaETerceiros(Long empresaId, String filtro) {
+        List<Funcionario> lista;
+
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            lista = funcionarioRepository.buscarPorFiltroETerceiros(empresaId, filtro.trim());
+        } else {
+            lista = funcionarioRepository.findAllPorEmpresaOuTerceiros(empresaId);
+        }
+
+        return lista.stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA FUNCIONÁRIOS POR EMPRESA (Método legado mantido para
+     * compatibilidade)
+     */
+    public List<Funcionario> listarPorEmpresa(Long empresaId) {
+        return funcionarioRepository.findAllByEmpresaId(empresaId).stream()
+                .filter(this::isNotAdminSistema)
+                .toList();
+    }
+
+    /**
+     * BUSCA APENAS OS QUE PODEM EMITIR PT (EMITENTES)
+     */
+    public List<Funcionario> listarEmitentes() {
+        return funcionarioRepository.findAll().stream()
+                .filter(f -> isNotAdminSistema(f) && f.isPodeEmitirPt())
+                .toList();
+    }
+
+    /**
+     * BUSCA APENAS OS QUE PODEM SOLICITAR PT (SOLICITANTES/FISCAIS)
+     */
+    public List<Funcionario> listarSolicitantes() {
+        return funcionarioRepository.findAll().stream()
+                .filter(f -> isNotAdminSistema(f) && f.isPodeSolicitarPt())
+                .toList();
+    }
+
+    /**
+     * BUSCA UM FUNCIONÁRIO PELO ID
+     */
+    public Optional<Funcionario> buscarPorId(Long id) {
+        return funcionarioRepository.findById(id);
+    }
+
+    /**
+     * DELETA UM FUNCIONÁRIO DO SISTEMA
+     */
+    public void deletarFuncionario(Long id) {
+        funcionarioRepository.deleteById(id);
+    }
+
+    /**
+     * MÉTODO AUXILIAR: Verifica se o funcionário NÃO é o Admin do Sistema.
+     */
+    private boolean isNotAdminSistema(Funcionario f) {
+        if (f == null) {
+            return false;
+        }
+        return !Funcionario.PERFIL_ADMIN_SISTEMA.equalsIgnoreCase(f.getPerfil());
+    }
+}

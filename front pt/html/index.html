@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal GESTÃO PT - Sistema de Segurança</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-index">
+
+    <header>
+        <h1>🛡️ SISTEMA DE PERMISSÃO DE TRABALHO</h1>
+        <div>
+            <span class="user-badge" id="txtIdentificacao">Carregando usuário...</span>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- 📊 PAINEL EXCLUSIVO DO ADMIN / FISCALIZAÇÃO DO SESMT -->
+        <div id="painelIndicadores" class="escondido">
+            <h2>Painel Global de Fiscalização Periódica (Exclusivo SESMT)</h2>
+            <div class="grid-indicadores">
+                <div class="card-indicador sucesso">
+                    <div class="num-indicador" id="qtdAptos">--</div>
+                    <div class="label-indicador">EFETIVO OPERACIONAL APTO</div>
+                </div>
+                <div class="card-indicador alerta">
+                    <div class="num-indicador" id="qtdVencidos">--</div>
+                    <div class="label-indicador">COLABORADORES BLOQUEADOS (ASO/NR VENCIDO)</div>
+                </div>
+                <div class="card-indicador destaque">
+                    <div class="num-indicador" id="qtdPtsAbertas">--</div>
+                    <div class="label-indicador">PERMISSÕES DE TRABALHO CADASTRADAS</div>
+                </div>
+            </div>
+            <br><br>
+        </div>
+
+        <!-- 🔀 CENTRAL DE DIRECIONAMENTO DINÂMICA -->
+        <h2>Módulos Disponíveis para Você</h2>
+        <div class="grid-modulos">
+            
+            <!-- MÓDULO 1: ADMINISTRAÇÃO -->
+            <div class="card-modulo escondido" id="modAdmin" onclick="window.location.href='/admin.html'">
+                <div>
+                    <div class="icon-modulo">👮‍♂️</div>
+                    <h3>Banco de Dados & Cadastros (SESMT)</h3>
+                    <p>Controle centralizado para fiscalização da periodicidade de exames (ASO), inclusão de novos funcionários e auditoria de documentos vencidos.</p>
+                </div>
+                <button class="btn-entrar">Auditar e Cadastrar</button>
+            </div>
+
+            <!-- MÓDULO 2: SOLICITAÇÃO DE PT -->
+            <div class="card-modulo escondido" id="modSolicitar" onclick="window.location.href='/solicitacao.html'">
+                <div>
+                    <div class="icon-modulo">➕</div>
+                    <h3>Solicitar Nova PT</h3>
+                    <p>Abertura de ordens de serviço em rascunho preenchendo as NRs mandatórias, enquadramentos de riscos operacionais e TAGs de equipamentos.</p>
+                </div>
+                <button class="btn-entrar">Criar Solicitação</button>
+            </div>
+
+            <!-- MÓDULO 3: PESQUISA E CONSULTA DE PT -->
+            <div class="card-modulo escondido" id="modPesquisar" onclick="window.location.href='/pesquisa.html'">
+                <div>
+                    <div class="icon-modulo">🔍</div>
+                    <h3>Pesquisa & Monitoramento de PTs</h3>
+                    <p>Módulo de consulta pública para verificação do status atual, aprovações vigentes de supervisores e liberação física para impressão.</p>
+                </div>
+                <button class="btn-entrar">Pesquisar PTs</button>
+            </div>
+
+            <!-- MÓDULO 4: RENOVAÇÃO DE PT -->
+            <div class="card-modulo escondido" id="modRenovacao" onclick="window.location.href='/renovacao.html'">
+                <div>
+                    <div class="icon-modulo">⏳</div>
+                    <h3>Renovação de PT</h3>
+                    <p>Módulo destinado à prorrogação e extensão de prazos para permissions com validade estendida (Trabalhos de longa duração acima de 1 dia).</p>
+                </div>
+                <button class="btn-entrar">Prorrogar Vigência</button>
+            </div>
+
+            <!-- MÓDULO 5: SETUP INICIAL -->
+            <div class="card-modulo" id="modSetup" onclick="window.location.href='setup_inicial.html'">
+                <div>
+                    <div class="icon-modulo">⚙️</div>
+                    <h3>Setup Inicial</h3>
+                    <p>Configuração inicial da empresa e do administrador para iniciar o sistema.</p>
+                </div>
+                <button class="btn-entrar">Acessar Setup</button>
+            </div>
+
+        </div>
+    </div>
+
+   <script src="js/index.js"></script>
+</body>
+</html>

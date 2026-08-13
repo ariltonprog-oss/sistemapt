@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emissão de PT - Sistema PT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/emitir-pt.css">
+    <!-- Ícones (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .texto-secundario-pequeno {
+            color: var(--texto-secundario, #a0aec0);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .texto-secundario {
+            color: var(--texto-secundario, #a0aec0);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .grid-checkboxes--responsivo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="sidebar-wrapper"></div>
+
+    <div class="conteudo-principal">
+        <header class="header-geral">
+            <h1>🛡️ Emissão Inteligente de Permissão de Trabalho</h1>
+        </header>
+
+        <main class="container">
+            <div class="card-formulario">
+                <div class="card-header">
+                    <h3>📋 Emitir PT #<span id="labelPtId">-</span></h3>
+                </div>
+
+                <form id="formEmitirPT">
+                    <!-- RESUMO DA SOLICITAÇÃO -->
+                    <fieldset class="secao-form secao-resumo-pt">
+                        <legend>Dados da Solicitação</legend>
+
+                        <!-- Linha 1: 5 colunas -->
+                        <div class="grid-form-5">
+                            <div class="campo-info">
+                                <label class="label-info-titulo">Planta / Área:</label>
+                                <div id="infoPlantaArea" class="label-info-valor">-</div>
+                            </div>
+
+                            <div class="campo-info">
+                                <label class="label-info-titulo">TAG / Equipamento:</label>
+                                <div id="infoTag" class="label-info-valor">-</div>
+                            </div>
+                            <div class="campo-info">
+                                <label class="label-info-titulo">OS / OM:</label>
+                                <div id="infoOrdemPj" class="label-info-valor">-</div>
+                            </div>
+                            <div class="campo-info">
+                                <label class="label-info-titulo">Solicitante:</label>
+                                <div id="infoSolicitante" class="label-info-valor">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Linha 2: Executante -->
+                        <div class="campo-info margin-topo">
+                            <label class="label-info-titulo">Executante / Equipe Envolvida:</label>
+                            <div id="infoExecutantes" class="label-info-valor">-</div>
+                        </div>
+
+                        <!-- Descrição da Atividade -->
+                        <div class="campo-info campo-info-bloco margin-topo">
+                            <label class="label-info-titulo">Descrição da Atividade:</label>
+                            <p id="infoDescricao" class="label-descricao-texto">-</p>
+                        </div>
+
+                        <!-- Resumo dos Riscos e Requisitos da PT -->
+                        <div class="campo-info campo-info-bloco margin-topo">
+                            <label class="label-info-titulo">Riscos e Requisitos de Segurança Selecionados:</label>
+                            <div id="listaRiscosResumo" class="riscos-container">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- BLOCO CONDICIONAL: LOTO / ENERGIAS PERIGOSAS -->
+                    <div id="blocoLoto" class="bloco-condicional oculto">
+                        <fieldset class="secao-form secao-validade-pt">
+                            <legend>🔒 Controle de Energias Perigosas (LOTO)</legend>
+                            <div class="form-group">
+                                <label for="lotoDetalhes">Verificações de Bloqueio e Energia Zero:</label>
+                                <textarea id="lotoDetalhes" rows="3" class="form-control"
+                                    placeholder="Informe o número da caixa LOTO e status de purge..."></textarea>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <!-- BLOCO CONDICIONAL: TRABALHO EM ALTURA -->
+                    <div id="blocoAltura" class="bloco-condicional oculto">
+                        <fieldset class="secao-form secao-validade-pt">
+                            <legend>🧗 Requisitos para Trabalho em Altura</legend>
+                            <div class="form-group">
+                                <label for="alturaDetalhes">Condições de Ancoragem, Linha de Vida e EPIs
+                                    específicos:</label>
+                                <input type="text" id="alturaDetalhes" class="form-control"
+                                    placeholder="Ex: Inspeção de talabarte dupla, cinto tipo paraquedista ok">
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <!-- BLOCO CONDICIONAL: ESPAÇO CONFINADO / OUTRAS CRÍTICAS -->
+                    <div id="blocoMonitoramento" class="bloco-condicional">
+                        <fieldset class="secao-form secao-validade-pt">
+                            <legend>📊 Monitoramento Ambiental e Documentos</legend>
+                            <div class="grid-form-2">
+                                <div class="form-group">
+                                    <label for="nomeAst">Nome da AST Associada</label>
+                                    <input type="text" id="nomeAst" class="form-control" placeholder="Ex: AST-042">
+                                </div>
+                                <div class="form-group">
+                                    <label for="monitoramentoAmbiental">Medições Ambientais (O2, Gases, etc.)</label>
+                                    <input type="text" id="monitoramentoAmbiental" class="form-control"
+                                        placeholder="Ex: O2: 20.9% | LEL: 0%">
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <!-- 🟢 SEÇÃO DINÂMICA: INSPEÇÃO DE EPIS E MEDIDAS DE CONTROLE POR RISCO -->
+                    <fieldset class="secao-form secao-validade-pt">
+                        <legend><i class="fa-solid fa-shield-halved"></i> Inspeção de EPIs e Medidas de Controle
+                            Específicas</legend>
+                        <p class="texto-secundario">
+                            Itens de verificação gerados automaticamente com base nos riscos e requisitos selecionados
+                            na solicitação desta PT:
+                        </p>
+                        <!-- Container preenchido via JavaScript dinamicamente -->
+                        <div id="containerInspecaoEpiMedidas" class="grid-checkboxes grid-checkboxes--responsivo">
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="secao-form secao-validade-pt">
+                        <legend>Condições Operacionais e Liberação Final</legend>
+
+                        <div class="form-group">
+                            <label for="recomendacoesEmissor">Recomendações Especiais / Restrições do Emissor</label>
+                            <textarea id="recomendacoesEmissor" rows="3" class="form-control"
+                                placeholder="Insira cuidados adicionais..."></textarea>
+                        </div>
+
+
+
+                        <div class="grid-form-31">
+                            <div class="form-group">
+                                <label for="turnoGrupo">Turno / Grupo <span
+                                        class="asterisco-obrigatorio">*</span></label>
+                                <input type="text" id="turnoGrupo" name="turnoGrupo" class="form-control"
+                                    style="text-transform: uppercase;" placeholder="Ex: TURNO A" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="matricula">Matrícula do Emitente</label>
+                                <input type="text" id="matricula" name="matricula" class="form-control"
+                                    placeholder="Matrícula" readonly required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="nomeEmitente">Emitente Responsável</label>
+                                <input type="text" id="nomeEmitente" class="form-control" readonly>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group margin-topo-form">
+                            <label class="grid-form-2">
+                                <input type="checkbox" id="checkVistoriaCampo" required class="input-checkbox-vistoria">
+                                <span>Confirmo que a vistoria de campo foi realizada e a área está segura para os
+                                    trabalhos.</span>
+                            </label>
+                        </div>
+
+            </div>
+            </fieldset>
+
+            <!-- VALIDADE E LIBERAÇÃO -->
+            <fieldset class="secao-form secao-validade-pt">
+                <legend>Validade e Liberação</legend>
+                <div class="grid-form-3">
+                    <div class="form-group">
+                        <label for="dataHoraInicio">Data e Hora de Início *</label>
+                        <input type="datetime-local" id="dataHoraInicio" required class="form-control">
+                    </div>
+                    <div class="btn-group btn-group-emissao margin-topo">
+                        <a href="dashboard.html" class="btn-cancelar">Cancelar</a>
+                        <button type="submit" class="btn-submit btn-confirmar-emissao">🛡️ Confirmar e Emitir
+                            PT</button>
+                    </div>
+            </fieldset>
+            </form>
+    </div>
+    </main>
+    </div>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/emitir-pt.js"></script>
+</body>
+
+</html>

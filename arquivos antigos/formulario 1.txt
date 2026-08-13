@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitar Permissão de Trabalho</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
+        .form-container { max-width: 600px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: 0 auto; }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        .btn-voltar { display: block; text-align: center; margin-top: 15px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Nova Permissão de Trabalho (PT)</h2>
+    <form id="ptForm">
+        <div class="form-group">
+            <label for="descricao">Descrição da Atividade</label>
+            <textarea id="descricao" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="solicitante">Solicitante</label>
+            <select id="solicitante" required>
+                <option value="">Carregando solicitantes...</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="dataEmissao">Data Prorrogada/Emissão</label>
+            <input type="date" id="dataEmissao" required>
+        </div>
+        <button type="submit">Enviar Solicitação de PT</button>
+        <a href="dashboard.html" class="btn-voltar">Voltar</a>
+    </form>
+</div>
+
+<script>
+    const API_BASE = "http://localhost:8080/api";
+    const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado')) || { empresaId: 1 };
+
+    // Executa ao abrir a página para preencher o Select com funcionários reais da empresa
+    async function carregarSolicitantes() {
+        try {
+            // Rota fictícia filtrando pela empresa logada
+            const response = await fetch(`${API_BASE}/funcionarios?empresaId=${usuarioLogado.empresaId}`);
+            const funcionarios = await response.json();
+            
+            const select = document.getElementById('solicitante');
+            select.innerHTML = '<option value="">Selecione o Solicitante</option>';
+            
+            funcionarios.forEach(func => {
+                if(func.perfil === 'SOLICITANTE') {
+                    const opt = document.createElement('option');
+                    opt.value = func.id;
+                    opt.textContent = func.nome;
+                    select.appendChild(opt);
+                }
+            });
+        } catch (error) {
+            console.error("Erro ao buscar solicitantes:", error);
+        }
+    }
+
+    document.getElementById('ptForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const ptData = {
+            descricao: document.getElementById('descricao').value,
+            solicitanteId: parseInt(document.getElementById('solicitante').value),
+            dataEmissao: document.getElementById('dataEmissao').value, // Formato ISO yyyy-MM-dd nativo do input
+            empresaId: usuarioLogado.empresaId
+        };
+
+        try {
+            const response = await fetch(`${API_BASE}/permissoes-trabalho`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ptData)
+            });
+
+            if (response.ok) {
+                alert("Permissão de Trabalho solicitada com sucesso!");
+                document.getElementById('ptForm').reset();
+            } else {
+                alert("Erro ao salvar a PT no servidor.");
+            }
+        } catch (error) {
+            alert("Erro ao conectar com o Back-end.");
+        }
+    });
+
+    // Inicializa os dados na tela
+    carregarSolicitantes();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+// js/editar.js
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Vincula o botão de salvar
+    const btnSalvar = document.getElementById('btnDispararSubmit');
+    if (btnSalvar) btnSalvar.addEventListener('click', salvarAlteracoes);
+
+    // 2. Vincula a mudança da função (para atualizar a grade de NRs)
+    const selectFuncao = document.getElementById('funcao');
+    if (selectFuncao) selectFuncao.addEventListener('change', atualizarMatrizNRs);
+
+    // 3. Carrega os dados
+    await carregarDadosDoColaborador();
+});
+
+async function carregarDadosDoColaborador() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+
+    if (!id) {
+        alert("Erro: ID do colaborador não encontrado na URL.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/funcionarios/${id}`);
+        if (!response.ok) throw new Error("Erro ao buscar dados.");
+
+        const funcionario = await response.json();
+
+        // Preenche campos simples
+        document.getElementById('nome').value = funcionario.nome || '';
+        document.getElementById('matricula').value = funcionario.matricula || '';
+        document.getElementById('funcao').value = funcionario.funcao || '';
+        document.getElementById('perfil').value = funcionario.perfil || '';
+        document.getElementById('ehTerceiro').value = funcionario.ehTerceiro ? "true" : "false";
+        document.getElementById('usuario').value = funcionario.usuario || '';
+
+        // Atualiza UI da Empresa
+        toggleEmpresa();
+
+        // Atualiza a grade de NRs antes de preencher as datas
+        atualizarMatrizNRs();
+
+        // PADRONIZAÇÃO: Use sempre ASO maiúsculo
+        if (document.getElementById('realizacaoASO')) document.getElementById('realizacaoASO').value = funcionario.realizacaoASO || '';
+        if (document.getElementById('validadeASO')) document.getElementById('validadeASO').value = funcionario.validadeASO || '';
+        if (document.getElementById('realizacaoReciclagemPt')) document.getElementById('realizacaoReciclagemPt').value = funcionario.realizacaoReciclagemPt || '';
+        if (document.getElementById('validadeReciclagemPt')) document.getElementById('validadeReciclagemPt').value = funcionario.validadeReciclagemPt || '';
+
+        // Preenche as NRs dinâmicas
+        if (funcionario.funcao && matrizNRsPorFuncao[funcionario.funcao]) {
+            matrizNRsPorFuncao[funcionario.funcao].forEach(nr => {
+                const nomeCampo = obterNomeCampoJava(nr);
+                if (nomeCampo) {
+                    const inputR = document.getElementById(`realizacao_${nr}`);
+                    const inputV = document.getElementById(`validade_${nr}`);
+                    if (inputR) inputR.value = funcionario["realizacao" + nomeCampo] || '';
+                    if (inputV) inputV.value = funcionario["validade" + nomeCampo] || '';
+                }
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Não foi possível carregar os dados.");
+    }
+}
+
+function atualizarMatrizNRs() {
+    const funcao = document.getElementById('funcao').value;
+    const container = document.getElementById('containerMatrizNRs');
+    if (!container) return;
+
+    if (!funcao || !matrizNRsPorFuncao[funcao]) {
+        container.innerHTML = '<p>Selecione uma função para ver as NRs.</p>';
+        return;
+    }
+
+    let html = '<div class="grid-nrs">';
+    matrizNRsPorFuncao[funcao].forEach(nr => {
+        const d = bibliotecaRequisitos[nr];
+        html += `<div class="card-nr-item">
+            <label><strong>${nr}</strong></label>
+            <small>${d.nome}</small>
+            <div class="form-group">
+                <input type="date" id="realizacao_${nr}" onchange="calcularVencimentoDireto('realizacao_${nr}', 'validade_${nr}', ${d.validade})">
+            </div>
+            <div class="form-group bloco-validade">
+                <input type="date" id="validade_${nr}" readonly>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html + '</div>';
+}
+
+async function salvarAlteracoes() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    console.log("DEBUG MATRICULA:", document.getElementById('matricula').value);
+    // 1. Monta o objeto base
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+    const data = {
+        // 1. Identificador (Essencial para o PUT)
+        id: parseInt(id),
+
+        // 2. Dados básicos
+        nome: document.getElementById('nome').value.trim(),
+        matricula: document.getElementById('matricula').value.trim(),
+        funcao: document.getElementById('funcao').value,
+        perfil: document.getElementById('perfil').value,
+
+        // 3. Login
+        usuario: document.getElementById('usuario').value.trim(),
+        // Se não tiver input de senha na tela de edição, envie string vazia
+        senha: document.getElementById('senha') ? document.getElementById('senha').value : "",
+
+        // 4. Empresa (O backend espera o objeto empresa com o ID)
+        ehTerceiro: document.getElementById('ehTerceiro').value === "true",
+        empresa: usuarioLogado ? { id: usuarioLogado.empresaId } : null,
+
+        // 5. Permissões
+        podeEmitirPt: document.getElementById('podeEmitirPT')?.checked || false,
+        podeSolicitarPt: document.getElementById('perfil').value === "SOLICITANTE",
+
+        // 6. Datas fixas
+        realizacaoASO: document.getElementById('realizacaoASO').value || null,
+        validadeASO: document.getElementById('validadeASO').value || null,
+        realizacaoReciclagemPt: document.getElementById('realizacaoReciclagemPt').value || null,
+        validadeReciclagemPt: document.getElementById('validadeReciclagemPt').value || null,
+
+        // 7. Usuário da sessão
+        usuarioLogadoId: usuarioLogado ? usuarioLogado.id : null
+    };
+
+    // 2. Loop das NRs Dinâmicas
+    document.querySelectorAll('.card-nr-item').forEach(card => {
+        const nr = card.querySelector("strong").innerText.trim();
+        const nomeCampo = obterNomeCampoJava(nr);
+        if (!nomeCampo) return;
+
+        const realizacao = card.querySelector('input[id^="realizacao_"]');
+        const validade = card.querySelector('input[id^="validade_"]');
+
+        if (realizacao && realizacao.value) {
+            data["realizacao" + nomeCampo] = realizacao.value;
+            data["validade" + nomeCampo] = validade.value;
+        }
+    });
+
+    // 3. Envio via PUT
+    const url = `http://localhost:8080/api/funcionarios/${id}`;
+
+    try {
+        const resp = await fetch(url, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        if (!resp.ok) {
+            // Pegar a mensagem real que o backend enviou
+            const erroDetalhado = await resp.text();
+            console.error("ERRO DO SERVIDOR:", erroDetalhado);
+            throw new Error(erroDetalhado);
+        }
+
+        alert("Alterações salvas com sucesso!");
+        window.location.href = 'gerenciar.html';
+    } catch (erro) {
+        console.error("Erro na captura:", erro);
+        alert("Erro ao salvar: " + erro.message);
+    }
+}
+
+function toggleEmpresa() {
+    const ehTerceiro = document.getElementById('ehTerceiro').value === "true";
+    const grupoEmpresa = document.getElementById('grupoEmpresa');
+    if (grupoEmpresa) grupoEmpresa.style.display = ehTerceiro ? 'block' : 'none';
+}

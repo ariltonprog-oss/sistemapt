@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SESMT - Painel Master de Empresas</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body class="page-admin">
+
+    <div id="sidebar-wrapper"></div>
+
+    <header>
+        <h1>👷‍♂️ Painel de Administração Master (Multi-Tenant)</h1>
+        <a href="login.html" class="btn-voltar" onclick="sessionStorage.clear()">Logout ➡️</a>
+    </header>
+
+    <div class="container">
+        
+        <div class="card">
+
+            <h2>🏢 Cadastrar Nova Empresa Cliente</h2>
+
+            <form id="formCadastroEmpresa">
+
+                <h3>Dados da Empresa</h3>
+
+                <div class="painel-config-linha">
+
+                    <div class="form-group campo-flex">
+                        <label for="nomeFantasia">Nome Fantasia</label>
+                        <input
+                            type="text"
+                            id="nomeFantasia"
+                            required
+                            placeholder="Ex: GS Inima Saneamento">
+                    </div>
+
+
+                    <div class="form-group campo-flex">
+                        <label for="cnpj">CNPJ (Apenas números)</label>
+                        <input
+                            type="text"
+                            id="cnpj"
+                            required
+                            placeholder="Ex: 12345678000199"
+                            maxlength="14">
+                    </div>
+
+                </div>
+
+
+                <h3>👤 Usuário Master da Empresa</h3>
+
+                <div class="painel-config-linha">
+
+                    <div class="form-group campo-flex">
+                        <label for="nomeMaster">Nome Completo</label>
+                        <input
+                            type="text"
+                            id="nomeMaster"
+                            required
+                            placeholder="Ex: João da Silva">
+                    </div>
+
+
+                    <div class="form-group campo-flex">
+                        <label for="usuarioMaster">Usuário de Acesso</label>
+                        <input
+                            type="text"
+                            id="usuarioMaster"
+                            required
+                            placeholder="Ex: joao.silva">
+                    </div>
+
+
+                    <div class="form-group campo-flex">
+                        <label for="senhaMaster">Senha Inicial</label>
+                        <input
+                            type="password"
+                            id="senhaMaster"
+                            required
+                            placeholder="Senha inicial">
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+                    <button type="submit" class="btn-novo-cadastro">
+                        💾 Salvar Empresa
+                    </button>
+                </div>
+
+
+                <div id="msgFeedback"></div>
+
+            </form>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="titulo-tabela-container">
+                <h2>🔍 Empresas Contratantes Cadastradas</h2>
+            </div>
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID Interno</th>
+                        <th>Nome Fantasia</th>
+                        <th>CNPJ / Identificador</th>
+                        <th>Status Operacional</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tabelaEmpresasCorpo">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/admin.js"></script>
+
+</body>
+
+</html>

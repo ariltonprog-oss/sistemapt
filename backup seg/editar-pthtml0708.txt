@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Permissão de Trabalho - SESMT</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <!-- Ícones (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="sidebar-wrapper"></div>
+
+    <main class="main-content">
+        <header class="header-pagina">
+            <h1 id="tituloPagina"><i class="fa-solid fa-file-pen"></i> Editar Permissão de Trabalho</h1>
+        </header>
+
+        <form id="formEditarPT" class="form-container">
+
+            <!-- SEÇÃO 1: DADOS GERAIS DA PT -->
+            <fieldset class="secao-form">
+                <legend>Dados Gerais da PT</legend>
+
+                <!-- LINHA 1: 4 COLUNAS -->
+                <div class="grid-form-4col">
+                    <div class="form-group">
+                        <label for="plantaArea">Planta / Área <span class="asterisco-obrigatorio">*</span></label>
+                        <input type="text" id="plantaArea" name="plantaArea" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="turnoGrupo">Turno / Grupo <span class="asterisco-obrigatorio">*</span></label>
+                        <input type="text" id="turnoGrupo" name="turnoGrupo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tag">TAG Equipamento</label>
+                        <input type="text" id="tag" name="tag">
+                    </div>
+                    <div class="form-group">
+                        <label for="ordemPj">Ordem / PJ</label>
+                        <input type="text" id="ordemPj" name="ordemPj">
+                    </div>
+                </div>
+
+                <!-- LINHA 2: DESCRIÇÃO DETALHADA -->
+                <div class="form-group full-width margin-topo">
+                    <label for="descricaoAtividade">Descrição Detalhada da Atividade <span
+                            class="asterisco-obrigatorio">*</span></label>
+                    <textarea id="descricaoAtividade" name="descricaoAtividade" rows="3"
+                        placeholder="Descreva as atividades executadas..." required></textarea>
+                </div>
+
+                <!-- LINHA 3: ÁREA DE ATUAÇÃO -->
+                <div class="grid-form-2col margin-topo">
+                    <div class="form-group">
+                        <label for="areaAtuacao">Especialidade</label>
+                        <input type="text" id="areaAtuacao" name="areaAtuacao" readonly tabindex="-1"
+                            class="input-readonly">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- AVALIAÇÃO DE RISCOS / FLIPS TRADICIONAIS -->
+            <fieldset class="secao-form">
+                <legend>Avaliação de Riscos Envolvidos (Requisitos Obrigatórios)</legend>
+                <div class="grid-checkboxes">
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerTrabalhoQuente" name="requerTrabalhoQuente"> 🔥 Trabalho a Quente
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerTrabalhoFrio" name="requerTrabalhoFrio"> 🧊 Trabalho a Frio
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerTrabalhoAltura" name="requerTrabalhoAltura"> 🧗 Trabalho em Altura
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerEspacoConfinado" name="requerEspacoConfinado"> 🕳️ Espaço Confinado
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerRiscoEletrico" name="requerRiscoEletrico"> ⚡ Risco Elétrico
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerAltaTensaoSep" name="requerAltaTensaoSep"> ⚡ Alta Tensão / SEP
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerAreaClassificada" name="requerAreaClassificada"> 🧪 Área Classificada
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerSegurancaMaquinas" name="requerSegurancaMaquinas"> ⚙️ Segurança em Máquinas
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerLoto" name="requerLoto"> 🔒 Bloqueio LOTO
+                    </label>
+                    <label class="checkbox-card">
+                        <input type="checkbox" id="requerAtividadePintura" name="requerAtividadePintura"> 🎨 Atividade de Pintura
+                    </label>
+                </div>
+            </fieldset>
+
+            <!-- MATRIZ DETALHADA DE RISCOS E CONTROLES -->
+            <fieldset class="secao-form">
+                <legend><i class="fa-solid fa-list-check"></i> Matriz de Riscos Ambientais e Físicos Detalhados</legend>
+
+                <!-- 1. Ruído -->
+                <div class="form-group margin-topo">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="ruidoAtivo" name="ruido.ativo" value="true"> 🔊 Ruído (Exposição a níveis elevados)
+                    </label>
+                    <div class="risco-subcontainer">
+                        <span class="risco-subtitulo">Tipo de Proteção Auditiva Requerida:</span>
+                        <label class="checkbox-label-inline">
+                            <input type="checkbox" name="ruido.opcoesSelecionadas" value="Proteção Simples" id="ruidoSimples"> Simples (Plug ou Concha)
+                        </label>
+                        <label class="checkbox-label-inline">
+                            <input type="checkbox" name="ruido.opcoesSelecionadas" value="Proteção Dupla" id="ruidoDupla"> Dupla (Plug + Concha)
+                        </label>
+                    </div>
+                    <div class="risco-subcontainer">
+                        <input type="text" name="ruido.textoComplementar" placeholder="Observações sobre o ruído (dB, equipamento)...">
+                    </div>
+                </div>
+
+                <!-- 2. Vibração -->
+                <div class="form-group margin-topo">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="vibracaoAtivo" name="vibracao.ativo" value="true"> 📳 Vibração (Maquinário / Ferramentas Manuais)
+                    </label>
+                    <div class="risco-subcontainer">
+                        <input type="text" name="vibracao.textoComplementar" placeholder="Detalhes da vibração ou ferramenta...">
+                    </div>
+                </div>
+
+                <!-- 3. Superfícies Aquecidas -->
+                <div class="form-group margin-topo">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="superficiesAtivo" name="superficiesAquecidas.ativo" value="true"> 🌡️ Superfícies Aquecidas / Queimaduras
+                    </label>
+                    <div class="risco-subcontainer">
+                        <input type="text" name="superficiesAquecidas.textoComplementar" placeholder="Temperatura estimada ou linha/equipamento...">
+                    </div>
+                </div>
+
+                <!-- 4. Radiação Não Ionizante -->
+                <div class="form-group margin-topo">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="radiacaoAtivo" name="radiacaoNaoIonizante.ativo" value="true"> ☀️ Radiação Não Ionizante (Solda / UV / Infravermelho)
+                    </label>
+                    <div class="risco-subcontainer">
+                        <input type="text" name="radiacaoNaoIonizante.textoComplementar" placeholder="Fonte da radiação...">
+                    </div>
+                </div>
+
+                <!-- 5. Agentes Químicos & Diphoterine Integrado -->
+                <div class="form-group margin-topo">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="quimicosAtivo" name="agentesQuimicos.ativo" value="true"> 🧪 Agentes Químicos / Produtos Perigosos <span class="tag-obrigatorio">(Inclui Diphoterine Obrigatório)</span>
+                    </label>
+                    <div class="risco-subcontainer">
+                        <input type="text" name="agentesQuimicos.textoComplementar" placeholder="Nome do produto químico / FISPQ...">
+                    </div>
+                    <div class="risco-subcontainer margin-topo">
+                        <input type="text" name="diphoterine.textoComplementar" placeholder="💧 Localização do kit de Diphoterine para emergência...">
+                    </div>
+                </div>
+
+                <!-- 6. Isolamento de Área -->
+                <div class="form-group margin-topo">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="isolamentoAtivo" name="isolamentoArea.ativo" value="true"> 🚧 Isolamento e Sinalização de Área
+                    </label>
+                    <div class="risco-subcontainer">
+                        <input type="text" name="isolamentoArea.textoComplementar" placeholder="Tipo de sinalização / cones / fitas...">
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- SEÇÃO: EQUIPE EXECUTANTE -->
+            <fieldset class="secao-form">
+                <legend><i class="fa-solid fa-users"></i> Equipe Executante</legend>
+
+                <label class="label-solicitante">
+                    <input type="checkbox" id="solicitanteExecutante" class="chk-solicitante">
+                    Eu (Solicitante) também vou atuar como EXECUTANTE nesta PT
+                </label>
+
+                <!-- CAMPO DE BUSCA E ADIÇÃO POR MATRÍCULA -->
+                <div class="input-matricula-group">
+                    <div class="form-group col-matricula">
+                        <label for="inputMatricula">Matrícula do Executante</label>
+                        <input type="text" id="inputMatricula" placeholder="Digite a matrícula (ex: 1000236)">
+                    </div>
+
+                    <div class="form-group col-nome">
+                        <label for="inputNomeExecutante">Nome do Colaborador</label>
+                        <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..." readonly>
+                    </div>
+
+                    <div class="form-group col-btn">
+                        <label>&nbsp;</label>
+                        <button type="button" id="btnAdicionarExecutante" class="btn-adicionar-executante">
+                            <i class="fa-solid fa-plus"></i> ADICIONAR
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MENSAGEM DE STATUS DA BUSCA DA MATRÍCULA -->
+                <span id="msgMatriculaStatus" class="msg-status-matricula"></span>
+
+                <!-- TABELA DE EXECUTANTES INCLUÍDOS -->
+                <div class="container-tabela-executantes">
+                    <table class="tabela-executantes">
+                        <thead>
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nome Completo</th>
+                                <th>Função / Especialidade</th>
+                                <th class="col-acao">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyExecutantes">
+                            <tr class="linha-vazia">
+                                <td colspan="4">Nenhum executante adicionado à equipe até o momento.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </fieldset>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="acoes-form">
+                <button type="submit" class="btn-salvar">💾 Salvar Alterações</button>
+                <a href="dashboard.html" class="btn-cancelar">Cancelar &amp; Sair</a>
+            </div>
+        </form>
+    </main>
+
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/editar-pt.js"></script>
+</body>
+
+</html>

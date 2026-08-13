@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Inicial do Sistema</title>
+   <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page-setup">
+    <h2>Configuração da Empresa e Administrador</h2>
+    <form id="setupForm">
+        <h3>Dados da Empresa</h3>
+        <input type="text" id="nomeEmpresa" placeholder="Nome da Empresa" required>
+        <input type="text" id="cnpjEmpresa" placeholder="CNPJ" required>
+        
+        <h3>Dados do Administrador</h3>
+        <input type="text" id="nomeAdmin" placeholder="Nome do Administrador" required>
+        <input type="text" id="loginAdmin" placeholder="Usuário Admin" required>
+        <input type="password" id="senhaAdmin" placeholder="Senha" required>
+        
+        <button type="button" onclick="executarSetup()">Finalizar Configuração</button>
+    </form>
+    <script src="js/setup.js"></script>
+</body>
+</html>

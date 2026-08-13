@@ -1,0 +1,169 @@
+package com.gestaopt.sistemapt.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.gestaopt.sistemapt.model.Funcionario;
+import com.gestaopt.sistemapt.repository.FuncionarioRepository;
+
+@Service
+public class FuncionarioService {
+
+    private final FuncionarioRepository funcionarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    // O Spring injeta o repositório automaticamente aqui
+    public FuncionarioService(FuncionarioRepository funcionarioRepository) {
+        this.funcionarioRepository = funcionarioRepository;
+    }
+
+    /**
+     * CADASTRA OU ATUALIZA UM FUNCIONÁRIO
+     */
+    public Funcionario salvarFuncionario(Funcionario funcionario) throws Exception {
+        // Validação básica de segurança de dados
+        if (funcionario.getNome() == null || funcionario.getNome().trim().isEmpty()) {
+            throw new Exception("O nome do funcionário é obrigatório!");
+        }
+        if (funcionario.getFuncao() == null || funcionario.getFuncao().trim().isEmpty()) {
+            throw new Exception("A função do funcionário é obrigatória!");
+        }
+        if (funcionario.getValidadeAso() == null) {
+            throw new Exception("Todo funcionário precisa ter a data de validade do ASO cadastrada!");
+        }
+        // Validação de Matrícula preenchida
+        if (funcionario.getMatricula() == null || funcionario.getMatricula().trim().isEmpty()) {
+            throw new Exception("A matrícula do funcionário é obrigatória!");
+        }
+        // --- 🤖 GERADOR AUTOMÁTICO DE LOGIN (primeiro.ultimo) ---
+        if (funcionario.getId() == null && (funcionario.getUsuario() == null || funcionario.getUsuario().trim().isEmpty())) {
+            String nomeCompleto = funcionario.getNome().trim().toLowerCase();
+
+            // Remove espaços duplos e divide o nome por espaços
+            String[] partesDoNome = nomeCompleto.split("\\s+");
+
+            if (partesDoNome.length >= 2) {
+                String primeiroNome = partesDoNome[0];
+                String ultimoSobrenome = partesDoNome[partesDoNome.length - 1];
+                String loginGerado = primeiroNome + "." + ultimoSobrenome;
+
+                // Trata homônimos: Se "paulo.moraes" já existir, tenta "paulo.moraes1", "paulo.moraes2"...
+                String loginFinal = loginGerado;
+                int contador = 1;
+                while (funcionarioRepository.findByUsuario(loginFinal).isPresent()) {
+                    loginFinal = loginGerado + contador;
+                    contador++;
+                }
+
+                funcionario.setUsuario(loginFinal);
+            } else {
+                // Caso a pessoa tenha cadastrado apenas um nome (ex: "Paulo")
+                funcionario.setUsuario(partesDoNome[0]);
+            }
+        }
+
+        // --- 🌟 VALIDAÇÃO DE MATRÍCULA ÚNICA (BLINDAGEM CONTRA DUPLICADOS) ---
+        String matriculaLimpa = funcionario.getMatricula().trim();
+        funcionario.setMatricula(matriculaLimpa);
+
+        // Cenário A: É um novo cadastro (id é nulo) e a matrícula já existe
+        if (funcionario.getId() == null) {
+            if (funcionarioRepository.existsByMatricula(matriculaLimpa)) {
+                throw new Exception("⚠️ Erro: Já existe um colaborador cadastrado com a matrícula " + matriculaLimpa + "!");
+            }
+        } // Cenário B: É uma edição. Só barra se a matrícula já pertencer a OUTRO funcionário
+        else {
+            Optional<Funcionario> comMesmaMatricula = funcionarioRepository.findAllByOrderByMatriculaAsc().stream()
+                    .filter(f -> f.getMatricula().equals(matriculaLimpa) && !f.getId().equals(funcionario.getId()))
+                    .findFirst();
+            if (comMesmaMatricula.isPresent()) {
+                throw new Exception("⚠️ Erro: A matrícula " + matriculaLimpa + " já está sendo usada por outro colaborador!");
+            }
+        }
+
+        // CORREÇÃO: Removemos o .toUpperCase() para não quebrar a sincronia com a matriz do JavaScript!
+        funcionario.setFuncao(funcionario.getFuncao().trim());
+
+        // Se for uma atualização (Edição), mescla os dados para garantir consistência
+        if (funcionario.getId() != null) {
+            Optional<Funcionario> funcionarioExistente = funcionarioRepository.findById(funcionario.getId());
+            if (funcionarioExistente.isPresent()) {
+                Funcionario antigo = funcionarioExistente.get();
+
+                // Se a senha vier em branco do front na edição, mantém a senha que já estava salva
+                if (funcionario.getSenha() == null || funcionario.getSenha().trim().isEmpty()) {
+                    funcionario.setSenha(antigo.getSenha());
+                }
+                // Se o usuário vier em branco, preserva o antigo
+                if (funcionario.getUsuario() == null || funcionario.getUsuario().trim().isEmpty()) {
+                    funcionario.setUsuario(antigo.getUsuario());
+                }
+            }
+        }
+
+        if (funcionario.getSenha() != null && !funcionario.getSenha().trim().isEmpty()) {
+            String senhaAtual = funcionario.getSenha().trim();
+            if (!senhaAtual.startsWith("$2a$") && !senhaAtual.startsWith("$2b$") && !senhaAtual.startsWith("$2y$")) {
+                funcionario.setSenha(passwordEncoder.encode(senhaAtual));
+            } else {
+                funcionario.setSenha(senhaAtual);
+            }
+        }
+
+        if (!Funcionario.PERFIL_ADMIN_SISTEMA.equals(funcionario.getPerfil())
+                && funcionario.getEmpresa() == null) {
+
+            throw new Exception(
+                    "Usuários deste perfil devem estar vinculados a uma empresa."
+            );
+        }
+
+        return funcionarioRepository.save(funcionario);
+    }
+
+    /**
+     * BUSCA TODOS OS FUNCIONÁRIOS CADASTRADOS
+     */
+    public List<Funcionario> listarTodos() {
+        return funcionarioRepository.findAll();
+    }
+
+    public List<Funcionario> listarPorEmpresa(Long empresaId) {
+        return funcionarioRepository.findAllByEmpresaId(empresaId);
+    }
+
+    /**
+     * BUSCA APENAS OS QUE PODEM EMITIR PT (EMITENTES)
+     */
+    public List<Funcionario> listarEmitentes() {
+        return funcionarioRepository.findAll().stream()
+                .filter(f -> f != null && f.isPodeEmitirPt()) // ✅ Alterado para garantir segurança contra nulos e sumir com o aviso
+                .toList();
+    }
+
+    /**
+     * BUSCA APENAS OS QUE PODEM SOLICITAR PT (SOLICITANTES/FISCAIS)
+     */
+    public List<Funcionario> listarSolicitantes() {
+        return funcionarioRepository.findAll().stream()
+                .filter(f -> f != null && f.isPodeSolicitarPt()) // ✅ Alterado para garantir segurança contra nulos e limpar o aviso
+                .toList();
+    }
+
+    /**
+     * BUSCA UM FUNCIONÁRIO PELO ID
+     */
+    public Optional<Funcionario> buscarPorId(Long id) {
+        return funcionarioRepository.findById(id);
+    }
+
+    /**
+     * DELETA UM FUNCIONÁRIO DO SISTEMA
+     */
+    public void deletarFuncionario(Long id) {
+        funcionarioRepository.deleteById(id);
+    }
+}
