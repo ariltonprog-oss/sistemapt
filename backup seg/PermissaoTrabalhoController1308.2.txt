@@ -306,8 +306,8 @@ public class PermissaoTrabalhoController {
         }
     }
 
-    // 7. PASSO 1: Solicitar o início do processo de revalidação (Suporta /solicitar-revalidacao e /fim-jornada)
-    @PostMapping({"/{id}/solicitar-revalidacao", "/{id}/fim-jornada"})
+    // 7. PASSO 1: Solicitar o início do processo de revalidação (Fim de Jornada)
+    @PostMapping("/{id}/solicitar-revalidacao")
     public ResponseEntity<?> solicitarRevalidacao(@PathVariable Long id) {
         if (id == null) {
             return ResponseEntity.badRequest().body("❌ O ID da Permissão de Trabalho não pode ser nulo.");

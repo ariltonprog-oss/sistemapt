@@ -12,9 +12,7 @@ const TRADUCOES = {
     'SOLICITADA': 'Solicitada',
     'EMITIDA': 'Emitida',
     'EM_REVALIDACAO': 'Em Revalidação',
-    'AGUARDANDO_REVALIDACAO': 'Aguardando Revalidação',
     'ENCERRADA': 'Encerrada',
-    'BAIXADA': 'Baixada',
     'CANCELADA': 'Cancelada'
 };
 
@@ -79,19 +77,6 @@ window.filtrarStatus = function (status, event) {
     // Filtra os dados com base na lista global
     if (status === 'TODAS') {
         renderizarTabela(listaPtsGlobal);
-    } else if (status === 'REVALIDAR') {
-        // Agrupa as PTs que exigem revalidação de turno ou estão em trânsito de revalidação
-        const filtradas = listaPtsGlobal.filter(pt => {
-            const st = (pt.status || '').toUpperCase();
-            return st === 'EM_REVALIDACAO' || st === 'AGUARDANDO_REVALIDACAO';
-        });
-        renderizarTabela(filtradas);
-    } else if (status === 'ENCERRADA') {
-        const filtradas = listaPtsGlobal.filter(pt => {
-            const st = (pt.status || '').toUpperCase();
-            return st === 'ENCERRADA' || st === 'BAIXADA';
-        });
-        renderizarTabela(filtradas);
     } else {
         const filtradas = listaPtsGlobal.filter(pt => (pt.status || '').toUpperCase() === status);
         renderizarTabela(filtradas);
@@ -147,8 +132,8 @@ function renderizarTabela(lista) {
             }
             acoesHtml += `<a href="editar-pt.html?id=${pt.id}" class="btn-acao-editar" title="Ver/Editar Solicitação">✏️ Detalhes</a>`;
         }
-        // 🟢 REGRA 2: Status EMITIDA ou EM_REVALIDACAO / AGUARDANDO_REVALIDACAO
-        else if (statusChave === 'EMITIDA' || statusChave === 'EM_REVALIDACAO' || statusChave === 'AGUARDANDO_REVALIDACAO') {
+        // 🟢 REGRA 2: Status EMITIDA ou EM_REVALIDACAO (Monitoramento de Prazo / Limite)
+        else if (statusChave === 'EMITIDA' || statusChave === 'EM_REVALIDACAO') {
             const infoVencimento = calcularVencimentoPT(pt);
             const obsRegulatoriaPadrao = "Permissão bloqueada por falta de retorno de status após vencimento de intervalo regulatório.";
 
@@ -186,7 +171,7 @@ function renderizarTabela(lista) {
                 }
             }
         }
-        // 🟢 REGRA 3: Status ENCERRADA / BAIXADA
+        // 🟢 REGRA 3: Status ENCERRADA
         else {
             acoesHtml += `<a href="visualizar-pt.html?id=${pt.id}" class="btn-acao-visualizar" title="Visualizar PT Encerrada">👁️ Visualizar</a>`;
         }
@@ -220,10 +205,8 @@ function getStatusBadgeClass(status) {
         case 'EMITIDA':
             return 'badge-emitida';
         case 'EM_REVALIDACAO':
-        case 'AGUARDANDO_REVALIDACAO':
             return 'badge-revalidacao';
         case 'ENCERRADA':
-        case 'BAIXADA':
             return 'badge-encerrada';
         default:
             return 'badge-solicitada';
@@ -239,15 +222,18 @@ function calcularVencimentoPT(pt) {
     const horas = dataRef.getHours();
     const minutos = dataRef.getMinutes();
     
+    // Verifica se foi iniciada após o fim do expediente ADM (17:45)
     const isAposExpediente = (horas > 17) || (horas === 17 && minutos >= 45);
     
     let limiteVencimento = new Date(dataRef);
     let tipoRegra = 'ADM';
     
     if (isAposExpediente) {
+        // 🌙 Regra especial pós-expediente: 12 horas de validade a partir do início
         tipoRegra = 'POS_EXPEDIENTE';
         limiteVencimento = new Date(dataRef.getTime() + 12 * 60 * 60 * 1000);
     } else {
+        // ☀️ Regra Turno ADM (incluindo início antecipado): Vence às 08:00 AM do dia seguinte (+ revalidações)
         limiteVencimento.setHours(8, 0, 0, 0);
         limiteVencimento.setDate(limiteVencimento.getDate() + 1 + revalCount);
     }

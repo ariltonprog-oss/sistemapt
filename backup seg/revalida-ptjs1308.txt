@@ -13,21 +13,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Preenche data e hora atuais automaticamente para o término da jornada
     const agora = new Date();
-    if (document.getElementById('revalData')) {
-        document.getElementById('revalData').value = agora.toISOString().split('T')[0];
-    }
-    if (document.getElementById('revalHora')) {
-        document.getElementById('revalHora').value = agora.toTimeString().slice(0, 5);
-    }
+    document.getElementById('revalData').value = agora.toISOString().split('T')[0];
+    document.getElementById('revalHora').value = agora.toTimeString().slice(0, 5);
 
     // Preenche o Emitente com o usuário logado
     const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
-    if (usuarioLogado && usuarioLogado.nome && document.getElementById('revalEmitente')) {
+    if (usuarioLogado && usuarioLogado.nome) {
         document.getElementById('revalEmitente').value = usuarioLogado.nome;
     }
 
     try {
-        // 1. Busca os dados gerais da PT
         const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}`, {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
         });
@@ -35,14 +30,14 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (response.ok) {
             ptAtual = await response.json();
             
-            // Preenche os campos do cabeçalho de resumo
+            // 1. Preenche os campos do cabeçalho de resumo
             if (document.getElementById('plantaArea')) document.getElementById('plantaArea').value = ptAtual.plantaArea || '';
             if (document.getElementById('turnoGrupo')) document.getElementById('turnoGrupo').value = ptAtual.turnoGrupo || '';
             if (document.getElementById('tag')) document.getElementById('tag').value = ptAtual.tag || '';
             if (document.getElementById('ordemPj')) document.getElementById('ordemPj').value = ptAtual.ordemPj || '';
             if (document.getElementById('descricaoAtividade')) document.getElementById('descricaoAtividade').value = ptAtual.descricaoAtividade || '';
 
-            // Carrega os executantes/equipe já vinculados à PT
+            // 2. Carrega os executantes/equipe já vinculados à PT
             const listaExecutantesBackend = ptAtual.executantes || ptAtual.equipeExecutante || ptAtual.executantesReais || [];
             if (Array.isArray(listaExecutantesBackend) && listaExecutantesBackend.length > 0) {
                 executantesReais = listaExecutantesBackend.map(e => ({
@@ -51,6 +46,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     funcao: e.funcao || '---'
                 }));
             } else if (ptAtual.solicitante) {
+                // Caso o backend traga o solicitante principal
                 executantesReais.push({
                     matricula: ptAtual.solicitante.matricula || '',
                     nome: ptAtual.solicitante.nome || '',
@@ -59,7 +55,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
             atualizarTabelaExecutantes();
 
-            // Controle do ciclo de revalidações (Limite de 4 revalidações após a emissão = 5 dias total)
+            // 3. Controla o ciclo de revalidações (Limite de 4 revalidações após a emissão = 5 dias total)
             const qtdRevalAtuais = ptAtual.quantidadeRevalidacoes || 0;
             const proximaEtapa = qtdRevalAtuais + 1;
 
@@ -69,21 +65,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
-            if (document.getElementById('revalEtapa')) {
-                document.getElementById('revalEtapa').value = `${proximaEtapa}ª Revalidação (Ciclo ${proximaEtapa} de 4)`;
-            }
+            document.getElementById('revalEtapa').value = `${proximaEtapa}ª Revalidação (Ciclo ${proximaEtapa} de 4)`;
         } else {
             alert("Erro ao buscar dados da PT.");
         }
-
-        // 2. NOVA ROTINA: Consulta o status da próxima ação para gerenciar os botões/etapas de turno
-        await atualizarEstadoBotoesJornada(ptId);
-
     } catch (error) {
         console.error("Erro de conexão:", error);
     }
 
-    // 3. Gestão de Adição/Remoção de Executantes
+    // 4. Gestão de Adição/Remoção de Executantes
     const inputMatricula = document.getElementById('inputMatricula');
     const inputNomeExecutante = document.getElementById('inputNomeExecutante');
     const btnAdicionarExecutante = document.getElementById('btnAdicionarExecutante');
@@ -144,107 +134,67 @@ document.addEventListener("DOMContentLoaded", async function () {
         atualizarTabelaExecutantes();
     };
 
-    // 4. Envio do formulário de revalidação
+    // 5. Envio do formulário de revalidação
     const formRevalidacao = document.getElementById('formRevalidacao');
-    if (formRevalidacao) {
-        formRevalidacao.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    formRevalidacao.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            const statusTurnoElement = document.getElementById('statusTurno');
-            const statusTurno = statusTurnoElement ? statusTurnoElement.value : '';
+        const statusTurno = document.getElementById('statusTurno').value;
 
-            let servicoConcluido = false;
-            let revalidacaoParaContinuidade = true;
-            let servicoInterrompido = false;
+        let servicoConcluido = false;
+        let revalidacaoParaContinuidade = true;
+        let servicoInterrompido = false;
 
-            if (statusTurno === 'CONCLUIDO') {
-                servicoConcluido = true;
-                revalidacaoParaContinuidade = false;
-            } else if (statusTurno === 'INTERROMPIDO') {
-                servicoConcluido = false;
-                revalidacaoParaContinuidade = false;
-                servicoInterrompido = true;
-            } else {
-                servicoConcluido = false;
-                revalidacaoParaContinuidade = true;
-            }
-
-            const payload = {
-                dataTerminoJornada: document.getElementById('revalData') ? document.getElementById('revalData').value : '',
-                horaTerminoJornada: document.getElementById('revalHora') ? document.getElementById('revalHora').value : '',
-                emitente: document.getElementById('revalEmitente') ? document.getElementById('revalEmitente').value : '',
-                servicoConcluido: servicoConcluido,
-                revalidacaoParaContinuidade: revalidacaoParaContinuidade,
-                servicoInterrompido: servicoInterrompido,
-                observacoes: document.getElementById('revalObservacoes') ? document.getElementById('revalObservacoes').value : '',
-                executantesReais: executantesReais
-            };
-
-            try {
-                const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/revalidar`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('token')
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    alert("Revalidação e registro de turno salvos com sucesso!");
-                    
-                    if (statusTurno === 'CONCLUIDO' || statusTurno === 'INTERROMPIDO') {
-                        window.location.href = `baixar-pt.html?id=${ptId}`;
-                    } else {
-                        window.location.href = "dashboard.html";
-                    }
-                } else {
-                    alert("Erro ao salvar a revalidação no servidor.");
-                }
-            } catch (error) {
-                console.error("Erro de comunicação:", error);
-                alert("Falha de comunicação com o servidor.");
-            }
-        });
-    }
-});
-
-// Função para sincronizar a visibilidade dos botões via classes CSS sem inline styles
-async function atualizarEstadoBotoesJornada(id) {
-    try {
-        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}/status-revalidacao`, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-        });
-        
-        if (!response.ok) {
-            throw new Error("Erro ao consultar o status da revalidação.");
+        if (statusTurno === 'CONCLUIDO') {
+            servicoConcluido = true;
+            revalidacaoParaContinuidade = false;
+        } else if (statusTurno === 'INTERROMPIDO') {
+            servicoConcluido = false;
+            revalidacaoParaContinuidade = false;
+            servicoInterrompido = true;
+        } else {
+            servicoConcluido = false;
+            revalidacaoParaContinuidade = true;
         }
 
-        const proximoPasso = await response.text();
+        const payload = {
+            dataTerminoJornada: document.getElementById('revalData').value,
+            horaTerminoJornada: document.getElementById('revalHora').value,
+            emitente: document.getElementById('revalEmitente').value,
+            servicoConcluido: servicoConcluido,
+            revalidacaoParaContinuidade: revalidacaoParaContinuidade,
+            servicoInterrompido: servicoInterrompido,
+            observacoes: document.getElementById('revalObservacoes').value,
+            executantesReais: executantesReais
+        };
 
-        const btnFim = document.getElementById('btnFimJornada');
-        const btnInicio = document.getElementById('btnInicioJornada');
+        try {
+            const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/revalidar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify(payload)
+            });
 
-        // Se os elementos existirem na tela, alterna as classes de visibilidade
-        if (btnFim && btnInicio) {
-            if (proximoPasso === "FIM_JORNADA") {
-                btnFim.classList.remove('d-none');
-                btnFim.disabled = false;
+            if (response.ok) {
+                alert("Revalidação e registro de turno salvos com sucesso!");
                 
-                btnInicio.classList.add('d-none');
-                btnInicio.disabled = true;
+                if (statusTurno === 'CONCLUIDO' || statusTurno === 'INTERROMPIDO') {
+                    window.location.href = `baixar-pt.html?id=${ptId}`;
+                } else {
+                    window.location.href = "dashboard.html";
+                }
             } else {
-                btnFim.classList.add('d-none');
-                btnFim.disabled = true;
-
-                btnInicio.classList.remove('d-none');
-                btnInicio.disabled = false;
+                alert("Erro ao salvar a revalidação no servidor.");
             }
+        } catch (error) {
+            console.error("Erro de comunicação:", error);
+            alert("Falha de comunicação com o servidor.");
         }
-    } catch (error) {
-        console.error("Erro ao sincronizar botões de jornada:", error);
-    }
-}
+    });
+});
 
 function atualizarTabelaExecutantes() {
     const tbodyExecutantes = document.getElementById('tbodyExecutantes');
@@ -273,38 +223,4 @@ function atualizarTabelaExecutantes() {
         `;
         tbodyExecutantes.appendChild(tr);
     });
-}
-// Função para executar o fim de jornada / encerramento de turno da PT
-async function executarFimJornada() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const ptId = urlParams.get('id');
-
-    if (!ptId) {
-        alert("ID da Permissão de Trabalho não encontrado na URL.");
-        return;
-    }
-
-    if (!confirm("Deseja realmente registrar o fim de jornada para esta Permissão de Trabalho?")) {
-        return;
-    }
-
-    try {
-        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/fim-jornada`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            alert("Fim de jornada registrado com sucesso!");
-            window.location.href = 'dashboard.html';
-        } else {
-            const erroMsg = await response.text();
-            alert("Erro ao registrar fim de jornada: " + (erroMsg || response.statusText));
-        }
-    } catch (error) {
-        console.error("Erro de conexão:", error);
-        alert("Não foi possível conectar ao servidor para registrar o fim de jornada.");
-    }
 }

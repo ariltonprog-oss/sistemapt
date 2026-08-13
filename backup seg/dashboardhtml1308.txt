@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoramento de PTs</title>
     <link rel="stylesheet" href="../css/style.css">
-</head>
+
 
 <body>
     <div id="sidebar-wrapper"></div>
@@ -19,13 +19,15 @@
             </div>
         </header>
 
+
         <!-- FILTROS DE STATUS DA PT -->
         <div class="dashboard-filtros">
             <button type="button" class="btn-filtro ativo" onclick="filtrarStatus('TODAS', event)">📋 Todas</button>
             <button type="button" class="btn-filtro" onclick="filtrarStatus('SOLICITADA', event)">⏳ Solicitadas</button>
-            <button type="button" class="btn-filtro" onclick="filtrarStatus('EMITIDA', event)">🟢 Emitidas (Em Execução)</button>
-            <button type="button" class="btn-filtro" onclick="filtrarStatus('REVALIDAR', event)">🔄 Revalidar Turno</button>
-            <button type="button" class="btn-filtro" onclick="filtrarStatus('ENCERRADA', event)">🏁 Encerradas / Baixadas</button>
+            <button type="button" class="btn-filtro" onclick="filtrarStatus('EMITIDA', event)">🟢 Emitidas (Em
+                Execução)</button>
+            <button type="button" class="btn-filtro" onclick="filtrarStatus('ENCERRADA', event)">🏁 Encerradas /
+                Baixadas</button>
         </div>
 
         <!-- CONTAINER / CARD DA TABELA -->

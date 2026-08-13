@@ -143,3 +143,55 @@
 .coluna-acoes {
     white-space: nowrap;
 }
+/* Container Flexível para alinhar os 4 botões lado a lado */
+.acoes-form-unificada {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 15px;
+}
+
+/* Formato e tamanho 100% padronizados para todos os botões */
+.acoes-form-unificada .btn-acao-custom {
+    flex: 1;
+    min-width: 220px;
+    height: 48px; /* Altura idêntica */
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: 6px; /* Mesmos cantos arredondados */
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: opacity 0.2s ease;
+    color: #ffffff !important;
+}
+
+.acoes-form-unificada .btn-acao-custom:hover {
+    opacity: 0.9;
+}
+
+/* Cores específicas mantendo o mesmo padrão visual robusto */
+.btn-fim-turno {
+    background-color: #e0a800; /* Laranja/Amarelo de alerta */
+}
+
+.btn-inicio-turno {
+    background-color: #17a2b8; /* Azul cyan/informativo */
+}
+
+.btn-salvar-custom {
+    background-color: #28a745; /* Verde igual ao seu botão de salvar */
+}
+
+.btn-cancelar-custom {
+    background-color: #dc3545; /* Vermelho igual ao seu botão de cancelar */
+}

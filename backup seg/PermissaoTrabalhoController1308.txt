@@ -236,6 +236,7 @@ public class PermissaoTrabalhoController {
                     ptExistente.setRequerLoto(ptAtualizada.isRequerLoto());
                     ptExistente.setRequerAtividadePintura(ptAtualizada.isRequerAtividadePintura());
 
+                    // ✅ CORREÇÃO: Atualizando também os objetos de agentes químicos, diphoterine e ruído
                     ptExistente.setAgentesQuimicos(ptAtualizada.getAgentesQuimicos());
                     ptExistente.setDiphoterine(ptAtualizada.getDiphoterine());
                     ptExistente.setRuido(ptAtualizada.getRuido());
@@ -244,6 +245,7 @@ public class PermissaoTrabalhoController {
                         ptExistente.setExecutantes(ptAtualizada.getExecutantes());
                     }
 
+                    // 🪖 RECALCULO DOS EPIs DINÂMICOS COM BASE NAS FLAGS ATUALIZADAS
                     try {
                         Especialidade esp = ptExistente.getAreaAtuacao();
                         if (esp != null) {
@@ -270,6 +272,7 @@ public class PermissaoTrabalhoController {
                                 atividades.add("PINTURA");
                             }
 
+                            // ✅ CORREÇÃO: Incluindo a checagem correta dos riscos químicos e físicos no recálculo
                             if (ptExistente.getAgentesQuimicos() != null && ptExistente.getAgentesQuimicos().isAtivo()) {
                                 atividades.add("QUIMICO");
                             }
@@ -292,22 +295,8 @@ public class PermissaoTrabalhoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 6. VERIFICAR STATUS DA PRÓXIMA AÇÃO DE REVALIDAÇÃO (FIM_JORNADA ou INICIO_JORNADA)
-    @GetMapping("/{id}/status-revalidacao")
-    public ResponseEntity<String> verificarStatusRevalidacao(@PathVariable Long id) {
-        if (id == null) {
-            return ResponseEntity.badRequest().body("❌ O ID da Permissão de Trabalho não pode ser nulo.");
-        }
-        try {
-            String status = service.getStatusProximaAcao(id);
-            return ResponseEntity.ok(status);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("❌ " + e.getMessage());
-        }
-    }
-
-    // 7. PASSO 1: Solicitar o início do processo de revalidação (Suporta /solicitar-revalidacao e /fim-jornada)
-    @PostMapping({"/{id}/solicitar-revalidacao", "/{id}/fim-jornada"})
+    // 6. PASSO 1: Solicitar o início do processo de revalidação
+    @PostMapping("/{id}/solicitar-revalidacao")
     public ResponseEntity<?> solicitarRevalidacao(@PathVariable Long id) {
         if (id == null) {
             return ResponseEntity.badRequest().body("❌ O ID da Permissão de Trabalho não pode ser nulo.");
@@ -321,7 +310,8 @@ public class PermissaoTrabalhoController {
         }
     }
 
-    // 8. PASSO 2: Confirmar a abertura da jornada e gravar os dados/gases (Início de Jornada)
+   
+    // 7. PASSO 2: Confirmar a abertura da jornada e gravar os dados/gases
     @PostMapping("/{id}/revalidar")
     public ResponseEntity<?> confirmarAberturaJornada(
             @PathVariable Long id,
@@ -339,7 +329,7 @@ public class PermissaoTrabalhoController {
         }
     }
 
-    // 9. BAIXA DA PT (UNIFICADA E AUDITADA PELO SERVICE)
+    // 8. BAIXA DA PT (UNIFICADA E AUDITADA PELO SERVICE)
     @PostMapping("/{id}/baixa")
     public ResponseEntity<String> realizarBaixa(@PathVariable Long id, @RequestBody BaixaPtRequestDTO dto) {
         try {
