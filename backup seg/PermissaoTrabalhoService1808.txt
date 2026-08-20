@@ -402,18 +402,7 @@ public class PermissaoTrabalhoService {
         }
 
         List<RevalidaPermissao> historico = revalidaRepository.findByPermissaoTrabalhoIdOrderByDataHoraRevalidacaoAsc(pt.getId());
-
-        if (historico.isEmpty()) {
-            // Se não tem histórico, o turno está rodando desde a emissão da PT
-            if (pt.getDataHoraEmissao() != null) {
-                long horasDesdeEmissao = ChronoUnit.HOURS.between(pt.getDataHoraEmissao(), LocalDateTime.now());
-                if (horasDesdeEmissao > 24) {
-                    pt.setStatus("BAIXA_COMPULSORIA");
-                    ptRepository.save(pt);
-                }
-            }
-        } else {
-            // Se já tem histórico, valida o último turno registrado
+        if (!historico.isEmpty()) {
             RevalidaPermissao ultima = historico.get(historico.size() - 1);
             if (ultima.getTerminoJornada() == null && ultima.getInicioJornada() != null) {
                 long horasAbertas = ChronoUnit.HOURS.between(ultima.getInicioJornada(), LocalDateTime.now());
@@ -423,15 +412,5 @@ public class PermissaoTrabalhoService {
                 }
             }
         }
-    }
-
-    public PermissaoTrabalho buscarPorId(Long id) throws Exception {
-        PermissaoTrabalho pt = ptRepository.findById(id)
-                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
-
-        // Garante que se abrir a PT isolada e ela estourou o prazo, atualiza o status na hora
-        verificarEAtualizarExpiracao(pt);
-
-        return pt;
     }
 }

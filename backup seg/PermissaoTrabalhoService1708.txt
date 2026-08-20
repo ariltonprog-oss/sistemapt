@@ -2,7 +2,6 @@ package com.gestaopt.sistemapt.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gestaopt.sistemapt.dto.BaixaPtRequestDTO;
 import com.gestaopt.sistemapt.dto.EmitirPermissaoRequestDTO;
+import com.gestaopt.sistemapt.dto.GerenciarPtRequestDTO;
 import com.gestaopt.sistemapt.model.Especialidade;
 import com.gestaopt.sistemapt.model.Funcionario;
 import com.gestaopt.sistemapt.model.PermissaoTrabalho;
+import com.gestaopt.sistemapt.model.PtExecutanteHistorico;
+import com.gestaopt.sistemapt.model.PtRiscoDinamico;
 import com.gestaopt.sistemapt.model.RevalidaPermissao;
 import com.gestaopt.sistemapt.repository.FuncionarioRepository;
 import com.gestaopt.sistemapt.repository.PermissaoTrabalhoRepository;
@@ -24,8 +26,9 @@ public class PermissaoTrabalhoService {
 
     private final PermissaoTrabalhoRepository ptRepository;
     private final RevalidaPermissaoRepository revalidaRepository;
-    private final FuncionarioRepository funcionarioRepository;
+    private final FuncionarioRepository funcionarioRepository; // Injetado para buscar o emitente logado[cite: 5]
 
+    // Construtor atualizado com todas as dependências necessárias[cite: 5]
     public PermissaoTrabalhoService(PermissaoTrabalhoRepository ptRepository,
             RevalidaPermissaoRepository revalidaRepository,
             FuncionarioRepository funcionarioRepository) {
@@ -34,6 +37,11 @@ public class PermissaoTrabalhoService {
         this.funcionarioRepository = funcionarioRepository;
     }
 
+    /**
+     * ORQUESTRADOR DA EMISSÃO: Recebe a requisição PATCH do front-end, vincula
+     * o emitente da sessão e o turno/grupo, e dispara as validações do
+     * SESMT[cite: 5].
+     */
     @Transactional
     public PermissaoTrabalho emitirPt(Long id, EmitirPermissaoRequestDTO dto) throws Exception {
         if (id == null) {
@@ -50,6 +58,7 @@ public class PermissaoTrabalhoService {
         Funcionario emitente = funcionarioRepository.findById(dto.getEmitenteId())
                 .orElseThrow(() -> new Exception("Funcionário emitente não encontrado no sistema."));
 
+        // Vincula o emitente e atualiza os dados enviados pelo DTO[cite: 5]
         pt.setEmitente(emitente);
         pt.setTurnoGrupo(dto.getTurnoGrupo());
         pt.setDataHoraInicio(dto.getDataHoraInicio());
@@ -59,18 +68,26 @@ public class PermissaoTrabalhoService {
         pt.setNomeAst(dto.getNomeAst());
         pt.setMonitoramentoAmbiental(dto.getMonitoramentoAmbiental());
         pt.setDataHoraEmissao(LocalDateTime.now());
+
+        // Atualiza o status para EMITIDA[cite: 5]
         pt.setStatus("EMITIDA");
 
         return ptRepository.save(pt);
     }
 
+    /**
+     * VALIDA E EMITE A PT (Trava contra riscos, perfis e turno em tempo
+     * real)[cite: 5]
+     */
     public PermissaoTrabalho validarEEmitirPT(PermissaoTrabalho pt) throws Exception {
         LocalDate hoje = LocalDate.now();
 
+        // --- NOVA TRAVA: TURNO / GRUPO OBRIGATÓRIO NA EMISSÃO ---[cite: 5]
         if (pt.getTurnoGrupo() == null || pt.getTurnoGrupo().trim().isEmpty()) {
             throw new Exception("O Turno / Grupo deve ser informado pelo emitente para realizar a emissão da PT!");
         }
 
+        // --- NOVA TRAVA: EXCLUSÃO MÚTUA QUENTE vs FRIO ---[cite: 5]
         if (pt.isRequerTrabalhoQuente() && pt.isRequerTrabalhoFrio()) {
             throw new Exception("Bloqueio SESMT: A atividade não pode ser classificada como Trabalho a Quente e Trabalho a Frio simultaneamente!");
         }
@@ -78,28 +95,32 @@ public class PermissaoTrabalhoService {
         Funcionario solicitante = pt.getSolicitante();
         Funcionario emitente = pt.getEmitente();
 
+        // 1. VALIDAÇÃO DO EMITENTE[cite: 5]
         if (emitente == null || !emitente.isPodeEmitirPt()) {
             throw new Exception("O funcionário não possui perfil de EMITENTE autorizado!");
         }
         if (emitente.getValidadeASO() == null || emitente.getValidadeASO().isBefore(hoje)) {
-            throw new Exception("O ASO do Emitente está vencido ou ausente!");
+            throw new Exception("O ASO do Emitente (" + (emitente.getNome() != null ? emitente.getNome() : "Não Informado") + ") está vencido ou ausente!");
         }
 
+        // 2. VALIDAÇÃO DO SOLICITANTE[cite: 5]
         if (solicitante == null) {
             throw new Exception("Toda PT precisa ter um Solicitante definido.");
         }
         if (solicitante.getValidadeASO() == null || solicitante.getValidadeASO().isBefore(hoje)) {
-            throw new Exception("O ASO do Solicitante está vencido ou ausente!");
+            throw new Exception("O ASO do Solicitante (" + solicitante.getNome() + ") está vencido ou ausente!");
         }
         if (solicitante.getValidadeReciclagemPt() == null || solicitante.getValidadeReciclagemPt().isBefore(hoje)) {
-            throw new Exception("A Reciclagem de PT do Solicitante está vencida ou ausente!");
+            throw new Exception("A Reciclagem de PT do Solicitante (" + solicitante.getNome() + ") está vencida ou ausente!");
         }
 
+        // 3. REGRAS AUTOMÁTICAS BASEADAS NA ESPECIALIDADE DA TAREFA[cite: 5]
         if (pt.getAreaAtuacao() == Especialidade.SOLDA) {
-            pt.setRequerTrabalhoQuente(true);
-            pt.setRequerTrabalhoFrio(false);
+            pt.setRequerTrabalhoQuente(true); // Solda herda automaticamente risco quente[cite: 5]
+            pt.setRequerTrabalhoFrio(false);   // Garante que se for solda, desmarca o frio[cite: 5]
         }
 
+        // Descobre se o solicitante vai executar ou só fiscalizar[cite: 5]
         boolean solicitanteEhExecutante = false;
         if (pt.getExecutantes() != null) {
             for (Funcionario exec : pt.getExecutantes()) {
@@ -110,12 +131,16 @@ public class PermissaoTrabalhoService {
             }
         }
 
+        // Aplica a matriz de NRs no solicitante[cite: 5]
         if (solicitanteEhExecutante) {
             validarMatrizNrsRigorosa(solicitante, pt);
         } else {
             validarMatrizNrsAcessoFiscal(solicitante, pt);
         }
 
+        // =========================================================================
+        // 4. PROCESSAMENTO DOS RISCOS DETALHADOS E CÁLCULO DINÂMICO DE EPIs[cite: 5]
+        // =========================================================================
         List<String> riscosMapeados = extrairRiscosEAtividades(pt);
         if (pt.getAreaAtuacao() != null) {
             List<String> episCalculados = pt.getAreaAtuacao().calcularEpisDinamicos(riscosMapeados);
@@ -126,6 +151,10 @@ public class PermissaoTrabalhoService {
         return ptRepository.save(pt);
     }
 
+    /**
+     * Método auxiliar para traduzir as flags e a nova matriz JSON em tags de
+     * regras de negócio[cite: 5]
+     */
     private List<String> extrairRiscosEAtividades(PermissaoTrabalho pt) {
         List<String> atividades = new ArrayList<>();
 
@@ -158,9 +187,10 @@ public class PermissaoTrabalhoService {
             atividades.add("RUIDO");
             if (pt.getRuido().getOpcoesSelecionadas() != null) {
                 for (String opcao : pt.getRuido().getOpcoesSelecionadas()) {
-                    if (opcao.toLowerCase().contains("dupla")) {
+                    String opLower = opcao.toLowerCase();
+                    if (opLower.contains("dupla")) {
                         atividades.add("RUIDO_DUPLA");
-                    } else if (opcao.toLowerCase().contains("simples")) {
+                    } else if (opLower.contains("simples")) {
                         atividades.add("RUIDO_SIMPLES");
                     }
                 }
@@ -191,31 +221,32 @@ public class PermissaoTrabalhoService {
     }
 
     /**
-     * CORREÇÃO: Valida se o turno estourou 24 horas sem encerramento. Caso
-     * positivo, força o status para ENCERRAMENTO OBRIGATÓRIO /
-     * BAIXA_COMPULSORIA.
+     * Retorna o próximo passo esperado para a interface alternar o botão entre
+     * FIM_JORNADA e INICIO_JORNADA[cite: 5]
      */
     public String getStatusProximaAcao(Long permissaoId) {
         List<RevalidaPermissao> historico = revalidaRepository.findByPermissaoTrabalhoIdOrderByDataHoraRevalidacaoAsc(permissaoId);
 
+        // Se não há histórico, a PT acabou de ser emitida e o turno está rodando -> Próximo passo é FIM_JORNADA[cite: 5]
         if (historico.isEmpty()) {
             return "FIM_JORNADA";
         }
 
+        // Pega a última revalidação salva[cite: 5]
         RevalidaPermissao ultima = historico.get(historico.size() - 1);
 
-        // Se o término é nulo, checamos há quanto tempo a jornada foi iniciada
-        if (ultima.getTerminoJornada() == null && ultima.getInicioJornada() != null) {
-            long horasAbertas = ChronoUnit.HOURS.between(ultima.getInicioJornada(), LocalDateTime.now());
-            if (horasAbertas > 24) {
-                return "BAIXA_COMPULSORIA"; // Excede o limite legal de 24h sem fechar turno
-            }
+        // Se o término da jornada é nulo, significa que a jornada está rodando -> Próximo passo é FIM_JORNADA[cite: 5]
+        if (ultima.getTerminoJornada() == null) {
             return "FIM_JORNADA";
         }
 
+        // Se o término NÃO é nulo, a jornada anterior foi fechada -> Próximo passo é INICIO_JORNADA[cite: 5]
         return "INICIO_JORNADA";
     }
 
+    /**
+     * PROCESSO DE REVALIDAÇÃO - PASSO 1: Fim do Turno / Jornada[cite: 5]
+     */
     @Transactional
     public PermissaoTrabalho solicitarRevalidacao(Long id) throws Exception {
         if (id == null) {
@@ -226,9 +257,10 @@ public class PermissaoTrabalhoService {
                 .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
 
         if (!pt.podeRevalidar()) {
-            throw new Exception("⚠️ Limite de dias/campos atingido para esta permissão. É obrigatório ENCERRAR a atividade!");
+            throw new Exception("⚠️ Limite de 5 dias/campos atingido para esta permissão. É obrigatório ENCERRAR a atividade ou emitir um novo documento!");
         }
 
+        // Busca o histórico para registrar o término da jornada atual[cite: 5]
         List<RevalidaPermissao> historico = revalidaRepository.findByPermissaoTrabalhoIdOrderByDataHoraRevalidacaoAsc(id);
 
         if (historico.isEmpty()) {
@@ -241,15 +273,6 @@ public class PermissaoTrabalhoService {
         } else {
             RevalidaPermissao ultima = historico.get(historico.size() - 1);
             if (ultima.getTerminoJornada() == null) {
-                // CORREÇÃO DE SEGURANÇA: Se passaram mais de 24h desde o início sem fechar, 
-                // podemos opcionalmente barrar ou registrar a expiração.
-                long horas = ChronoUnit.HOURS.between(ultima.getInicioJornada(), LocalDateTime.now());
-                if (horas > 24) {
-                    pt.setStatus("BAIXA_COMPULSORIA");
-                    ptRepository.save(pt);
-                    throw new Exception("⚠️ Turno expirado há mais de 24 horas sem encerramento. A PT foi direcionada para Baixa Compulsória!");
-                }
-
                 ultima.setTerminoJornada(LocalDateTime.now());
                 revalidaRepository.save(ultima);
             }
@@ -259,6 +282,9 @@ public class PermissaoTrabalhoService {
         return ptRepository.save(pt);
     }
 
+    /**
+     * PROCESSO DE REVALIDAÇÃO - PASSO 2: Início da Próxima Jornada[cite: 5]
+     */
     @Transactional
     public RevalidaPermissao confirmarAberturaJornada(Long id, RevalidaPermissao novaJornada) throws Exception {
         if (id == null) {
@@ -269,21 +295,21 @@ public class PermissaoTrabalhoService {
                 .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
 
         if (!pt.podeRevalidar()) {
-            throw new Exception("⚠️ Limite máximo de dias operacionais esgotado.");
+            throw new Exception("⚠️ Limite máximo de 5 dias operacionais esgotado.");
         }
 
         if (pt.requerMonitoramentoAmbiental()) {
             if (novaJornada.getGasOxigenio() == null
                     || novaJornada.getGasExplosividade() == null
                     || novaJornada.getGasToxicidade() == null) {
-                throw new Exception("⚠️ Bloqueio de Segurança: Monitoramento de Gases obrigatório!");
+                throw new Exception("⚠️ Bloqueio de Segurança: Monitoramento de Gases obrigatório para Espaço Confinado / Trabalho a Quente em Área Classificada!");
             }
         }
 
         novaJornada.setPermissaoTrabalho(pt);
         novaJornada.setDataHoraRevalidacao(LocalDateTime.now());
         novaJornada.setInicioJornada(LocalDateTime.now());
-        novaJornada.setTerminoJornada(null);
+        novaJornada.setTerminoJornada(null); // Mantém nulo para que o próximo ciclo exija o encerramento[cite: 5]
 
         pt.setQtdRevalidadas(pt.getQtdRevalidadas() + 1);
         pt.setStatus("EMITIDA");
@@ -292,56 +318,96 @@ public class PermissaoTrabalhoService {
         return revalidaRepository.save(novaJornada);
     }
 
+    /**
+     * MATRIZ RIGOROSA (Executantes)[cite: 5]
+     */
     private void validarMatrizNrsRigorosa(Funcionario f, PermissaoTrabalho pt) throws Exception {
         String nome = f.getNome();
         LocalDate hoje = LocalDate.now();
 
         if (pt.isRequerAreaClassificada() && (f.getValidadeNr20() == null || f.getValidadeNr20().isBefore(hoje))) {
-            throw new Exception(nome + " sem NR-20 válida para Área Classificada!");
+            throw new Exception(nome + " vai executar serviço em ÁREA CLASSIFICADA mas não possui NR-20 válida!");
         }
         if (pt.isRequerTrabalhoAltura() && (f.getValidadeNr35() == null || f.getValidadeNr35().isBefore(hoje))) {
-            throw new Exception(nome + " sem NR-35 válida para Altura!");
+            throw new Exception(nome + " vai executar o serviço mas não possui NR-35 (Altura) válida!");
         }
         if (pt.isRequerEspacoConfinado() && (f.getValidadeNr33() == null || f.getValidadeNr33().isBefore(hoje))) {
-            throw new Exception(nome + " sem NR-33 válida para Espaço Confinado!");
+            throw new Exception(nome + " vai executar o serviço mas não possui NR-33 (Espaço Confinado) válida!");
         }
         if (pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
-            throw new Exception(nome + " sem NR-10 válida para Risco Elétrico!");
+            throw new Exception(nome + " vai intervir em circuitos mas não possui NR-10 válida!");
         }
         if (pt.isRequerAltaTensaoSep() && (f.getValidadeNr10Sep() == null || f.getValidadeNr10Sep().isBefore(hoje))) {
-            throw new Exception(nome + " sem NR-10 SEP válida!");
+            throw new Exception(nome + " vai intervir em alta tensão mas não possui NR-10 SEP válida!");
+        }
+        if (pt.isRequerTrabalhoQuente() && (f.getValidadeReciclagemPt() == null || f.getValidadeReciclagemPt().isBefore(hoje))) {
+            throw new Exception(nome + " vai executar Trabalho a Quente mas sua reciclagem/treinamento está inválido!");
+        }
+        if ((pt.getAreaAtuacao() == Especialidade.AUTOMACAO || pt.getAreaAtuacao() == Especialidade.INSTRUMENTACAO)
+                && pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
+            throw new Exception("Bloqueio: Intervenção de " + pt.getAreaAtuacao() + " em painéis exige NR-10 ativa!");
         }
     }
 
+    /**
+     * MATRIZ FLEXÍVEL (Fiscal)[cite: 5]
+     */
     private void validarMatrizNrsAcessoFiscal(Funcionario f, PermissaoTrabalho pt) throws Exception {
+        String nome = f.getNome();
         LocalDate hoje = LocalDate.now();
+
         if (pt.isRequerAreaClassificada() && (f.getValidadeNr20() == null || f.getValidadeNr20().isBefore(hoje))) {
-            throw new Exception("Fiscal sem NR-20 válida.");
+            throw new Exception("Bloqueio de Acesso: O Fiscal " + nome + " não pode entrar na Área Classificada pois não possui NR-20 válida!");
         }
         if (pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
-            throw new Exception("Fiscal sem NR-10 válida.");
+            throw new Exception("Bloqueio de Acesso: O Fiscal " + nome + " não pode entrar na sala elétrica/CCM pois não possui NR-10 válida!");
         }
     }
 
+    /**
+     * BAIXA DA PT[cite: 5]
+     */
     public String encerrarEAuditarPT(PermissaoTrabalho pt, List<Funcionario> executantesReais) {
+        StringBuilder relatorioAdvertencias = new StringBuilder();
+
+        for (Funcionario exec : executantesReais) {
+            try {
+                validarMatrizNrsRigorosa(exec, pt);
+            } catch (Exception e) {
+                relatorioAdvertencias.append("⚠️ ADVERTÊNCIA para [")
+                        .append(exec.getNome())
+                        .append("] da empresa [")
+                        .append(exec.getEmpresa() != null ? exec.getEmpresa() : "Próprio")
+                        .append("]. Motivo: Trabalhou irregularmente. ")
+                        .append(e.getMessage())
+                        .append("\n");
+            }
+        }
+
         pt.setStatus("ENCERRADA");
         ptRepository.save(pt);
-        return "PT encerrada com sucesso!";
+
+        if (relatorioAdvertencias.length() == 0) {
+            return "PT encerrada com 100% de conformidade de segurança!";
+        } else {
+            return relatorioAdvertencias.toString();
+        }
     }
 
     public List<PermissaoTrabalho> listarTodas() {
-        List<PermissaoTrabalho> todas = ptRepository.findAll();
-        for (PermissaoTrabalho pt : todas) {
-            verificarEAtualizarExpiracao(pt); // Atualiza no banco se estourou o prazo
-        }
         return ptRepository.findAll();
     }
 
+    /**
+     * NOVO: Lista Permissões de Trabalho filtradas por status específico para o
+     * Dashboard.
+     */
     public List<PermissaoTrabalho> listarPorStatus(String status) {
-        List<PermissaoTrabalho> todas = listarTodas(); // Já executa a varredura e atualização
         if (status == null || status.trim().isEmpty() || "TODAS".equalsIgnoreCase(status)) {
-            return todas;
+            return ptRepository.findAll();
         }
+        // Caso seu repository possua findByStatus, ou filtrando em memória:
+        List<PermissaoTrabalho> todas = ptRepository.findAll();
         List<PermissaoTrabalho> filtradas = new ArrayList<>();
         for (PermissaoTrabalho pt : todas) {
             if (status.equalsIgnoreCase(pt.getStatus())) {
@@ -351,16 +417,69 @@ public class PermissaoTrabalhoService {
         return filtradas;
     }
 
+    /**
+     * NOVO: Lista PTs que estão aguardando revalidação / início de próximo
+     * turno.
+     */
     public List<PermissaoTrabalho> listarPtsParaRevalidar() {
-        List<PermissaoTrabalho> todas = listarTodas(); // Já executa a varredura e atualização
+        List<PermissaoTrabalho> todas = ptRepository.findAll();
         List<PermissaoTrabalho> pendentes = new ArrayList<>();
         for (PermissaoTrabalho pt : todas) {
             String proximaAcao = getStatusProximaAcao(pt.getId());
-            if ("INICIO_JORNADA".equals(proximaAcao) || "EM_REVALIDACAO".equals(pt.getStatus()) || "AGUARDANDO_REVALIDACAO".equals(pt.getStatus()) || "BAIXA_COMPULSORIA".equals(pt.getStatus())) {
+            if ("INICIO_JORNADA".equals(proximaAcao) || "EM_REVALIDACAO".equals(pt.getStatus()) || "AGUARDANDO_REVALIDACAO".equals(pt.getStatus())) {
                 pendentes.add(pt);
             }
         }
         return pendentes;
+    }
+
+    @Transactional
+    public PermissaoTrabalho gerenciarPt(Long id, GerenciarPtRequestDTO dto, String usuarioResponsavel) {
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("PT não encontrada com ID: " + id));
+
+        if ("EMITIDA".equalsIgnoreCase(pt.getStatus())) {
+            pt.setStatus("EM_EXECUCAO");
+        }
+
+        if (dto.getExecutantesAdicionados() != null) {
+            for (var execDto : dto.getExecutantesAdicionados()) {
+                PtExecutanteHistorico historico = new PtExecutanteHistorico();
+                historico.setPermissaoTrabalho(pt);
+                historico.setNomeFuncionario(execDto.getNomeFuncionario());
+                historico.setMatricula(execDto.getMatricula());
+                historico.setTipoAcao("ENTRADA");
+                historico.setObservacao("Entrada registrada em campo durante a execução.");
+                historico.setRegistradoPor(usuarioResponsavel);
+                pt.getHistoricoExecutantes().add(historico);
+            }
+        }
+
+        if (dto.getExecutantesRemovidos() != null) {
+            for (var execDto : dto.getExecutantesRemovidos()) {
+                PtExecutanteHistorico historico = new PtExecutanteHistorico();
+                historico.setPermissaoTrabalho(pt);
+                historico.setNomeFuncionario(execDto.getNomeFuncionario());
+                historico.setMatricula(execDto.getMatricula());
+                historico.setTipoAcao("SAIDA");
+                historico.setObservacao(execDto.getObservacao() != null ? execDto.getObservacao() : "Saída registrada em campo.");
+                historico.setRegistradoPor(usuarioResponsavel);
+                pt.getHistoricoExecutantes().add(historico);
+            }
+        }
+
+        if (dto.getRiscosDinamicos() != null) {
+            for (var riscoDto : dto.getRiscosDinamicos()) {
+                PtRiscoDinamico risco = new PtRiscoDinamico();
+                risco.setPermissaoTrabalho(pt);
+                risco.setDescricaoRisco(riscoDto.getDescricaoRisco());
+                risco.setMedidasControle(riscoDto.getMedidasControle());
+                risco.setRegistradoPor(usuarioResponsavel);
+                pt.getRiscosDinamicos().add(risco);
+            }
+        }
+
+        return ptRepository.save(pt);
     }
 
     @Transactional
@@ -379,6 +498,9 @@ public class PermissaoTrabalhoService {
             if (Boolean.TRUE.equals(dto.getRevalidacaoParaContinuidade())) {
                 pt.setStatus("AGUARDANDO_REVALIDACAO");
             } else {
+                if (dto.getJustificativaNaoConclusao() == null || dto.getJustificativaNaoConclusao().isBlank()) {
+                    throw new RuntimeException("A justificativa é obrigatória para encerramento sem conclusão e sem revalidação.");
+                }
                 pt.setStatus("BAIXADA");
             }
         }
@@ -388,50 +510,6 @@ public class PermissaoTrabalhoService {
             executantesReais = funcionarioRepository.findAllById(dto.getExecutantesReaisIds());
         }
 
-        return encerrarEAuditarPT(pt, executantesReais);
-    }
-
-    /**
-     * Valida automaticamente se o turno estourou 24h e atualiza o status no
-     * banco para BAIXA_COMPULSORIA
-     */
-    private void verificarEAtualizarExpiracao(PermissaoTrabalho pt) {
-        // Ignora se já estiver encerrada ou baixada
-        if ("ENCERRADA".equals(pt.getStatus()) || "BAIXADA".equals(pt.getStatus()) || "BAIXA_COMPULSORIA".equals(pt.getStatus())) {
-            return;
-        }
-
-        List<RevalidaPermissao> historico = revalidaRepository.findByPermissaoTrabalhoIdOrderByDataHoraRevalidacaoAsc(pt.getId());
-
-        if (historico.isEmpty()) {
-            // Se não tem histórico, o turno está rodando desde a emissão da PT
-            if (pt.getDataHoraEmissao() != null) {
-                long horasDesdeEmissao = ChronoUnit.HOURS.between(pt.getDataHoraEmissao(), LocalDateTime.now());
-                if (horasDesdeEmissao > 24) {
-                    pt.setStatus("BAIXA_COMPULSORIA");
-                    ptRepository.save(pt);
-                }
-            }
-        } else {
-            // Se já tem histórico, valida o último turno registrado
-            RevalidaPermissao ultima = historico.get(historico.size() - 1);
-            if (ultima.getTerminoJornada() == null && ultima.getInicioJornada() != null) {
-                long horasAbertas = ChronoUnit.HOURS.between(ultima.getInicioJornada(), LocalDateTime.now());
-                if (horasAbertas > 24) {
-                    pt.setStatus("BAIXA_COMPULSORIA");
-                    ptRepository.save(pt);
-                }
-            }
-        }
-    }
-
-    public PermissaoTrabalho buscarPorId(Long id) throws Exception {
-        PermissaoTrabalho pt = ptRepository.findById(id)
-                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
-
-        // Garante que se abrir a PT isolada e ela estourou o prazo, atualiza o status na hora
-        verificarEAtualizarExpiracao(pt);
-
-        return pt;
+        return encerrarEAuditarPT(pt, executantesReais); // Dispara a auditoria de NRs e consolida o encerramento[cite: 5]
     }
 }

@@ -51,8 +51,7 @@
 
             <!-- SEÇÃO 2: DADOS DA REVALIDAÇÃO E TÉRMINO DE JORNADA -->
             <fieldset class="secao-form">
-                <legend><i class="fa-solid fa-clock-rotate-left"></i> Informações do Término de Jornada e Revalidação
-                </legend>
+                <legend><i class="fa-solid fa-clock-rotate-left"></i> Informações do Término de Jornada e Revalidação</legend>
 
                 <div class="grid-form-4col">
                     <div class="form-group">
@@ -74,51 +73,25 @@
                 </div>
 
                 <div class="form-group full-width margin-topo">
-                    <label for="statusTurno">Status do Turno / Destino da PT: <span
-                            class="asterisco-obrigatorio">*</span></label>
+                    <label for="statusTurno">Status do Turno / Destino da PT: <span class="asterisco-obrigatorio">*</span></label>
                     <select id="statusTurno" class="form-control" required>
-                        <option value="EM_ANDAMENTO" selected>Não - Serviço em Andamento (Revalidar para Próximo Turno)
-                        </option>
+                        <option value="EM_ANDAMENTO" selected>Não - Serviço em Andamento (Revalidar para Próximo Turno)</option>
                         <option value="CONCLUIDO">Sim - Serviço Totalmente Concluído (Liberar para Baixa)</option>
-                        <option value="INTERROMPIDO">Não - Serviço Interrompido / Encerrar (Baixa sem Conclusão)
-                        </option>
+                        <option value="INTERROMPIDO">Não - Serviço Interrompido / Encerrar (Baixa sem Conclusão)</option>
                     </select>
                 </div>
 
                 <div class="form-group full-width margin-topo">
                     <label for="revalObservacoes">Observações da Revalidação / Condições de Segurança</label>
-                    <textarea id="revalObservacoes" rows="3"
-                        placeholder="Informe detalhes operacionais, restrições ou ajustes do turno..."></textarea>
+                    <textarea id="revalObservacoes" rows="3" placeholder="Informe detalhes operacionais, restrições ou ajustes do turno..."></textarea>
                 </div>
             </fieldset>
 
-            <!-- SEÇÃO 4: HISTÓRICO DE JORNADAS ANTERIORES -->
-            <fieldset class="secao-form">
-                <legend><i class="fa-solid fa-history"></i> Histórico de Jornadas Anteriores (Turnos Passados)</legend>
-                <div class="container-tabela-executantes">
-                    <table class="tabela-executantes">
-                        <thead>
-                            <tr>
-                                <th>Turno / Ciclo</th>
-                                <th>Início da Jornada</th>
-                                <th>Término da Jornada</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodyHistoricoJornadas">
-                            <tr class="linha-vazia">
-                                <td colspan="3">Nenhuma jornada anterior registrada.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </fieldset>
-
-            <!-- SEÇÃO 5: EQUIPE REAL EXECUTANTE (CONFERÊNCIA DE CAMPO) -->
+            <!-- SEÇÃO 3: EQUIPE REAL EXECUTANTE (CONFERÊNCIA DE CAMPO) -->
             <fieldset class="secao-form">
                 <legend><i class="fa-solid fa-users"></i> Auditoria de Executantes Reais (Conferência de Campo)</legend>
                 <p class="texto-instrucao">
-                    Adicione abaixo os colaboradores que **efetivamente** atuaram na execução da tarefa neste turno para
-                    validação das NRs pelo SESMT.
+                    Adicione abaixo os colaboradores que **efetivamente** atuaram na execução da tarefa neste turno para validação das NRs pelo SESMT.
                 </p>
 
                 <div class="input-matricula-group">
@@ -129,8 +102,7 @@
 
                     <div class="form-group col-nome">
                         <label for="inputNomeExecutante">Nome do Colaborador</label>
-                        <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..."
-                            readonly>
+                        <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..." readonly>
                     </div>
 
                     <div class="form-group col-btn">
@@ -161,21 +133,19 @@
                 </div>
             </fieldset>
 
-            <!-- SEÇÃO DE GERENCIAMENTO E BOTÕES UNIFICADOS -->
-            <!-- SEÇÃO DE GERENCIAMENTO E BOTÕES UNIFICADOS -->
+          <!-- SEÇÃO DE GERENCIAMENTO E BOTÕES UNIFICADOS -->
+          <!-- SEÇÃO DE GERENCIAMENTO E BOTÕES UNIFICADOS -->
             <div class="card-body">
                 <h4>Gerenciamento de Turno / Revalidação</h4>
 
                 <div class="acoes-form-unificada">
                     <!-- Botão 1: Fim de Jornada (Passo 1) -->
-                    <button type="button" id="btnFimJornada" class="btn-acao-custom btn-fim-turno d-none"
-                        onclick="executarFimJornada()">
+                    <button type="button" id="btnFimJornada" class="btn-acao-custom btn-fim-turno d-none" onclick="executarFimJornada()">
                         🛑 Encerrar Turno (Fim de Jornada)
                     </button>
 
                     <!-- Botão 2: Início de Jornada (Passo 2) -->
-                    <button type="button" id="btnInicioJornada" class="btn-acao-custom btn-inicio-turno d-none"
-                        onclick="inicioJornada()">
+                    <button type="button" id="btnInicioJornada" class="btn-acao-custom btn-inicio-turno d-none" onclick="abrirModalOuTelaInicioJornada()">
                         ▶️ Iniciar Próximo Turno (Revalidar)
                     </button>
 

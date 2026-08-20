@@ -11,6 +11,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
+    // Preenche data e hora atuais automaticamente para o término da jornada
+    const agora = new Date();
+    if (document.getElementById('revalData')) {
+        document.getElementById('revalData').value = agora.toISOString().split('T')[0];
+    }
+    if (document.getElementById('revalHora')) {
+        document.getElementById('revalHora').value = agora.toTimeString().slice(0, 5);
+    }
+
     // Preenche o Emitente com o usuário logado
     const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
     if (usuarioLogado && usuarioLogado.nome && document.getElementById('revalEmitente')) {
@@ -33,29 +42,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (document.getElementById('ordemPj')) document.getElementById('ordemPj').value = ptAtual.ordemPj || '';
             if (document.getElementById('descricaoAtividade')) document.getElementById('descricaoAtividade').value = ptAtual.descricaoAtividade || '';
 
-            // 🛡️ CORREÇÃO DA DATA/HORA DE TÉRMINO:
-            let dataHoraReferencia = null;
-            
-            if (ptAtual.revalidacoes && ptAtual.revalidacoes.length > 0) {
-                const ultimaReval = ptAtual.revalidacoes[ptAtual.revalidacoes.length - 1];
-                dataHoraReferencia = ultimaReval.terminoJornada || ultimaReval.dataHoraRevalidacao;
-            }
-            
-            if (!dataHoraReferencia) {
-                dataHoraReferencia = ptAtual.dataFimJornada || ptAtual.ultimaAtualizacao;
-            }
-
-            const dataObj = dataHoraReferencia ? new Date(dataHoraReferencia) : new Date();
-
-            if (!isNaN(dataObj.getTime())) {
-                if (document.getElementById('revalData')) {
-                    document.getElementById('revalData').value = dataObj.toISOString().split('T')[0];
-                }
-                if (document.getElementById('revalHora')) {
-                    document.getElementById('revalHora').value = dataObj.toTimeString().slice(0, 5);
-                }
-            }
-
             // Carrega os executantes/equipe já vinculados à PT
             const listaExecutantesBackend = ptAtual.executantes || ptAtual.equipeExecutante || ptAtual.executantesReais || [];
             if (Array.isArray(listaExecutantesBackend) && listaExecutantesBackend.length > 0) {
@@ -73,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
             atualizarTabelaExecutantes();
 
-            // Controle do ciclo de revalidações
+            // Controle do ciclo de revalidações (Limite de 4 revalidações após a emissão = 5 dias total)
             const qtdRevalAtuais = ptAtual.quantidadeRevalidacoes || 0;
             const proximaEtapa = qtdRevalAtuais + 1;
 
@@ -90,7 +76,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             alert("Erro ao buscar dados da PT.");
         }
 
-        // 2. Consulta o status da próxima ação para gerenciar os botões/etapas de turno
+        // 2. NOVA ROTINA: Consulta o status da próxima ação para gerenciar os botões/etapas de turno
         await atualizarEstadoBotoesJornada(ptId);
 
     } catch (error) {
@@ -223,7 +209,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
-// Função para sincronizar a visibilidade dos botões via classes CSS
+// Função para sincronizar a visibilidade dos botões via classes CSS sem inline styles
 async function atualizarEstadoBotoesJornada(id) {
     try {
         const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${id}/status-revalidacao`, {
@@ -239,6 +225,7 @@ async function atualizarEstadoBotoesJornada(id) {
         const btnFim = document.getElementById('btnFimJornada');
         const btnInicio = document.getElementById('btnInicioJornada');
 
+        // Se os elementos existirem na tela, alterna as classes de visibilidade
         if (btnFim && btnInicio) {
             if (proximoPasso === "FIM_JORNADA") {
                 btnFim.classList.remove('d-none');
@@ -287,8 +274,7 @@ function atualizarTabelaExecutantes() {
         tbodyExecutantes.appendChild(tr);
     });
 }
-
-// Função para executar o fim de jornada
+// Função para executar o fim de jornada / encerramento de turno da PT
 async function executarFimJornada() {
     const urlParams = new URLSearchParams(window.location.search);
     const ptId = urlParams.get('id');
@@ -306,14 +292,13 @@ async function executarFimJornada() {
         const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/fim-jornada`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
+                'Content-Type': 'application/json'
             }
         });
 
         if (response.ok) {
             alert("Fim de jornada registrado com sucesso!");
-            window.location.reload();
+            window.location.href = 'dashboard.html';
         } else {
             const erroMsg = await response.text();
             alert("Erro ao registrar fim de jornada: " + (erroMsg || response.statusText));
@@ -321,62 +306,5 @@ async function executarFimJornada() {
     } catch (error) {
         console.error("Erro de conexão:", error);
         alert("Não foi possível conectar ao servidor para registrar o fim de jornada.");
-    }
-}
-
-// Função atualizada para inicioJornada capturando data/hora exatas do clique
-window.inicioJornada = async function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const ptId = urlParams.get('id');
-
-    if (!ptId) {
-        alert("ID da Permissão de Trabalho não encontrado na URL.");
-        return;
-    }
-
-    if (!confirm("Deseja realmente registrar o início de jornada para esta Permissão de Trabalho?")) {
-        return;
-    }
-
-    const agora = new Date();
-    const payload = {
-        dataInicioJornada: agora.toISOString().split('T')[0],
-        horaInicioJornada: agora.toTimeString().slice(0, 5)
-    };
-
-    try {
-        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/inicio-jornada`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            alert("Início de jornada registrado com sucesso!");
-            window.location.reload();
-        } else {
-            const erroMsg = await response.text();
-            alert("Erro ao registrar início de jornada: " + (erroMsg || response.statusText));
-        }
-    } catch (error) {
-        console.error("Erro de conexão:", error);
-        alert("Não foi possível conectar ao servidor para registrar o início de jornada.");
-    }
-};
-async function carregarHistoricoJornadas(ptId) {
-    try {
-        const response = await fetch(`http://localhost:8080/api/permissoes-trabalho/${ptId}/revalidacoes`, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
-        });
-        if (response.ok) {
-            const historico = await response.json();
-            // Preenche os campos de início e término das jornadas anteriores na tabela da tela
-            preencherTabelaJornadas(historico);
-        }
-    } catch (error) {
-        console.error("Erro ao carregar histórico de jornadas:", error);
     }
 }

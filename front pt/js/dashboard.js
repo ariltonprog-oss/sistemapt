@@ -232,6 +232,19 @@ function getStatusBadgeClass(status) {
 
 // Função unificada de cálculo de prazos (Turno ADM vs Pós-Expediente 12h)
 function calcularVencimentoPT(pt) {
+    const status = (pt.status || '').toUpperCase();
+
+    // 🛡️ TRAVA DE SEGURANÇA: PTs em processo de revalidação ou aguardando revalidação 
+    // nunca devem cair em baixa obrigatória / vencimento prematuro.
+    if (status === 'EM_REVALIDACAO' || status === 'AGUARDANDO_REVALIDACAO') {
+        return {
+            dataRef: new Date(),
+            limiteVencimento: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            tipoRegra: 'REVALIDACAO',
+            estaVencida: false
+        };
+    }
+
     const dataRefBruta = pt.dataHoraInicio || pt.dataEmissao || pt.ultimaAtualizacao || pt.dataCriacao || pt.criadoEm || pt.data;
     const dataRef = dataRefBruta ? new Date(dataRefBruta) : new Date();
     const revalCount = pt.quantidadeRevalidacoes || pt.etapaRevalidacao || 0;
@@ -239,15 +252,18 @@ function calcularVencimentoPT(pt) {
     const horas = dataRef.getHours();
     const minutos = dataRef.getMinutes();
     
+    // Verifica se foi iniciada após o fim do expediente ADM (17:45)
     const isAposExpediente = (horas > 17) || (horas === 17 && minutos >= 45);
     
     let limiteVencimento = new Date(dataRef);
     let tipoRegra = 'ADM';
     
     if (isAposExpediente) {
+        // 🌙 Regra especial pós-expediente: 12 horas de validade a partir do início
         tipoRegra = 'POS_EXPEDIENTE';
         limiteVencimento = new Date(dataRef.getTime() + 12 * 60 * 60 * 1000);
     } else {
+        // ☀️ Regra Turno ADM (incluindo início antecipado): Vence às 08:00 AM do dia seguinte (+ revalidações)
         limiteVencimento.setHours(8, 0, 0, 0);
         limiteVencimento.setDate(limiteVencimento.getDate() + 1 + revalCount);
     }

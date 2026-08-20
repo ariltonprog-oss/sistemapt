@@ -228,3 +228,27 @@ body {
     margin-bottom: 20px;
     text-align: right;
 }
+
+    .revalidacao-card {
+        border: 1px solid #b0b0b0;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        margin-bottom: 10px;
+    }
+    .revalidacao-titulo {
+        background-color: #e2e8f0;
+        padding: 4px 8px;
+        font-weight: bold;
+        border-bottom: 1px solid #b0b0b0;
+    }
+    .revalidacao-linha {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 8px;
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+    .campo {
+        white-space: nowrap;
+    }
