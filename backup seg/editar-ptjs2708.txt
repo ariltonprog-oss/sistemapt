@@ -216,7 +216,6 @@ async function carregarDadosPT(id) {
         setValorInput('turnoGrupo', pt.turnoGrupo);
         setValorInput('tag', pt.tag);
         setValorInput('ordemPj', pt.ordemPj);
-        setValorInput('nomeAst', pt.nomeAst);
         setValorInput('descricaoAtividade', pt.descricaoAtividade);
 
         const campoArea = document.getElementById('areaAtuacao');
@@ -313,11 +312,11 @@ async function salvarAlteracoesPT(event) {
         tag: document.getElementById('tag').value.trim().toUpperCase(),
         ordemPj: document.getElementById('ordemPj').value.trim().toUpperCase(),
         descricaoAtividade: document.getElementById('descricaoAtividade').value.trim().toUpperCase(),
-        nomeAst: document.getElementById('nomeAst').value.trim(),
+
         areaAtuacao: desformatarParaEnum(valorAreaBruto),
 
         solicitanteExecutante: atuarComoExecutante,
-
+        
         requerTrabalhoQuente: document.getElementById('requerTrabalhoQuente').checked,
         requerTrabalhoFrio: document.getElementById('requerTrabalhoFrio').checked,
         requerTrabalhoAltura: document.getElementById('requerTrabalhoAltura').checked,

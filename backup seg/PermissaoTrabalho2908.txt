@@ -284,22 +284,6 @@ public class PermissaoTrabalho {
         return this.qtdRevalidadas > 1;
     }
 
-    // --- MÉTODO DE NEGÓCIO: GARANTE O SOLICITANTE NA EQUIPE DE EXECUTANTES ---
-    public void garantirSolicitanteComoExecutante() {
-        if (this.solicitanteExecutante && this.solicitante != null) {
-            if (this.executantes == null) {
-                this.executantes = new ArrayList<>();
-            }
-
-            boolean jaExiste = this.executantes.stream()
-                    .anyMatch(exec -> exec.getId() != null && exec.getId().equals(this.solicitante.getId()));
-
-            if (!jaExiste) {
-                this.executantes.add(this.solicitante);
-            }
-        }
-    }
-
     // --- GETTERS AND SETTERS DOS NOVOS ITENS DE RISCO ---
     public RiskControlItem getRuido() {
         return ruido;

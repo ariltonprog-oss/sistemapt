@@ -49,6 +49,13 @@
                 <th>Ordem / PJ (OS/OM):</th>
                 <td id="valOrdem">--</td>
             </tr>
+
+            <tr>
+                <th>Nome da AST:</th>
+                <td id="valNomeAst" colspan="3">--</td>
+            </tr>
+            <tr>
+
             <tr>
                 <th>Descrição da Atividade:</th>
                 <td id="valDescricao" colspan="3">--</td>
@@ -69,28 +76,37 @@
 
         <!-- EMISSÃO E ASSINATURA INICIAL -->
         <div class="secao-titulo">Emissão da Permissão de Trabalho (Dia Inicial)</div>
-        <table class="doc-info-tabela">
+        <table class="doc-info-tabela tabela-emissao">
             <tr>
-                <th>Emitente da PT:</th>
-                <td id="valEmitente">--</td>
-                <th>Matrícula:</th>
-                <td id="valMatriculaEmitente">--</td>
+                <th class="col-label">Emitente:</th>
+                <td id="valEmitente" class="col-nome-ator">--</td>
+                <th class="col-label-curto">Matr.:</th>
+                <td id="valMatriculaEmitente" class="col-mat">--</td>
+                <th class="col-label-curto">Empresa:</th>
+                <td id="valEmpresaEmitente" class="col-emp">--</td>
             </tr>
             <tr>
-                <th>Data / Hora Emissão:</th>
-                <td id="valDataEmissao">--</td>
-                <th>Validade Inicial:</th>
+                <th class="col-label">Solicitante:</th>
+                <td id="valSolicitante" class="col-nome-ator">--</td>
+                <th class="col-label-curto">Matr.:</th>
+                <td id="valMatriculaSolicitante" class="col-mat">--</td>
+                <th class="col-label-curto">Empresa:</th>
+                <td id="valEmpresaSolicitante" class="col-emp">--</td>
+            </tr>
+            <tr>
+                <th class="col-label">Data / Hora:</th>
+                <td id="valDataEmissao" colspan="3">--</td>
+                <th class="col-label-curto">Validade:</th>
                 <td>24 Horas</td>
             </tr>
             <tr>
-                <td colspan="4">
+                <td colspan="6">
                     <strong>Assinatura do Emitente:</strong> ____________________________________________________
                 </td>
             </tr>
             <tr>
-                <td colspan="4">
-                    <strong>Assinatura do Solicitante:</strong> ___________________________________________________
-                    Matrícula: ____________
+                <td colspan="6">
+                    <strong>Assinatura do Solicitante:</strong> ____________________________________________________
                 </td>
             </tr>
         </table>
@@ -100,72 +116,91 @@
         </div>
 
         <div class="revalidacao-card">
-    <div class="revalidacao-titulo">1ª Revalidação (2º Dia)</div>
-    <div class="revalidacao-linha">
-        <div class="campo">
-            <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
+            <div class="revalidacao-titulo">1ª Revalidação (2º Dia)</div>
+            <div class="revalidacao-linha">
+                <div class="campo">
+                    <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
+                </div>
+                <div class="campo">
+                    <strong>Emitente (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+                <div class="campo">
+                    <strong>Requisitante (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+            </div>
         </div>
-        <div class="campo">
-            <strong>Emitente (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
-        </div>
-        <div class="campo">
-            <strong>Requisitante (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
-        </div>
-    </div>
-</div>
-
-         <div class="revalidacao-card">
-    <div class="revalidacao-titulo">2ª Revalidação (3º Dia)</div>
-    <div class="revalidacao-linha">
-        <div class="campo">
-            <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
-        </div>
-        <div class="campo">
-            <strong>Emitente (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
-        </div>
-        <div class="campo">
-            <strong>Requisitante (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
-        </div>
-    </div>
-</div>
 
         <div class="revalidacao-card">
-    <div class="revalidacao-titulo">3ª Revalidação (4º Dia)</div>
-    <div class="revalidacao-linha">
-        <div class="campo">
-            <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
+            <div class="revalidacao-titulo">2ª Revalidação (3º Dia)</div>
+            <div class="revalidacao-linha">
+                <div class="campo">
+                    <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
+                </div>
+                <div class="campo">
+                    <strong>Emitente (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+                <div class="campo">
+                    <strong>Requisitante (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+            </div>
         </div>
-        <div class="campo">
-            <strong>Emitente (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
-        </div>
-        <div class="campo">
-            <strong>Requisitante (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
-        </div>
-    </div>
-</div>
 
         <div class="revalidacao-card">
-    <div class="revalidacao-titulo">5ª Revalidação (Último Dia)</div>
-    <div class="revalidacao-linha">
-        <div class="campo">
-            <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
+            <div class="revalidacao-titulo">3ª Revalidação (4º Dia)</div>
+            <div class="revalidacao-linha">
+                <div class="campo">
+                    <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
+                </div>
+                <div class="campo">
+                    <strong>Emitente (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+                <div class="campo">
+                    <strong>Requisitante (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+            </div>
         </div>
-        <div class="campo">
-            <strong>Emitente (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
+
+        <div class="revalidacao-card">
+            <div class="revalidacao-titulo">5ª Revalidação (Último Dia)</div>
+            <div class="revalidacao-linha">
+                <div class="campo">
+                    <strong>Data/Hora:</strong> ____/____/________ &nbsp; ____:____
+                </div>
+                <div class="campo">
+                    <strong>Emitente (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+                <div class="campo">
+                    <strong>Requisitante (Rubr.):</strong> ____________________
+                    <strong>Matr.:</strong> ________
+                </div>
+            </div>
         </div>
-        <div class="campo">
-            <strong>Requisitante (Rubr.):</strong> ____________________ 
-            <strong>Matr.:</strong> ________
+
+        <div class="bloco-secao-executantes">
+            <div class="secao-titulo">21. NOMES DOS EXECUTANTES ENVOLVIDOS NO SERVIÇO</div>
+            <table class="doc-info-tabela tabela-executantes">
+                <thead>
+                    <tr>
+                        <th class="col-item text-center">ITEM</th>
+                        <th class="col-nome">NOME</th>
+                        <th class="col-funcao">FUNÇÃO</th>
+                        <th class="col-empresa">EMPRESA</th>
+                        <th class="col-assinatura text-center">ASSINATURA</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyExecutantesDoc">
+                    <!-- Linhas geradas via JavaScript -->
+                </tbody>
+            </table>
         </div>
-    </div>
-</div>
+
 
         <!-- ENCERRAMENTO E BAIXA -->
         <div class="secao-titulo">Encerramento e Baixa da Permissão de Trabalho</div>

@@ -47,11 +47,6 @@ public class PermissaoTrabalhoService {
             throw new Exception("Erro SESMT: Nenhum emitente foi identificado para esta operação.");
         }
 
-        // 🔒 Trava de segurança SESMT: Exige a AST na emissão
-        if (dto.getNomeAst() == null || dto.getNomeAst().trim().isEmpty()) {
-            throw new Exception("Bloqueio SESMT: Não é permitida a emissão de uma Permissão de Trabalho sem uma AST vinculada.");
-        }
-
         Funcionario emitente = funcionarioRepository.findById(dto.getEmitenteId())
                 .orElseThrow(() -> new Exception("Funcionário emitente não encontrado no sistema."));
 
@@ -108,10 +103,6 @@ public class PermissaoTrabalhoService {
 
         if (pt.getTurnoGrupo() == null || pt.getTurnoGrupo().trim().isEmpty()) {
             throw new Exception("O Turno / Grupo deve ser informado pelo emitente para realizar a emissão da PT!");
-        }
-
-        if (pt.getNomeAst() == null || pt.getNomeAst().trim().isEmpty()) {
-            throw new Exception("Bloqueio SESMT: Não é permitida a emissão de uma Permissão de Trabalho sem uma AST vinculada.");
         }
 
         if (pt.isRequerTrabalhoQuente() && pt.isRequerTrabalhoFrio()) {

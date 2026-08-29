@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('justificativaNaoConclusao').value = pt.justificativaNaoConclusao || 'N/A';
 
         // Preenche a tabela de executantes reais salvos na baixa
+        console.log("Objeto PT recebido:", pt);
+
         const tbody = document.getElementById('tbodyExecutantes');
         if (pt.executantes && Array.isArray(pt.executantes) && pt.executantes.length > 0) {
             tbody.innerHTML = pt.executantes.map(e => `

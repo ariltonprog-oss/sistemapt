@@ -50,98 +50,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('valOrdem').textContent = pt.ordemPj || (pt.emergencial ? '🚨 Emergencial' : '-');
         document.getElementById('valDescricao').textContent = pt.descricaoAtividade || '-';
 
-        // Tratamento robusto para a AST (substitui a linha simples)
-        let nomeAst = "Não informada";
-        const astDado = pt.ast || pt.nomeAst || pt.analiseSeguranca || pt.analiseDeSeguranca || pt.descricaoAst;
-        if (astDado !== null && astDado !== undefined && astDado !== "") {
-            if (typeof astDado === 'object') {
-                nomeAst = astDado.nome || astDado.titulo || astDado.descricao || astDado.codigo || "Informada";
-            } else {
-                nomeAst = astDado;
-            }
-        }
-        document.getElementById('valNomeAst').textContent = nomeAst;
-
-        // Renderizar a Tabela de Executantes (Correspondente ao Item 21 do impresso)
-        const tbodyExecutantesDoc = document.getElementById('tbodyExecutantesDoc');
-        if (tbodyExecutantesDoc) {
-            const executantes = (pt.executantes && Array.isArray(pt.executantes)) ? pt.executantes : [];
-            const totalLinhas = 8; // Quantidade fixa idêntica ao impresso oficial (Itens 1 ao 8)
-            let htmlLinhas = '';
-
-            for (let i = 0; i < totalLinhas; i++) {
-                const numeroItem = i + 1;
-                const e = executantes[i]; // Busca o executante cadastrado, se houver
-
-                if (e) {
-                    // Fallback genérico caso a empresa não esteja informada
-                    let nomeEmpresa = '-';
-                    const empData = e.empresa || e.empresaGestora || e.nomeEmpresa;
-
-                    if (empData) {
-                        if (typeof empData === 'object') {
-                            nomeEmpresa = empData.nomeFantasia || empData.nome || empData.razaoSocial || '-';
-                        } else {
-                            nomeEmpresa = empData;
-                        }
-                    }
-
-                    const nomeFuncionario = e.nome || e.nomeCompleto || e.usuario || '-';
-                    const funcaoFuncionario = e.funcao || e.cargo || 'Operacional';
-
-                    // Linha preenchida automaticamente pelo sistema
-                    htmlLinhas += `
-                <tr>
-                    <td class="text-center">${numeroItem}</td>
-                    <td>${nomeFuncionario}</td>
-                    <td>${funcaoFuncionario}</td>
-                    <td>${nomeEmpresa}</td>
-                    <td>&nbsp;</td>
-                </tr>
-            `;
-                } else {
-                    // Linha em branco para preenchimento manual de executantes adicionais
-                    htmlLinhas += `
-                <tr>
-                    <td class="text-center">${numeroItem}</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-            `;
-                }
-            }
-            tbodyExecutantesDoc.innerHTML = htmlLinhas;
-        }
-        // 3. EMITENTE: Nome, Matrícula e Empresa
+        // 3. EMITENTE: Utilizando a chave correta "emitente" encontrada no objeto PT
         let nomeEmitente = "-";
         let matriculaEmitente = "-";
-        let empresaEmitente = "-";
 
         const emitenteDado = pt.emitente;
+        console.log("DEBUG JS - Dado do Emitente recebido na PT:", emitenteDado);
 
         if (emitenteDado !== null && emitenteDado !== undefined) {
             if (typeof emitenteDado === 'object') {
+                // Cenário A: O backend enviou o objeto completo do emitente
                 nomeEmitente = emitenteDado.nome || emitenteDado.nomeCompleto || emitenteDado.usuario || "-";
                 matriculaEmitente = emitenteDado.matricula || "-";
-
-                const empData = emitenteDado.empresa || emitenteDado.empresaGestora || emitenteDado.nomeEmpresa;
-                if (empData) {
-                    empresaEmitente = (typeof empData === 'object') ? (empData.nomeFantasia || empData.nome || empData.razaoSocial || '-') : empData;
-                }
             } else {
+                // Cenário B: O backend enviou apenas o ID, então buscamos na rota de funcionários
                 try {
                     const responseFunc = await fetch(`http://localhost:8080/api/funcionarios/${emitenteDado}`);
                     if (responseFunc.ok) {
                         const func = await responseFunc.json();
                         nomeEmitente = func.nome || func.nomeCompleto || func.usuario || "Nome não encontrado";
                         matriculaEmitente = func.matricula || "-";
-
-                        const empData = func.empresa || func.empresaGestora || func.nomeEmpresa;
-                        if (empData) {
-                            empresaEmitente = (typeof empData === 'object') ? (empData.nomeFantasia || empData.nome || empData.razaoSocial || '-') : empData;
-                        }
                     } else {
                         nomeEmitente = "Funcionário não encontrado";
                     }
@@ -150,69 +78,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                     nomeEmitente = "Erro ao carregar emitente";
                 }
             }
-        }
-
-        document.getElementById('valEmitente').textContent = nomeEmitente;
-        document.getElementById('valMatriculaEmitente').textContent = matriculaEmitente;
-        document.getElementById('valEmpresaEmitente').textContent = empresaEmitente;
-
-
-        // 3.1. SOLICITANTE: Nome, Matrícula e Empresa
-        let nomeSolicitante = "-";
-        let matriculaSolicitante = "-";
-        let empresaSolicitante = "-";
-
-        const solicitanteDado = pt.solicitante;
-
-        if (solicitanteDado !== null && solicitanteDado !== undefined) {
-            if (typeof solicitanteDado === 'object') {
-                nomeSolicitante = solicitanteDado.nome || solicitanteDado.nomeCompleto || solicitanteDado.usuario || "-";
-                matriculaSolicitante = solicitanteDado.matricula || "-";
-
-                const empData = solicitanteDado.empresa || solicitanteDado.empresaGestora || solicitanteDado.nomeEmpresa;
-                if (empData) {
-                    empresaSolicitante = (typeof empData === 'object') ? (empData.nomeFantasia || empData.nome || empData.razaoSocial || '-') : empData;
-                }
+        } else {
+            // Fallback caso venha totalmente vazio: tenta pegar da sessão ou exibe padrão
+            const usuarioLogadoStr = sessionStorage.getItem('usuarioLogado');
+            if (usuarioLogadoStr) {
+                const usuarioLogado = JSON.parse(usuarioLogadoStr);
+                nomeEmitente = usuarioLogado.nome || usuarioLogado.usuario || "";
+                matriculaEmitente = usuarioLogado.matricula || "";
             } else {
-                try {
-                    const responseFunc = await fetch(`http://localhost:8080/api/funcionarios/${solicitanteDado}`);
-                    if (responseFunc.ok) {
-                        const func = await responseFunc.json();
-                        nomeSolicitante = func.nome || func.nomeCompleto || func.usuario || "Nome não encontrado";
-                        matriculaSolicitante = func.matricula || "-";
-
-                        const empData = func.empresa || func.empresaGestora || func.nomeEmpresa;
-                        if (empData) {
-                            empresaSolicitante = (typeof empData === 'object') ? (empData.nomeFantasia || empData.nome || empData.razaoSocial || '-') : empData;
-                        }
-                    } else {
-                        nomeSolicitante = "Funcionário não encontrado";
-                    }
-                } catch (err) {
-                    console.error("Erro ao buscar dados do funcionário pelo ID do solicitante:", err);
-                    nomeSolicitante = "Erro ao carregar solicitante";
-                }
+                nomeEmitente = "Sistema / Emissor SESMT";
             }
         }
 
-        document.getElementById('valSolicitante').textContent = nomeSolicitante;
-        document.getElementById('valMatriculaSolicitante').textContent = matriculaSolicitante;
-        document.getElementById('valEmpresaSolicitante').textContent = empresaSolicitante;
-
-        // 4. Data e Hora (Com fallback para diferentes nomes de propriedades do backend)
-        const dataInicioRaw = pt.dataHoraInicio || pt.dataEmissao || pt.criadoEm || pt.data;
-        console.log("DEBUG JS - Valor bruto de data/hora:", dataInicioRaw);
+        // Atribui os valores finais aos elementos da tela de impressão
+        document.getElementById('valEmitente').textContent = nomeEmitente;
+        document.getElementById('valMatriculaEmitente').textContent = matriculaEmitente;
+        // 4. Data e Hora
+        // Utilizando a data e hora de início diretamente no documento impresso
+        const dataInicioRaw = pt.dataHoraInicio;
+        console.log("DEBUG JS - Valor bruto de dataHoraInicio:", dataInicioRaw);
 
         if (dataInicioRaw) {
             let dataObj;
 
+            // Se o Java enviar como array [ano, mes, dia, hora, minuto, segundo]
             if (Array.isArray(dataInicioRaw)) {
                 const [ano, mes, dia, hora = 0, minuto = 0] = dataInicioRaw;
+                // No JS, os meses vão de 0 a 11 (por isso o mes - 1)
                 dataObj = new Date(ano, mes - 1, dia, hora, minuto);
             } else {
+                // Se o Java enviar como String ISO ("2026-08-06T07:54:00")
                 dataObj = new Date(dataInicioRaw);
             }
 
+            // Valida se a data é válida antes de exibir
             if (!isNaN(dataObj.getTime())) {
                 const dataFormatada = dataObj.toLocaleDateString('pt-BR');
                 const horaFormatada = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -257,7 +156,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.print();
             });
         }
-        console.log("DADOS VINDOS DA TABELA PT:", pt);
 
         // Botão de Gerar e Salvar PDF Automático
         const btnSalvarPdf = document.getElementById('btnSalvarPdf');

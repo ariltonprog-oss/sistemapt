@@ -198,12 +198,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
+            // 🛠️ GARANTE QUE O SOLICITANTE SEJA ENVIADO COMO EXECUTANTE SE FOR O CASO
+            let listaExecutantesParaEnviar = [...executantesReais];
+            if (ptAtual.solicitanteExecutante && ptAtual.solicitante && listaExecutantesParaEnviar.length === 0) {
+                listaExecutantesParaEnviar.push({
+                    id: ptAtual.solicitante.id,
+                    nome: ptAtual.solicitante.nome,
+                    matricula: ptAtual.solicitante.matricula,
+                    funcao: ptAtual.solicitante.funcao
+                });
+            }
+
             const payload = {
                 servicoConcluido: document.getElementById('servicoConcluido').value === 'true',
                 revalidacaoParaContinuidade: document.getElementById('revalidacaoParaContinuidade').value === 'true',
                 equipamentoTestado: document.getElementById('equipamentoTestado').value,
                 justificativaNaoConclusao: document.getElementById('justificativaNaoConclusao').value,
-                executantesReais: executantesReais
+                executantesReais: listaExecutantesParaEnviar // Usa a lista tratada
             };
 
             try {
@@ -228,7 +239,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-});
 function calcularVencimentoPT(pt) {
     const dataRefBruta = pt.dataHoraInicio || pt.dataEmissao || pt.ultimaAtualizacao || pt.dataCriacao || pt.criadoEm || pt.data;
     const dataRef = dataRefBruta ? new Date(dataRefBruta) : new Date();
@@ -263,3 +273,4 @@ function calcularVencimentoPT(pt) {
         estaVencida: expirado || (tipoRegra === 'ADM' && revalCount >= 4)
     };
 }
+});

@@ -24,23 +24,33 @@
             <fieldset class="secao-form">
                 <legend>Dados Gerais da PT</legend>
 
-                <!-- LINHA 1: 4 COLUNAS -->
-                <div class="grid-form-4col">
+                <!-- LINHA DE DADOS PRINCIPAIS (5 COLUNAS) -->
+                <div class="grid-form-5">
                     <div class="form-group">
                         <label for="plantaArea">Planta / Área <span class="asterisco-obrigatorio">*</span></label>
-                        <input type="text" id="plantaArea" name="plantaArea" required>
+                        <input type="text" id="plantaArea" name="plantaArea" required class="form-control">
                     </div>
+
                     <div class="form-group">
                         <label for="turnoGrupo">Turno / Grupo <span class="asterisco-obrigatorio">*</span></label>
-                        <input type="text" id="turnoGrupo" name="turnoGrupo" required>
+                        <input type="text" id="turnoGrupo" name="turnoGrupo" required
+                            class="form-control input-uppercase">
                     </div>
+
                     <div class="form-group">
                         <label for="tag">TAG Equipamento</label>
-                        <input type="text" id="tag" name="tag">
+                        <input type="text" id="tag" name="tag" class="form-control input-uppercase">
                     </div>
+
                     <div class="form-group">
                         <label for="ordemPj">Ordem / PJ</label>
-                        <input type="text" id="ordemPj" name="ordemPj">
+                        <input type="text" id="ordemPj" name="ordemPj" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nomeAst">Nome da AST <span class="text-danger">*</span></label>
+                        <input type="text" id="nomeAst" name="nomeAst" class="form-control" placeholder="Informe a AST"
+                            required>
                     </div>
                 </div>
 
@@ -67,16 +77,19 @@
                 <legend>Avaliação de Riscos Envolvidos (Requisitos Obrigatórios)</legend>
                 <div class="grid-checkboxes">
                     <label class="checkbox-card">
-                        <input type="checkbox" id="requerTrabalhoQuente" name="requerTrabalhoQuente"> 🔥 Trabalho a Quente
+                        <input type="checkbox" id="requerTrabalhoQuente" name="requerTrabalhoQuente"> 🔥 Trabalho a
+                        Quente
                     </label>
                     <label class="checkbox-card">
                         <input type="checkbox" id="requerTrabalhoFrio" name="requerTrabalhoFrio"> 🧊 Trabalho a Frio
                     </label>
                     <label class="checkbox-card">
-                        <input type="checkbox" id="requerTrabalhoAltura" name="requerTrabalhoAltura"> 🧗 Trabalho em Altura
+                        <input type="checkbox" id="requerTrabalhoAltura" name="requerTrabalhoAltura"> 🧗 Trabalho em
+                        Altura
                     </label>
                     <label class="checkbox-card">
-                        <input type="checkbox" id="requerEspacoConfinado" name="requerEspacoConfinado"> 🕳️ Espaço Confinado
+                        <input type="checkbox" id="requerEspacoConfinado" name="requerEspacoConfinado"> 🕳️ Espaço
+                        Confinado
                     </label>
                     <label class="checkbox-card">
                         <input type="checkbox" id="requerRiscoEletrico" name="requerRiscoEletrico"> ⚡ Risco Elétrico
@@ -85,16 +98,19 @@
                         <input type="checkbox" id="requerAltaTensaoSep" name="requerAltaTensaoSep"> ⚡ Alta Tensão / SEP
                     </label>
                     <label class="checkbox-card">
-                        <input type="checkbox" id="requerAreaClassificada" name="requerAreaClassificada"> 🧪 Área Classificada
+                        <input type="checkbox" id="requerAreaClassificada" name="requerAreaClassificada"> 🧪 Área
+                        Classificada
                     </label>
                     <label class="checkbox-card">
-                        <input type="checkbox" id="requerSegurancaMaquinas" name="requerSegurancaMaquinas"> ⚙️ Segurança em Máquinas
+                        <input type="checkbox" id="requerSegurancaMaquinas" name="requerSegurancaMaquinas"> ⚙️ Segurança
+                        em Máquinas
                     </label>
                     <label class="checkbox-card">
                         <input type="checkbox" id="requerLoto" name="requerLoto"> 🔒 Bloqueio LOTO
                     </label>
                     <label class="checkbox-card">
-                        <input type="checkbox" id="requerAtividadePintura" name="requerAtividadePintura"> 🎨 Atividade de Pintura
+                        <input type="checkbox" id="requerAtividadePintura" name="requerAtividadePintura"> 🎨 Atividade
+                        de Pintura
                     </label>
                 </div>
             </fieldset>
@@ -106,72 +122,88 @@
                 <!-- 1. Ruído -->
                 <div class="form-group margin-topo">
                     <label class="checkbox-item">
-                        <input type="checkbox" id="ruidoAtivo" name="ruido.ativo" value="true"> 🔊 Ruído (Exposição a níveis elevados)
+                        <input type="checkbox" id="ruidoAtivo" name="ruido.ativo" value="true"> 🔊 Ruído (Exposição a
+                        níveis elevados)
                     </label>
                     <div class="risco-subcontainer">
                         <span class="risco-subtitulo">Tipo de Proteção Auditiva Requerida:</span>
                         <label class="checkbox-label-inline">
-                            <input type="checkbox" name="ruido.opcoesSelecionadas" value="Proteção Simples" id="ruidoSimples"> Simples (Plug ou Concha)
+                            <input type="checkbox" name="ruido.opcoesSelecionadas" value="Proteção Simples"
+                                id="ruidoSimples"> Simples (Plug ou Concha)
                         </label>
                         <label class="checkbox-label-inline">
-                            <input type="checkbox" name="ruido.opcoesSelecionadas" value="Proteção Dupla" id="ruidoDupla"> Dupla (Plug + Concha)
+                            <input type="checkbox" name="ruido.opcoesSelecionadas" value="Proteção Dupla"
+                                id="ruidoDupla"> Dupla (Plug + Concha)
                         </label>
                     </div>
                     <div class="risco-subcontainer">
-                        <input type="text" name="ruido.textoComplementar" placeholder="Observações sobre o ruído (dB, equipamento)...">
+                        <input type="text" name="ruido.textoComplementar"
+                            placeholder="Observações sobre o ruído (dB, equipamento)...">
                     </div>
                 </div>
 
                 <!-- 2. Vibração -->
                 <div class="form-group margin-topo">
                     <label class="checkbox-item">
-                        <input type="checkbox" id="vibracaoAtivo" name="vibracao.ativo" value="true"> 📳 Vibração (Maquinário / Ferramentas Manuais)
+                        <input type="checkbox" id="vibracaoAtivo" name="vibracao.ativo" value="true"> 📳 Vibração
+                        (Maquinário / Ferramentas Manuais)
                     </label>
                     <div class="risco-subcontainer">
-                        <input type="text" name="vibracao.textoComplementar" placeholder="Detalhes da vibração ou ferramenta...">
+                        <input type="text" name="vibracao.textoComplementar"
+                            placeholder="Detalhes da vibração ou ferramenta...">
                     </div>
                 </div>
 
                 <!-- 3. Superfícies Aquecidas -->
                 <div class="form-group margin-topo">
                     <label class="checkbox-item">
-                        <input type="checkbox" id="superficiesAtivo" name="superficiesAquecidas.ativo" value="true"> 🌡️ Superfícies Aquecidas / Queimaduras
+                        <input type="checkbox" id="superficiesAtivo" name="superficiesAquecidas.ativo" value="true"> 🌡️
+                        Superfícies Aquecidas / Queimaduras
                     </label>
                     <div class="risco-subcontainer">
-                        <input type="text" name="superficiesAquecidas.textoComplementar" placeholder="Temperatura estimada ou linha/equipamento...">
+                        <input type="text" name="superficiesAquecidas.textoComplementar"
+                            placeholder="Temperatura estimada ou linha/equipamento...">
                     </div>
                 </div>
 
                 <!-- 4. Radiação Não Ionizante -->
                 <div class="form-group margin-topo">
                     <label class="checkbox-item">
-                        <input type="checkbox" id="radiacaoAtivo" name="radiacaoNaoIonizante.ativo" value="true"> ☀️ Radiação Não Ionizante (Solda / UV / Infravermelho)
+                        <input type="checkbox" id="radiacaoAtivo" name="radiacaoNaoIonizante.ativo" value="true"> ☀️
+                        Radiação Não Ionizante (Solda / UV / Infravermelho)
                     </label>
                     <div class="risco-subcontainer">
-                        <input type="text" name="radiacaoNaoIonizante.textoComplementar" placeholder="Fonte da radiação...">
+                        <input type="text" name="radiacaoNaoIonizante.textoComplementar"
+                            placeholder="Fonte da radiação...">
                     </div>
                 </div>
 
                 <!-- 5. Agentes Químicos & Diphoterine Integrado -->
                 <div class="form-group margin-topo">
                     <label class="checkbox-item">
-                        <input type="checkbox" id="quimicosAtivo" name="agentesQuimicos.ativo" value="true"> 🧪 Agentes Químicos / Produtos Perigosos <span class="tag-obrigatorio">(Inclui Diphoterine Obrigatório)</span>
+                        <input type="checkbox" id="quimicosAtivo" name="agentesQuimicos.ativo" value="true"> 🧪 Agentes
+                        Químicos / Produtos Perigosos <span class="tag-obrigatorio">(Inclui Diphoterine
+                            Obrigatório)</span>
                     </label>
                     <div class="risco-subcontainer">
-                        <input type="text" name="agentesQuimicos.textoComplementar" placeholder="Nome do produto químico / FISPQ...">
+                        <input type="text" name="agentesQuimicos.textoComplementar"
+                            placeholder="Nome do produto químico / FISPQ...">
                     </div>
                     <div class="risco-subcontainer margin-topo">
-                        <input type="text" name="diphoterine.textoComplementar" placeholder="💧 Localização do kit de Diphoterine para emergência...">
+                        <input type="text" name="diphoterine.textoComplementar"
+                            placeholder="💧 Localização do kit de Diphoterine para emergência...">
                     </div>
                 </div>
 
                 <!-- 6. Isolamento de Área -->
                 <div class="form-group margin-topo">
                     <label class="checkbox-item">
-                        <input type="checkbox" id="isolamentoAtivo" name="isolamentoArea.ativo" value="true"> 🚧 Isolamento e Sinalização de Área
+                        <input type="checkbox" id="isolamentoAtivo" name="isolamentoArea.ativo" value="true"> 🚧
+                        Isolamento e Sinalização de Área
                     </label>
                     <div class="risco-subcontainer">
-                        <input type="text" name="isolamentoArea.textoComplementar" placeholder="Tipo de sinalização / cones / fitas...">
+                        <input type="text" name="isolamentoArea.textoComplementar"
+                            placeholder="Tipo de sinalização / cones / fitas...">
                     </div>
                 </div>
             </fieldset>
@@ -182,7 +214,7 @@
 
                 <label class="label-solicitante">
                     <input type="checkbox" id="solicitanteExecutante" class="chk-solicitante">
-                    Eu (Solicitante) também vou atuar como EXECUTANTE nesta PT
+                    SOLICITANTE será EXECUTANTE nesta PT
                 </label>
 
                 <!-- CAMPO DE BUSCA E ADIÇÃO POR MATRÍCULA -->
@@ -194,7 +226,8 @@
 
                     <div class="form-group col-nome">
                         <label for="inputNomeExecutante">Nome do Colaborador</label>
-                        <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..." readonly>
+                        <input type="text" id="inputNomeExecutante" placeholder="Localizado automaticamente..."
+                            readonly>
                     </div>
 
                     <div class="form-group col-btn">

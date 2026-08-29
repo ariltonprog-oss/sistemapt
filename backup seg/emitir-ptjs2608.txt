@@ -88,53 +88,20 @@ async function carregarDadosParaEmissao(id) {
 
         const elSolicitante = document.getElementById('infoSolicitante');
         if (elSolicitante) elSolicitante.textContent = textoSolicitante;
-        // Exemplo de validação antes do envio
-        const nomeAst = document.getElementById('nomeAst').value; // ou o seletor do seu campo de AST
 
-        if (!nomeAst || nomeAst.trim() === "") {
-            alert("Erro: Não é permitido emitir uma Permissão de Trabalho sem uma AST vinculada!");
-            return; // Interrompe o envio
+        let textoExecutantes = '';
+        const temEquipeExterna = pt.executantes || pt.executanteNome || (pt.equipe && pt.equipe.trim() !== '');
+
+        if (!temEquipeExterna || pt.solicitanteExecutante === true) {
+            textoExecutantes = `👷 Atuação Própria: ${textoSolicitante}`;
+        } else {
+            const execNome = pt.executantes || pt.executanteNome || pt.equipe || 'Não especificado';
+            const execMatricula = pt.executanteMatricula ? ` (Mat: ${pt.executanteMatricula})` : '';
+            textoExecutantes = `${execNome}${execMatricula}`;
         }
 
-        // 1.5. Preenche a tabela de executantes de forma clara e estruturada
-        const tbodyExecutantes = document.getElementById('tbodyExecutantesEmissao');
-        if (tbodyExecutantes) {
-            let listaExecutantesRenderizar = [];
-
-            // Adiciona os executantes vindos do banco/payload se houver
-            if (pt.executantes && Array.isArray(pt.executantes) && pt.executantes.length > 0) {
-                listaExecutantesRenderizar = [...pt.executantes];
-            }
-
-            // SE a opção de atuar como executante estiver marcada E o solicitante existir, 
-            // garante que ele apareça na tabela para total clareza do emitente.
-            if (pt.solicitanteExecutante && pt.solicitante) {
-                const jaTemSolicitante = listaExecutantesRenderizar.some(
-                    e => e.id === pt.solicitante.id || e.matricula === pt.solicitante.matricula
-                );
-                if (!jaTemSolicitante) {
-                    listaExecutantesRenderizar.push(pt.solicitante);
-                }
-            }
-
-            // Desenha as linhas na tabela
-            if (listaExecutantesRenderizar.length > 0) {
-                tbodyExecutantes.innerHTML = listaExecutantesRenderizar.map(e => `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <td style="padding: 8px;"><strong>${e.matricula || 'N/A'}</strong></td>
-                        <td style="padding: 8px;">${e.nome || 'Não informado'}</td>
-                        <td style="padding: 8px;">${e.funcao || e.cargo || 'Operacional'}</td>
-                    </tr>
-                `).join('');
-            } else {
-                tbodyExecutantes.innerHTML = `
-                    <tr>
-                        <td colspan="3" style="padding: 12px; text-align: center; color: var(--texto-secundario, #a0aec0);">
-                            Nenhum executante especificado para esta PT.
-                        </td>
-                    </tr>`;
-            }
-        }
+        const elExecutantes = document.getElementById('infoExecutantes');
+        if (elExecutantes) elExecutantes.textContent = textoExecutantes;
 
         // 2. Renderiza as tags de Riscos e Requisitos
         const containerRiscos = document.getElementById('listaRiscosResumo');

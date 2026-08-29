@@ -222,7 +222,6 @@ public class PermissaoTrabalhoController {
                     ptExistente.setTag(ptAtualizada.getTag());
                     ptExistente.setOrdemPj(ptAtualizada.getOrdemPj());
                     ptExistente.setDescricaoAtividade(ptAtualizada.getDescricaoAtividade());
-                    ptExistente.setNomeAst(ptAtualizada.getNomeAst());
                     ptExistente.setAreaAtuacao(ptAtualizada.getAreaAtuacao());
                     ptExistente.setSolicitanteExecutante(ptAtualizada.isSolicitanteExecutante());
 

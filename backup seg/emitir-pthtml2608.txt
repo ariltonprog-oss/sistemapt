@@ -68,30 +68,18 @@
                                 <label class="label-info-titulo">Solicitante:</label>
                                 <div id="infoSolicitante" class="label-info-valor">-</div>
                             </div>
-                            <div class="form-group">
+                             <div class="form-group">
                                 <label class="label-info-titulo">Nome da AST Associada</label>
-                                <div id="infoNomeAst" class="label-info-valor">-</div>
+                                     <div id="infoNomeAst" class="label-info-valor">-</div>
+                                </div>
                             </div>
-                        </div>
                     </fieldset>
-                    <!-- Linha 2: Tabela de Executantes / Equipe -->
-                    <div class="campo-info campo-info-bloco margin-topo">
-                        <label class="label-info-titulo">Equipe Executante (Conferência de Campo):</label>
-                        <div class="table-responsive tabela-executantes-container">
-                            <table class="tabela-padrao tabela-executantes-emissao">
-                                <thead>
-                                    <tr>
-                                        <th>Matrícula</th>
-                                        <th>Nome</th>
-                                        <th>Função / Cargo</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbodyExecutantesEmissao">
-                                    <!-- Preenchido dinamicamente via JS -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <!-- Linha 2: Executante -->
+                    <div class="campo-info margin-topo">
+                        <label class="label-info-titulo">Executante / Equipe Envolvida:</label>
+                        <div id="infoExecutantes" class="label-info-valor">-</div>
                     </div>
+
                     <!-- Descrição da Atividade -->
                     <div class="campo-info campo-info-bloco margin-topo">
                         <label class="label-info-titulo">Descrição da Atividade:</label>

@@ -252,3 +252,90 @@ body {
     .campo {
         white-space: nowrap;
     }
+    .tabela-executantes {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
+}
+
+.tabela-executantes thead tr {
+    background-color: #f1f1f1;
+    text-align: center;
+}
+
+.tabela-executantes th, 
+.tabela-executantes td {
+    border: 1px solid #ccc;
+    padding: 4px;
+}
+
+.tabela-executantes .col-item { width: 8%; }
+.tabela-executantes .col-nome { width: 35%; }
+.tabela-executantes .col-funcao { width: 20%; }
+.tabela-executantes .col-empresa { width: 17%; }
+.tabela-executantes .col-assinatura { width: 20%; }
+
+.text-center {
+    text-align: center;
+}
+@media print {
+    /* Fixa o cabeçalho para que ele se repita automaticamente no topo de cada nova página */
+    .doc-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #ffffff; /* Fundo branco para evitar transparência sobre o conteúdo */
+        z-index: 9999;
+        border-bottom: 2px solid #000;
+    }
+
+    /* Oculta os botões de ação (Imprimir, Salvar PDF, Voltar) na impressão */
+    .acoes-topo {
+        display: none !important;
+    }
+
+    /* Adiciona margem superior no corpo do documento para o conteúdo não ficar por baixo do cabeçalho fixo */
+    body {
+        padding-top: 25mm; 
+    }
+}
+.tabela-emissao .col-label { 
+    width: 13%; 
+}
+.tabela-emissao .col-nome-ator { 
+    width: 29%; 
+}
+.tabela-emissao .col-label-curto { 
+    width: 9%; 
+    text-align: center;
+}
+.tabela-emissao .col-mat { 
+    width: 11%; 
+}
+.tabela-emissao .col-emp { 
+    width: 29%; 
+}
+.tabela-executantes .col-item { 
+    width: 8%; 
+}
+.tabela-executantes .col-nome { 
+    width: 32%; 
+}
+.tabela-executantes .col-funcao { 
+    width: 25%; 
+}
+.tabela-executantes .col-empresa { 
+    width: 20%; 
+}
+.tabela-executantes .col-assinatura { 
+    width: 15%; 
+}
+
+.text-center {
+    text-align: center;
+}
+.bloco-secao-executantes {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
