@@ -1,17 +1,41 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
 
-    // 1. Obtém o usuário logado
+    // 1. Obtém o usuário logado do sessionStorage
     const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado')) || {};
+    const nomeUsuario = usuarioLogado.nome || usuarioLogado.usuario || 'Usuário';
+    const funcionarioId = usuarioLogado.id;
 
-    // Normaliza o perfil vindo do banco/sessão
+    // Normaliza o perfil vindo da sessão
     const perfil = (
         usuarioLogado.perfil ||
-        usuarioLogado.funcao ||
         usuarioLogado.tipo ||
         ''
     ).toUpperCase().trim();
 
-    // 2. REGRAS DE ADMINISTRADOR / MASTER
+    // 2. Busca a função direto da API do funcionário (Funcionario.java) se houver ID
+    let funcaoExibicao = '';
+    if (funcionarioId) {
+        try {
+            const response = await fetch(`http://localhost:8080/api/funcionarios/${funcionarioId}`);
+            if (response.ok) {
+                const funcionario = await response.json();
+                funcaoExibicao = funcionario.funcao || funcionario.cargo || '';
+            }
+        } catch (error) {
+            console.error("Erro ao buscar dados do funcionário para a sidebar:", error);
+        }
+    }
+
+    // Fallback caso a API falhe, tentando pegar da sessão
+    if (!funcaoExibicao) {
+        funcaoExibicao = usuarioLogado.funcao || usuarioLogado.cargo || '';
+    }
+
+    // Formata o texto da função para exibição elegante
+    const funcaoFormatada = funcaoExibicao ? String(funcaoExibicao).replace('_', ' ') : '';
+    const htmlFuncao = funcaoFormatada ? `<div class="funcao-usuario">${funcaoFormatada}</div>` : '';
+
+    // 3. REGRAS DE ADMINISTRADOR / MASTER
     const ehAdminSistema = usuarioLogado.ehAdminSistema === true ||
         ['ADMIN_SISTEMA', 'MASTER_SISTEMA'].includes(perfil);
 
@@ -19,7 +43,6 @@ document.addEventListener("DOMContentLoaded", function () {
         ['MASTER_EMPRESA', 'ADMIN_EMPRESA', 'MASTER', 'ADMIN', 'ADM'].includes(perfil) ||
         perfil.includes('MASTER');
 
-    // 3. REGRAS OPERACIONAIS BASEADAS NO <SELECT> DO SEU HTML:
     const podeSolicitar = usuarioLogado.podeSolicitar === true ||
         ['OFICIAL', 'ENCARREGADO'].includes(perfil);
 
@@ -27,33 +50,25 @@ document.addEventListener("DOMContentLoaded", function () {
     let menuLinks = "";
 
     if (ehAdminSistema) {
-        // ⚙️ MENU ADMINISTRADOR DO SISTEMA MULTITENANT
         menuLinks += `
         <li><a href="admin.html">Gerenciar Empresas</a></li>
         <li><a href="lista-admins.html">Lista de Administradores</a></li>
     `;
     }
     else if (ehMasterEmpresa) {
-        // 👑 MENU MASTER / ADMIN DA EMPRESA CLIENTE
         menuLinks += `
         <li><a href="dashboard.html">Monitoramento</a></li>
         <li><a href="cadastro.html">Cadastro de Usuário</a></li>
-        <li><a href="gerenciar.html">Gerenciar Colaboradores</a></li>
+        <li><a href="gerenciar-colaborador.html">Gerenciar Colaboradores</a></li>
     `;
     }
     else {
-        // 🛠️ MENU OPERACIONAL (CHÃO DE FÁBRICA)
         menuLinks += `<li><a href="dashboard.html">Monitoramento</a></li>`;
-
-        // Exibe "Solicitar PT" apenas para OFICIAL e ENCARREGADO
         if (podeSolicitar) {
             menuLinks += `<li><a href="solicitar-pt.html">Solicitar Permissão de Trabalho</a></li>`;
         }
-        // *Nota: O link de Emitir/Encerrar foi removido daqui pois agora a ação é feita 
-        // diretamente na tabela do Dashboard por botão contextual.
     }
 
-    // 5. Adiciona o botão de Logout (Sair) no final do menu
     menuLinks += `
         <li>
             <a href="#" onclick="sessionStorage.clear(); window.location.href='login.html'">
@@ -62,14 +77,12 @@ document.addEventListener("DOMContentLoaded", function () {
         </li>
     `;
 
-    // Recupera dados para o cabeçalho da empresa na sidebar
-    const logado = sessionStorage.getItem('usuarioLogado');
-    const usuario = logado ? JSON.parse(logado) : null;
-    const nomeEmpresa = (usuario && usuario.empresaNome) ? usuario.empresaNome : 'Notlira';
+    // Cabeçalho da empresa na sidebar
+    const nomeEmpresa = (usuarioLogado && usuarioLogado.empresaNome) ? usuarioLogado.empresaNome : 'Notlira';
     const primeiraLetra = nomeEmpresa.charAt(0).toUpperCase();
     const restoDoNome = nomeEmpresa.slice(1);
 
-    // 6. Constrói o HTML final da barra lateral
+    // 5. Constrói o HTML final da barra lateral
     const sidebarHTML = `
     <nav class="sidebar">
         <div class="sidebar-header">
@@ -91,12 +104,19 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
         </div>
 
+        <!-- BLOCO USUÁRIO LOGADO -->
+        <div class="usuario-logado-sidebar">
+            <span class="label-usuario">Usuário Logado</span>
+            <div class="nome-usuario">${nomeUsuario}</div>
+            ${htmlFuncao}
+        </div>
+
         <ul class="sidebar-menu">
             ${menuLinks}
         </ul>
     </nav>`;
 
-    // 7. Injeta a barra lateral na tela
+    // 6. Injeta a barra lateral na tela
     const container = document.getElementById('sidebar-wrapper');
     if (container) {
         container.innerHTML = sidebarHTML;

@@ -43,7 +43,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('valEmpresaHeader').textContent = nomeEmpresa || 'EMPRESA';
 
         // 2. Cabeçalho básico
-        document.getElementById('docNumeroPt').textContent = `PT Nº: #${pt.id || '---'}`;
+        const numeroExibicao = (pt.numeroEmissao && pt.anoEmissao)
+            ? `PT Nº: ${String(pt.numeroEmissao).padStart(4, '0')}/${pt.anoEmissao}`
+            : 'PT Nº: NÃO EMITIDA';
+        document.getElementById('docNumeroPt').textContent = numeroExibicao;
         document.getElementById('valPlanta').textContent = pt.plantaArea || '-';
         document.getElementById('valTurno').textContent = pt.turnoGrupo || '-';
         document.getElementById('valTag').textContent = pt.tag || '-';
@@ -61,6 +64,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         document.getElementById('valNomeAst').textContent = nomeAst;
+
+        // Dentro da função que popula os campos da tela de impressão:
+        const elRecomendacoes = document.getElementById('printRecomendacoesEmissor');
+        if (elRecomendacoes) {
+            elRecomendacoes.textContent = pt.recomendacoesEmissor || 'Nenhuma recomendação informada.';
+        }
 
         // Renderizar a Tabela de Executantes (Correspondente ao Item 21 do impresso)
         const tbodyExecutantesDoc = document.getElementById('tbodyExecutantesDoc');
@@ -246,7 +255,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const episContainer = document.getElementById('listaEpisDoc');
         if (pt.episObrigatorios && Array.isArray(pt.episObrigatorios) && pt.episObrigatorios.length > 0) {
-            episContainer.innerHTML = pt.episObrigatorios.map(epi => `<span style="display: inline-block; background: #e2e3e5; color: #000; padding: 3px 8px; margin: 2px; border-radius: 3px; font-weight: bold;">[X] ${epi}</span>`).join(' ');
+            const episFormatados = pt.episObrigatorios.map(epi => {
+                let textoEpi = epi;
+
+                // Se o EPI for o Diphoterine e houver um texto complementar (número do kit) preenchido
+                if (epi.toLowerCase().includes('diphoterine') && pt.diphoterine && pt.diphoterine.textoComplementar) {
+                    textoEpi = `${epi} - Kit Nº: ${pt.diphoterine.textoComplementar}`;
+                }
+
+                return `<span style="display: inline-block; background: #e2e3e5; color: #000; padding: 3px 8px; margin: 2px; border-radius: 3px; font-weight: bold;">[X] ${textoEpi}</span>`;
+            });
+
+            episContainer.innerHTML = episFormatados.join(' ');
         } else {
             episContainer.innerHTML = 'Nenhum EPI específico cadastrado ou calculado.';
         }
@@ -264,13 +284,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (btnSalvarPdf) {
             btnSalvarPdf.addEventListener('click', () => {
                 const element = document.getElementById('conteudo-pt');
-                const nomeArquivo = `PT_Nº${pt.id || '000'}.pdf`; // Nome automático baseado no ID da PT
+                const numeroFormatadoArquivo = (pt.numeroEmissao && pt.anoEmissao)
+                    ? `${String(pt.numeroEmissao).padStart(4, '0')}_${pt.anoEmissao}`
+                    : `ID_${pt.id || '000'}`;
 
+                const nomeArquivo = `PT_${numeroFormatadoArquivo}.pdf`;
                 const opt = {
-                    margin: 10, // Margens em milímetros
+                    margin: 6, // Reduzido para otimizar o espaço vertical da página A4
                     filename: nomeArquivo,
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 }, // Aumenta a nitidez do PDF
+                    html2canvas: { scale: 2, useCORS: true },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 

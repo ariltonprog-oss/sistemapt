@@ -108,3 +108,35 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     margin-bottom: 20px;
 }
+.usuario-logado-sidebar {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 15px 15px 5px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.usuario-logado-sidebar .label-usuario {
+    font-size: 10px;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.usuario-logado-sidebar .nome-usuario {
+    font-size: 14px;
+    color: #f8fafc;
+    font-weight: bold;
+    word-break: break-word;
+}
+
+.usuario-logado-sidebar .perfil-usuario {
+    font-size: 11px;
+    color: #38bdf8;
+    text-transform: uppercase;
+    font-weight: 500;
+}

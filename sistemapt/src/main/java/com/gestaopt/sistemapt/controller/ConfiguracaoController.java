@@ -13,7 +13,7 @@ import com.gestaopt.sistemapt.model.Configuracao;
 import com.gestaopt.sistemapt.repository.ConfiguracaoRepository;
 
 @RestController
-@RequestMapping("/api/configuracoes")
+@RequestMapping("/api/configuracoes/limite-pt")
 public class ConfiguracaoController {
 
     private final ConfiguracaoRepository repository;
@@ -23,7 +23,7 @@ public class ConfiguracaoController {
     }
 
     // GET: Busca o limite atual (se não existir, retorna o padrão 3)
-    @GetMapping("/limite-pt")
+    @GetMapping
     public ResponseEntity<String> getLimitePt() {
         String limite = repository.findById("limite-pt")
                 .map(c -> c.getValor()) // ✅ Substituído para sumir com o aviso de Null type safety
@@ -32,7 +32,7 @@ public class ConfiguracaoController {
     }
 
     // POST: Salva ou atualiza o limite enviado pelo admin.html
-    @PostMapping("/limite-pt")
+    @PostMapping
     public ResponseEntity<Void> salvarLimitePt(@RequestBody Map<String, String> payload) {
         String valor = payload.get("valor");
         if (valor == null || valor.trim().isEmpty()) {

@@ -1,7 +1,6 @@
 /* =========================================================================
-   ESTILOS DO DOCUMENTO OFICIAL DE IMPRESSÃO (PT)
+   1. ESTILOS GERAIS E LAYOUT BASE
    ========================================================================= */
-
 body {
     background-color: #555;
     color: #000;
@@ -18,6 +17,9 @@ body {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
+/* =========================================================================
+   2. CABEÇALHO DO DOCUMENTO
+   ========================================================================= */
 .doc-header {
     display: flex;
     border: 2px solid #000;
@@ -81,6 +83,9 @@ body {
     margin-top: 4px;
 }
 
+/* =========================================================================
+   3. TABELAS E INFORMAÇÕES
+   ========================================================================= */
 .doc-info-tabela {
     width: 100%;
     border-collapse: collapse;
@@ -102,18 +107,42 @@ body {
     font-size: 11px;
 }
 
-.col-25 {
-    width: 25%;
+.col-25 { width: 25%; }
+.col-30 { width: 30%; }
+.tabela-sem-margem { margin-bottom: 0; }
+
+.tabela-executantes {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 5px;
 }
 
-.col-30 {
-    width: 30%;
+.tabela-executantes thead tr {
+    background-color: #f1f1f1;
+    text-align: center;
 }
 
-.tabela-sem-margem {
-    margin-bottom: 0;
+.tabela-executantes th, 
+.tabela-executantes td {
+    border: 1px solid #ccc;
+    padding: 4px;
 }
 
+.tabela-executantes .col-item { width: 8%; }
+.tabela-executantes .col-nome { width: 32%; }
+.tabela-executantes .col-funcao { width: 25%; }
+.tabela-executantes .col-empresa { width: 20%; }
+.tabela-executantes .col-assinatura { width: 15%; }
+
+.tabela-emissao .col-label { width: 13%; }
+.tabela-emissao .col-nome-ator { width: 29%; }
+.tabela-emissao .col-label-curto { width: 9%; text-align: center; }
+.tabela-emissao .col-mat { width: 11%; }
+.tabela-emissao .col-emp { width: 29%; }
+
+/* =========================================================================
+   4. SEÇÕES, RISCOS, EPIs E RECOMENDAÇÕES
+   ========================================================================= */
 .secao-titulo {
     background-color: #333;
     color: #fff;
@@ -123,6 +152,32 @@ body {
     margin-top: 15px;
     margin-bottom: 5px;
     text-transform: uppercase;
+}
+
+.secao-impressao {
+    margin-top: 15px;
+}
+
+.secao-impressao .label-info-titulo {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #000;
+    display: block;
+    margin-bottom: 4px;
+}
+
+#printRecomendacoesEmissor {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    color: #000 !important;
+    background-color: #fff !important;
+    white-space: pre-wrap;
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 4px;
+    min-height: 40px;
 }
 
 .checkbox-lista {
@@ -158,6 +213,9 @@ body {
     font-weight: bold;
 }
 
+/* =========================================================================
+   5. REVALIDAÇÃO E BLOCOS ESPECIAIS
+   ========================================================================= */
 .revalidacao-bloco {
     border: 1px solid #000;
     margin-bottom: 10px;
@@ -174,9 +232,40 @@ body {
     padding: 4px;
 }
 
-.acoes-topo {
+.revalidacao-card {
+    border: 1px solid #b0b0b0;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+.revalidacao-titulo {
+    background-color: #e2e8f0;
+    padding: 4px 8px;
+    font-weight: bold;
+    border-bottom: 1px solid #b0b0b0;
+}
+
+.revalidacao-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+.bloco-secao-executantes {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+/* =========================================================================
+   6. BOTÕES E AÇÕES DE TELA
+   ========================================================================= */
+.acoes-topo, .botoes-acao {
+    margin-bottom: 20px;
     text-align: right;
-    margin-bottom: 15px;
 }
 
 .btn-imprimir {
@@ -190,7 +279,7 @@ body {
 }
 
 .btn-imprimir:hover {
-    background: hsl(34, 100%, 50%)6b3;
+    background: hsla(34, 100%, 40%, 1);
 }
 
 .btn-voltar-imprimir {
@@ -203,18 +292,37 @@ body {
     display: inline-block;
 }
 
+/* =========================================================================
+   7. UTILITÁRIOS
+   ========================================================================= */
+.text-center {
+    text-align: center;
+}
+
+.campo {
+    white-space: nowrap;
+}
+
+/* =========================================================================
+   8. MEDIA QUERIES (IMPRESSÃO / PDF)
+   ========================================================================= */
 @media print {
     body {
         background: none !important;
         color: #000 !important;
     }
+
+    /* Oculta elementos de navegação e botões */
     .acoes-topo,
+    .botoes-acao,
     #sidebar-wrapper,
     .sidebar,
     header,
     nav {
         display: none !important;
     }
+
+    /* Ajusta o container para ocupar a folha inteira sem sombras */
     .documento-wrapper {
         box-shadow: none !important;
         margin: 0 !important;
@@ -223,119 +331,42 @@ body {
         padding: 0 !important;
         background: #fff !important;
     }
-}
-.botoes-acao {
-    margin-bottom: 20px;
-    text-align: right;
-}
 
-    .revalidacao-card {
-        border: 1px solid #b0b0b0;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
-        margin-bottom: 10px;
-    }
-    .revalidacao-titulo {
-        background-color: #e2e8f0;
-        padding: 4px 8px;
-        font-weight: bold;
-        border-bottom: 1px solid #b0b0b0;
-    }
-    .revalidacao-linha {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 6px 8px;
-        gap: 10px;
-        flex-wrap: nowrap;
-    }
-    .campo {
-        white-space: nowrap;
-    }
-    .tabela-executantes {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 5px;
-}
-
-.tabela-executantes thead tr {
-    background-color: #f1f1f1;
-    text-align: center;
-}
-
-.tabela-executantes th, 
-.tabela-executantes td {
-    border: 1px solid #ccc;
-    padding: 4px;
-}
-
-.tabela-executantes .col-item { width: 8%; }
-.tabela-executantes .col-nome { width: 35%; }
-.tabela-executantes .col-funcao { width: 20%; }
-.tabela-executantes .col-empresa { width: 17%; }
-.tabela-executantes .col-assinatura { width: 20%; }
-
-.text-center {
-    text-align: center;
-}
-@media print {
-    /* Fixa o cabeçalho para que ele se repita automaticamente no topo de cada nova página */
-    .doc-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: #ffffff; /* Fundo branco para evitar transparência sobre o conteúdo */
-        z-index: 9999;
-        border-bottom: 2px solid #000;
-    }
-
-    /* Oculta os botões de ação (Imprimir, Salvar PDF, Voltar) na impressão */
-    .acoes-topo {
-        display: none !important;
-    }
-
-    /* Adiciona margem superior no corpo do documento para o conteúdo não ficar por baixo do cabeçalho fixo */
-    body {
-        padding-top: 25mm; 
+    /* Regras essenciais para documentos multi-página: 
+       Evita que blocos importantes sejam cortados ao meio na quebra de página */
+    .secao-impressao, 
+    .revalidacao-card, 
+    .doc-info-tabela,
+    .bloco-secao-executantes {
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
 }
-.tabela-emissao .col-label { 
-    width: 13%; 
-}
-.tabela-emissao .col-nome-ator { 
-    width: 29%; 
-}
-.tabela-emissao .col-label-curto { 
-    width: 9%; 
-    text-align: center;
-}
-.tabela-emissao .col-mat { 
-    width: 11%; 
-}
-.tabela-emissao .col-emp { 
-    width: 29%; 
-}
-.tabela-executantes .col-item { 
-    width: 8%; 
-}
-.tabela-executantes .col-nome { 
-    width: 32%; 
-}
-.tabela-executantes .col-funcao { 
-    width: 25%; 
-}
-.tabela-executantes .col-empresa { 
-    width: 20%; 
-}
-.tabela-executantes .col-assinatura { 
-    width: 15%; 
-}
-
-.text-center {
-    text-align: center;
-}
-.bloco-secao-executantes {
+.controle-revalidacao, .secao-revalidacao {
     break-inside: avoid;
     page-break-inside: avoid;
+}
+/* Força o bloco de revalidação a iniciar inteiramente na próxima página */
+.secao-revalidacao {
+    page-break-before: always;
+    break-before: page;
+}
+.diretrizes-container {
+    border: 1px solid #ccc;
+    background-color: #fcfcfc;
+    padding: 8px 12px;
+    margin-bottom: 15px;
+    font-size: 11px;
+    color: #000;
+}
+
+.diretrizes-container ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.diretrizes-container li {
+    margin-bottom: 4px;
+    line-height: 1.3;
+    font-weight: bold;
 }

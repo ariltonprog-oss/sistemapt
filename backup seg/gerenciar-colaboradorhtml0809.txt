@@ -42,6 +42,6 @@
     </main>
 
     <script src="../js/sidebar.js"></script>
-    <script src="../js/gerenciar.js"></script> <!-- Lógica da busca e tabela -->
+    <script src="../js/gerenciar-colaborador.js"></script> <!-- Lógica da busca e tabela -->
 </body>
 </html>

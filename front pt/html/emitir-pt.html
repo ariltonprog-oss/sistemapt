@@ -9,25 +9,7 @@
     <link rel="stylesheet" href="../css/emitir-pt.css">
     <!-- Ícones (FontAwesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .texto-secundario-pequeno {
-            color: var(--texto-secundario, #a0aec0);
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-        }
 
-        .texto-secundario {
-            color: var(--texto-secundario, #a0aec0);
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-        }
-
-        .grid-checkboxes--responsivo {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 10px;
-        }
-    </style>
 </head>
 
 <body>
@@ -41,7 +23,7 @@
         <main class="container">
             <div class="card-formulario">
                 <div class="card-header">
-                    <h3>📋 Emitir PT #<span id="labelPtId">-</span></h3>
+                    <h3>📋 Emitir PT <span id="labelPtId">-</span></h3>
                 </div>
 
                 <form id="formEmitirPT">
@@ -70,7 +52,8 @@
                             </div>
                             <div class="form-group">
                                 <label class="label-info-titulo">Nome da AST Associada</label>
-                                <div id="infoNomeAst" class="label-info-valor">-</div>
+                                <input type="text" id="inputNomeAst" class="form-control"
+                                    placeholder="Informe ou ajuste a AST">
                             </div>
                         </div>
                     </fieldset>

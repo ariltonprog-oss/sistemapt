@@ -10,9 +10,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    document.getElementById('labelPtId').textContent = ptId;
 
-    // 🟢 Identifica e preenche o nome e a matrícula do emitente logado na tela
+
+    // Identifica e preenche o nome e a matrícula do emitente logado na tela
     const usuarioLogadoStr = sessionStorage.getItem('usuarioLogado');
     if (usuarioLogadoStr) {
         const usuarioLogado = JSON.parse(usuarioLogadoStr);
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             inputNomeEmitente.value = usuarioLogado.nome || usuarioLogado.usuario || "Emitente Autenticado";
         }
 
-        // 🚀 Busca a matrícula no back-end usando a URL completa do Spring Boot
+        // Busca a matrícula no back-end usando a URL completa do Spring Boot
         const funcionarioId = usuarioLogado.id;
         if (funcionarioId) {
             try {
@@ -55,8 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-
-
 function preencherDatasPadrao() {
     const agora = new Date();
     agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
@@ -76,11 +74,20 @@ async function carregarDadosParaEmissao(id) {
 
         // 1. Popula os campos básicos
         document.getElementById('infoPlantaArea').textContent = pt.plantaArea || '-';
-
         document.getElementById('infoTag').textContent = pt.tag || '-';
         document.getElementById('infoOrdemPj').textContent = pt.ordemPj || '-';
         document.getElementById('infoDescricao').textContent = pt.descricaoAtividade || '-';
-        document.getElementById('infoNomeAst').textContent = pt.nomeAst || 'Não informada';
+
+        // Preenche o campo de AST (suportando input para edição ou div para leitura com segurança)
+        const inputAst = document.getElementById('inputNomeAst');
+        if (inputAst) {
+            inputAst.value = pt.nomeAst || '';
+        } else {
+            const infoAst = document.getElementById('infoNomeAst');
+            if (infoAst) {
+                infoAst.textContent = pt.nomeAst || 'Não informada';
+            }
+        }
 
         const solNome = pt.solicitante?.nome || pt.solicitanteNome || 'Não informado';
         const solMatricula = pt.solicitante?.matricula || pt.solicitanteMatricula || '';
@@ -88,26 +95,16 @@ async function carregarDadosParaEmissao(id) {
 
         const elSolicitante = document.getElementById('infoSolicitante');
         if (elSolicitante) elSolicitante.textContent = textoSolicitante;
-        // Exemplo de validação antes do envio
-        const nomeAst = document.getElementById('nomeAst').value; // ou o seletor do seu campo de AST
-
-        if (!nomeAst || nomeAst.trim() === "") {
-            alert("Erro: Não é permitido emitir uma Permissão de Trabalho sem uma AST vinculada!");
-            return; // Interrompe o envio
-        }
 
         // 1.5. Preenche a tabela de executantes de forma clara e estruturada
         const tbodyExecutantes = document.getElementById('tbodyExecutantesEmissao');
         if (tbodyExecutantes) {
             let listaExecutantesRenderizar = [];
 
-            // Adiciona os executantes vindos do banco/payload se houver
             if (pt.executantes && Array.isArray(pt.executantes) && pt.executantes.length > 0) {
                 listaExecutantesRenderizar = [...pt.executantes];
             }
 
-            // SE a opção de atuar como executante estiver marcada E o solicitante existir, 
-            // garante que ele apareça na tabela para total clareza do emitente.
             if (pt.solicitanteExecutante && pt.solicitante) {
                 const jaTemSolicitante = listaExecutantesRenderizar.some(
                     e => e.id === pt.solicitante.id || e.matricula === pt.solicitante.matricula
@@ -117,7 +114,6 @@ async function carregarDadosParaEmissao(id) {
                 }
             }
 
-            // Desenha as linhas na tabela
             if (listaExecutantesRenderizar.length > 0) {
                 tbodyExecutantes.innerHTML = listaExecutantesRenderizar.map(e => `
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -179,10 +175,13 @@ async function carregarDadosParaEmissao(id) {
                 }
 
                 if (ativo) {
-                    temRisco = true;
-                    const tag = document.createElement('span');
+                    temRico = true;
+                    const tag = document.createElement('div'); // Mudado de span para div para quebrar linha
                     tag.textContent = textoFinal;
                     tag.className = 'risco-badge';
+                    // Adiciona um espaçamento limpo via estilo inline ou ajuste a classe CSS
+                    tag.style.marginBottom = '6px';
+                    tag.style.display = 'block';
                     containerRiscos.appendChild(tag);
                 }
             });
@@ -195,10 +194,8 @@ async function carregarDadosParaEmissao(id) {
             }
         }
 
-        // 3. Renderiza os EPIs de forma puramente informativa (somente leitura)
         gerarChecklistDinamico(pt);
 
-        // 4. Lógica de Exibição Condicional dos Blocos de Preenchimento
         const blocoLoto = document.getElementById('blocoLoto');
         if (blocoLoto) blocoLoto.classList.toggle('oculto', !pt.requerLoto);
 
@@ -217,7 +214,6 @@ async function carregarDadosParaEmissao(id) {
     }
 }
 
-// 🟢 FUNÇÃO  EXIBE OS EPIs APENAS PARA CONSULTA 
 function gerarChecklistDinamico(pt) {
     const container = document.getElementById('containerInspecaoEpiMedidas');
     if (!container) return;
@@ -233,7 +229,6 @@ function gerarChecklistDinamico(pt) {
         return;
     }
 
-    // Renderiza cards limpos e estáticos (somente leitura)
     let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; width: 100%;">';
     episCalculados.forEach(epiNome => {
         html += `
@@ -251,14 +246,19 @@ function gerarChecklistDinamico(pt) {
 async function confirmarEmissaoPT(event) {
     event.preventDefault();
 
-    // 1. Pega os dados do usuário logado direto da sessão com segurança
+    // Captura e valida o nome da AST (seja do input editável ou de um elemento fallback)
+    const campoAst = document.getElementById('inputNomeAst');
+    const nomeAst = campoAst ? campoAst.value.trim() : (document.getElementById('infoNomeAst')?.textContent.trim() || '');
+
+    if (!nomeAst || nomeAst === "-" || nomeAst === "Não informada") {
+        alert("⚠️ Bloqueio SESMT: Não é permitida a emissão de uma Permissão de Trabalho sem uma AST vinculada!");
+        return;
+    }
+
     const usuarioLogadoStr = sessionStorage.getItem('usuarioLogado');
     const usuarioLogado = usuarioLogadoStr ? JSON.parse(usuarioLogadoStr) : null;
-
-    // Garante que pegamos o ID independentemente de como ele venha no objeto (id, usuarioId, etc.)
     const idEmitenteExtraido = usuarioLogado ? (usuarioLogado.id || usuarioLogado.usuarioId || usuarioLogado.funcionarioId) : null;
 
-    // 2. Monta o payload exatamente com os nomes que o EmitirPermissaoRequestDTO espera
     const payload = {
         dataHoraInicio: document.getElementById('dataHoraInicio').value ? document.getElementById('dataHoraInicio').value + ":00" : null,
         recomendacoesEmissor: document.getElementById('recomendacoesEmissor')?.value.trim() || null,
@@ -267,7 +267,8 @@ async function confirmarEmissaoPT(event) {
         alturaDetalhes: document.getElementById('alturaDetalhes')?.value.trim() || null,
         matricula: document.getElementById('matricula')?.value.trim() || null,
         turnoGrupo: document.getElementById('turnoGrupo')?.value.trim() || null,
-        emitenteId: idEmitenteExtraido // Envia o ID extraído da sessão para o DTO
+        nomeAst: nomeAst, // Envia a AST validada/ajustada no payload
+        emitenteId: idEmitenteExtraido
     };
 
     console.log("Payload enviado para o DTO:", JSON.stringify(payload, null, 2));

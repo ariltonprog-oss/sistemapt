@@ -17,7 +17,7 @@ import com.gestaopt.sistemapt.model.Funcionario;
 import com.gestaopt.sistemapt.repository.FuncionarioRepository;
 
 @RestController
-@RequestMapping("/api/autenticacao")
+@RequestMapping("/api/autenticacao/login")
 
 public class AutenticacaoController {
 
@@ -29,12 +29,12 @@ public class AutenticacaoController {
     }
 
     // Este método resolve o erro de CORS (Preflight/OPTIONS) sem quebrar o POST
-    @org.springframework.web.bind.annotation.RequestMapping(value = "/login", method = org.springframework.web.bind.annotation.RequestMethod.OPTIONS)
+    @org.springframework.web.bind.annotation.RequestMapping(method = org.springframework.web.bind.annotation.RequestMethod.OPTIONS)
     public ResponseEntity<?> handleOptions() {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/login")
+    @PostMapping
     public ResponseEntity<?> efetuarLogin(@RequestBody LoginRequest loginRequest) {
         String usuarioDigitado = loginRequest.getUsuario() != null ? loginRequest.getUsuario().trim() : "";
         String senhaDigitada = loginRequest.getSenha() != null ? loginRequest.getSenha().trim() : "";

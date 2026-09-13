@@ -55,6 +55,15 @@ public class PermissaoTrabalhoService {
         Funcionario emitente = funcionarioRepository.findById(dto.getEmitenteId())
                 .orElseThrow(() -> new Exception("Funcionário emitente não encontrado no sistema."));
 
+        // Validações básicas de data e ASO do emitente
+        LocalDate hoje = LocalDate.now();
+        if (!emitente.isPodeEmitirPt()) {
+            throw new Exception("O funcionário não possui perfil de EMITENTE autorizado!");
+        }
+        if (emitente.getValidadeASO() == null || emitente.getValidadeASO().isBefore(hoje)) {
+            throw new Exception("O ASO do Emitente está vencido ou ausente!");
+        }
+
         pt.setEmitente(emitente);
         pt.setTurnoGrupo(dto.getTurnoGrupo());
         pt.setDataHoraInicio(dto.getDataHoraInicio());
@@ -65,6 +74,16 @@ public class PermissaoTrabalhoService {
         pt.setMonitoramentoAmbiental(dto.getMonitoramentoAmbiental());
         pt.setDataHoraEmissao(LocalDateTime.now());
         pt.setStatus("EMITIDA");
+
+        // 🔢 --- GERAÇÃO DO NÚMERO SEQUENCIAL ANUAL (ex: 1/2026) ---
+        if (pt.getNumeroEmissao() == null) {
+            int anoAtual = LocalDate.now().getYear();
+            Integer maiorNumero = ptRepository.encontrarMaiorNumeroPorAno(anoAtual);
+            int proximoNumero = (maiorNumero == null) ? 1 : maiorNumero + 1;
+
+            pt.setNumeroEmissao(proximoNumero);
+            pt.setAnoEmissao(anoAtual);
+        }
 
         return ptRepository.save(pt);
     }
@@ -166,6 +185,13 @@ public class PermissaoTrabalhoService {
         if (pt.getAreaAtuacao() != null) {
             List<String> episCalculados = pt.getAreaAtuacao().calcularEpisDinamicos(riscosMapeados);
             pt.setEpisObrigatorios(episCalculados);
+        }
+
+        // --- GERAÇÃO DO NÚMERO SEQUENCIAL DE EMISSÃO ---
+        if (pt.getNumeroEmissao() == null) {
+            Integer maiorNumero = ptRepository.encontrarMaiorNumeroEmissao();
+            int proximoNumero = (maiorNumero == null) ? 1 : maiorNumero + 1;
+            pt.setNumeroEmissao(proximoNumero);
         }
 
         pt.setStatus("EMITIDA");
@@ -398,12 +424,16 @@ public class PermissaoTrabalhoService {
     }
 
     public List<PermissaoTrabalho> listarPtsParaRevalidar() {
-        List<PermissaoTrabalho> todas = listarTodas(); // Já executa a varredura e atualização
+        List<PermissaoTrabalho> todas = listarTodas();
         List<PermissaoTrabalho> pendentes = new ArrayList<>();
         for (PermissaoTrabalho pt : todas) {
             String proximaAcao = getStatusProximaAcao(pt.getId());
-            if ("INICIO_JORNADA".equals(proximaAcao) || "EM_REVALIDACAO".equals(pt.getStatus()) || "AGUARDANDO_REVALIDACAO".equals(pt.getStatus()) || "BAIXA_COMPULSORIA".equals(pt.getStatus())) {
-                pendentes.add(pt);
+            // Inclui "FIM_JORNADA" para listar PTs que estão com turno em andamento e precisam de atenção/fechamento
+            if ("INICIO_JORNADA".equals(proximaAcao) || "FIM_JORNADA".equals(proximaAcao) || "EM_REVALIDACAO".equals(pt.getStatus()) || "AGUARDANDO_REVALIDACAO".equals(pt.getStatus()) || "BAIXA_COMPULSORIA".equals(pt.getStatus())) {
+                // Garante que PTs já encerradas ou totalmente baixadas não apareçam aqui
+                if (!"ENCERRADA".equals(pt.getStatus()) && !"BAIXADA".equals(pt.getStatus())) {
+                    pendentes.add(pt);
+                }
             }
         }
         return pendentes;

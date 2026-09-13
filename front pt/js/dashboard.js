@@ -117,9 +117,8 @@ function renderizarTabela(lista) {
     const usuario = logado ? JSON.parse(logado) : {};
     const perfil = usuario.perfil ? usuario.perfil.toUpperCase() : '';
 
-    const perfisEmitentes = ['EMISSOR', 'SESMT', 'MASTER', 'ADMIN', 'OPERADOR_INDUSTRIAL'];
-    const ehEmitente = perfisEmitentes.includes(perfil);
-
+    const perfisEmitentes = ['EMISSOR', 'SESMT', 'MASTER', 'ADMIN', 'MASTER_EMPRESA', 'ADMIN_EMPRESA', 'OPERADOR_INDUSTRIAL'];
+    const ehEmitente = perfisEmitentes.includes(perfil) || perfil.includes('MASTER') || perfil.includes('ADMIN');
     corpoTabela.innerHTML = lista.map(pt => {
         const statusChave = (pt.status || 'SOLICITADA').toUpperCase();
         const statusExibicao = formatarTexto(statusChave);
@@ -140,6 +139,12 @@ function renderizarTabela(lista) {
             }
         }
 
+        // Exibe no formato numero/ano (ex: 1/2026) sem o #
+        const numeroExibicaoTabela = (pt.numeroEmissao && pt.anoEmissao)
+            ? `${String(pt.numeroEmissao).padStart(4, '0')}/${pt.anoEmissao}`
+            : (pt.numeroEmissao ? String(pt.numeroEmissao).padStart(4, '0') : '---');
+
+
         // 🟢 REGRA 1: Status SOLICITADA
         if (statusChave === 'SOLICITADA') {
             if (ehEmitente) {
@@ -147,7 +152,7 @@ function renderizarTabela(lista) {
             }
             acoesHtml += `<a href="editar-pt.html?id=${pt.id}" class="btn-acao-editar" title="Ver/Editar Solicitação">✏️ Detalhes</a>`;
         }
-        // 🟢 REGRA 2: Status EMITIDA ou EM_REVALIDACAO / AGUARDANDO_REVALIDACAO
+        // 🟢 // 🟢 REGRA 2: Status EMITIDA ou EM_REVALIDACAO / AGUARDANDO_REVALIDACAO
         else if (statusChave === 'EMITIDA' || statusChave === 'EM_REVALIDACAO' || statusChave === 'AGUARDANDO_REVALIDACAO') {
             const infoVencimento = calcularVencimentoPT(pt);
             const obsRegulatoriaPadrao = "Permissão bloqueada por falta de retorno de status após vencimento de intervalo regulatório.";
@@ -155,21 +160,25 @@ function renderizarTabela(lista) {
             if (infoVencimento.estaVencida) {
                 // BLOQUEIO COMPULSÓRIO
                 classeDestaqueLinha = 'linha-alerta-limite';
-                const msgBloqueio = infoVencimento.tipoRegra === 'POS_EXPEDIENTE' 
-                    ? "Bloqueado (Pós-Expediente 12h) - Baixa Obrigatória" 
+                const msgBloqueio = infoVencimento.tipoRegra === 'POS_EXPEDIENTE'
+                    ? "Bloqueado (Pós-Expediente 12h) - Baixa Obrigatória"
                     : "Bloqueado (Turno 08h) - Baixa Obrigatória";
-                
+
                 avisoPrazoHtml = `<br><span style="color: #ff9f43; font-size: 0.80em; font-weight: 600;" title="${obsRegulatoriaPadrao}">
                     <i class="fa-solid fa-ban"></i> ${msgBloqueio}
                 </span>`;
-                
-                acoesHtml = `<a href="baixar-pt.html?id=${pt.id}" class="btn-acao-baixar" title="${obsRegulatoriaPadrao}">🏁 Baixar (Obrigatório)</a> `;
-                acoesHtml += `<a href="imprimir-pt.html?id=${pt.id}" class="btn-acao-imprimir" target="_blank" title="Imprimir Documento">🖨️ Imprimir</a>`;
+
+                if (ehEmitente) {
+                    acoesHtml += `<a href="baixar-pt.html?id=${pt.id}" class="btn-acao-baixar" title="${obsRegulatoriaPadrao}">🏁 Baixar (Obrigatório)</a> `;
+                    acoesHtml += `<a href="imprimir-pt.html?id=${pt.id}" class="btn-acao-imprimir" target="_blank" title="Imprimir Documento">🖨️ Imprimir</a>`;
+                }
             } else {
                 // Fluxo normal
-                acoesHtml += `<a href="revalidar-pt.html?id=${pt.id}" class="btn-acao-revalidar" title="Revalidar PT">🔄 Revalidar</a> `;
-                acoesHtml += `<a href="baixar-pt.html?id=${pt.id}" class="btn-acao-baixar" title="Dar Baixa na PT">🏁 Baixar</a> `;
-                acoesHtml += `<a href="imprimir-pt.html?id=${pt.id}" class="btn-acao-imprimir" target="_blank" title="Imprimir Documento">🖨️ Imprimir</a>`;
+                if (ehEmitente) {
+                    acoesHtml += `<a href="revalidar-pt.html?id=${pt.id}" class="btn-acao-revalidar" title="Revalidar PT">🔄 Revalidar</a> `;
+                    acoesHtml += `<a href="baixar-pt.html?id=${pt.id}" class="btn-acao-baixar" title="Dar Baixa na PT">🏁 Baixar</a> `;
+                    acoesHtml += `<a href="imprimir-pt.html?id=${pt.id}" class="btn-acao-imprimir" target="_blank" title="Imprimir Documento">🖨️ Imprimir</a>`;
+                }
 
                 // Alertas preventivos específicos por tipo de regra
                 if (infoVencimento.tipoRegra === 'POS_EXPEDIENTE') {
@@ -193,7 +202,7 @@ function renderizarTabela(lista) {
 
         return `
             <tr class="${classeDestaqueLinha}">
-                <td>#${pt.id}</td>
+                <td>${numeroExibicaoTabela}</td>
                 <td>${pt.plantaArea || '-'}</td>
                 <td>${pt.emergencial ? '🚨 Emergencial' : (pt.ordemPj || '-')}</td>
                 <td><strong>${areaExibicao}</strong></td>
@@ -248,16 +257,16 @@ function calcularVencimentoPT(pt) {
     const dataRefBruta = pt.dataHoraInicio || pt.dataEmissao || pt.ultimaAtualizacao || pt.dataCriacao || pt.criadoEm || pt.data;
     const dataRef = dataRefBruta ? new Date(dataRefBruta) : new Date();
     const revalCount = pt.quantidadeRevalidacoes || pt.etapaRevalidacao || 0;
-    
+
     const horas = dataRef.getHours();
     const minutos = dataRef.getMinutes();
-    
+
     // Verifica se foi iniciada após o fim do expediente ADM (17:45)
     const isAposExpediente = (horas > 17) || (horas === 17 && minutos >= 45);
-    
+
     let limiteVencimento = new Date(dataRef);
     let tipoRegra = 'ADM';
-    
+
     if (isAposExpediente) {
         // 🌙 Regra especial pós-expediente: 12 horas de validade a partir do início
         tipoRegra = 'POS_EXPEDIENTE';
@@ -267,10 +276,10 @@ function calcularVencimentoPT(pt) {
         limiteVencimento.setHours(8, 0, 0, 0);
         limiteVencimento.setDate(limiteVencimento.getDate() + 1 + revalCount);
     }
-    
+
     const agora = new Date();
     const expirado = agora > limiteVencimento;
-    
+
     return {
         dataRef,
         limiteVencimento,

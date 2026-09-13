@@ -1,0 +1,490 @@
+package com.gestaopt.sistemapt.service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.gestaopt.sistemapt.dto.BaixaPtRequestDTO;
+import com.gestaopt.sistemapt.dto.EmitirPermissaoRequestDTO;
+import com.gestaopt.sistemapt.model.Especialidade;
+import com.gestaopt.sistemapt.model.Funcionario;
+import com.gestaopt.sistemapt.model.PermissaoTrabalho;
+import com.gestaopt.sistemapt.model.RevalidaPermissao;
+import com.gestaopt.sistemapt.repository.FuncionarioRepository;
+import com.gestaopt.sistemapt.repository.PermissaoTrabalhoRepository;
+import com.gestaopt.sistemapt.repository.RevalidaPermissaoRepository;
+
+@Service
+public class PermissaoTrabalhoService {
+
+    private final PermissaoTrabalhoRepository ptRepository;
+    private final RevalidaPermissaoRepository revalidaRepository;
+    private final FuncionarioRepository funcionarioRepository;
+
+    public PermissaoTrabalhoService(PermissaoTrabalhoRepository ptRepository,
+            RevalidaPermissaoRepository revalidaRepository,
+            FuncionarioRepository funcionarioRepository) {
+        this.ptRepository = ptRepository;
+        this.revalidaRepository = revalidaRepository;
+        this.funcionarioRepository = funcionarioRepository;
+    }
+
+    @Transactional
+    public PermissaoTrabalho emitirPt(Long id, EmitirPermissaoRequestDTO dto) throws Exception {
+        if (id == null) {
+            throw new Exception("O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
+
+        if (dto.getEmitenteId() == null) {
+            throw new Exception("Erro SESMT: Nenhum emitente foi identificado para esta operação.");
+        }
+
+        // 🔒 Trava de segurança SESMT: Exige a AST na emissão
+        if (dto.getNomeAst() == null || dto.getNomeAst().trim().isEmpty()) {
+            throw new Exception("Bloqueio SESMT: Não é permitida a emissão de uma Permissão de Trabalho sem uma AST vinculada.");
+        }
+
+        Funcionario emitente = funcionarioRepository.findById(dto.getEmitenteId())
+                .orElseThrow(() -> new Exception("Funcionário emitente não encontrado no sistema."));
+
+        pt.setEmitente(emitente);
+        pt.setTurnoGrupo(dto.getTurnoGrupo());
+        pt.setDataHoraInicio(dto.getDataHoraInicio());
+        pt.setRecomendacoesEmissor(dto.getRecomendacoesEmissor());
+        pt.setLotoDetalhes(dto.getLotoDetalhes());
+        pt.setAlturaDetalhes(dto.getAlturaDetalhes());
+        pt.setNomeAst(dto.getNomeAst());
+        pt.setMonitoramentoAmbiental(dto.getMonitoramentoAmbiental());
+        pt.setDataHoraEmissao(LocalDateTime.now());
+        pt.setStatus("EMITIDA");
+
+        return ptRepository.save(pt);
+    }
+
+    @Transactional
+    public PermissaoTrabalho atualizarPt(Long id, PermissaoTrabalho ptAtualizada) throws Exception {
+        if (id == null) {
+            throw new Exception("O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+
+        PermissaoTrabalho ptExistente = ptRepository.findById(id)
+                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
+
+        // Atualiza os campos editáveis enviados pelo front-end
+        ptExistente.setDescricaoAtividade(ptAtualizada.getDescricaoAtividade());
+        ptExistente.setNomeAst(ptAtualizada.getNomeAst());
+        ptExistente.setPlantaArea(ptAtualizada.getPlantaArea());
+        ptExistente.setEmpresaGestora(ptAtualizada.getEmpresaGestora());
+        ptExistente.setTag(ptAtualizada.getTag());
+        ptExistente.setOrdemPj(ptAtualizada.getOrdemPj());
+        ptExistente.setTurnoGrupo(ptAtualizada.getTurnoGrupo());
+        ptExistente.setRecomendacoesEmissor(ptAtualizada.getRecomendacoesEmissor());
+        ptExistente.setLotoDetalhes(ptAtualizada.getLotoDetalhes());
+        ptExistente.setAlturaDetalhes(ptAtualizada.getAlturaDetalhes());
+        ptExistente.setMonitoramentoAmbiental(ptAtualizada.getMonitoramentoAmbiental());
+
+        // Atualiza flags e listas de executantes se alteradas na tela
+        ptExistente.setSolicitanteExecutante(ptAtualizada.isSolicitanteExecutante());
+        if (ptAtualizada.getExecutantes() != null) {
+            ptExistente.setExecutantes(ptAtualizada.getExecutantes());
+        }
+
+        // Aplica a regra de segurança do solicitante executante que criamos na model
+        ptExistente.garantirSolicitanteComoExecutante();
+
+        return ptRepository.save(ptExistente);
+    }
+
+    public PermissaoTrabalho validarEEmitirPT(PermissaoTrabalho pt) throws Exception {
+        LocalDate hoje = LocalDate.now();
+
+        if (pt.getTurnoGrupo() == null || pt.getTurnoGrupo().trim().isEmpty()) {
+            throw new Exception("O Turno / Grupo deve ser informado pelo emitente para realizar a emissão da PT!");
+        }
+
+        if (pt.getNomeAst() == null || pt.getNomeAst().trim().isEmpty()) {
+            throw new Exception("Bloqueio SESMT: Não é permitida a emissão de uma Permissão de Trabalho sem uma AST vinculada.");
+        }
+
+        if (pt.isRequerTrabalhoQuente() && pt.isRequerTrabalhoFrio()) {
+            throw new Exception("Bloqueio SESMT: A atividade não pode ser classificada como Trabalho a Quente e Trabalho a Frio simultaneamente!");
+        }
+
+        Funcionario solicitante = pt.getSolicitante();
+        Funcionario emitente = pt.getEmitente();
+
+        if (emitente == null || !emitente.isPodeEmitirPt()) {
+            throw new Exception("O funcionário não possui perfil de EMITENTE autorizado!");
+        }
+        if (emitente.getValidadeASO() == null || emitente.getValidadeASO().isBefore(hoje)) {
+            throw new Exception("O ASO do Emitente está vencido ou ausente!");
+        }
+
+        if (solicitante == null) {
+            throw new Exception("Toda PT precisa ter um Solicitante definido.");
+        }
+        if (solicitante.getValidadeASO() == null || solicitante.getValidadeASO().isBefore(hoje)) {
+            throw new Exception("O ASO do Solicitante está vencido ou ausente!");
+        }
+        if (solicitante.getValidadeReciclagemPt() == null || solicitante.getValidadeReciclagemPt().isBefore(hoje)) {
+            throw new Exception("A Reciclagem de PT do Solicitante está vencida ou ausente!");
+        }
+
+        if (pt.getAreaAtuacao() == Especialidade.SOLDA) {
+            pt.setRequerTrabalhoQuente(true);
+            pt.setRequerTrabalhoFrio(false);
+        }
+
+        // Substituído pelo método encapsulado na entidade
+        pt.garantirSolicitanteComoExecutante();
+
+        boolean solicitanteEhExecutante = false;
+        if (pt.getExecutantes() != null) {
+            for (Funcionario exec : pt.getExecutantes()) {
+                if (exec.getId() != null && exec.getId().equals(solicitante.getId())) {
+                    solicitanteEhExecutante = true;
+                    break;
+                }
+            }
+        }
+
+        if (solicitanteEhExecutante) {
+            validarMatrizNrsRigorosa(solicitante, pt);
+        } else {
+            validarMatrizNrsAcessoFiscal(solicitante, pt);
+        }
+
+        List<String> riscosMapeados = extrairRiscosEAtividades(pt);
+        if (pt.getAreaAtuacao() != null) {
+            List<String> episCalculados = pt.getAreaAtuacao().calcularEpisDinamicos(riscosMapeados);
+            pt.setEpisObrigatorios(episCalculados);
+        }
+
+        // --- GERAÇÃO DO NÚMERO SEQUENCIAL DE EMISSÃO ---
+        if (pt.getNumeroEmissao() == null) {
+            Integer maiorNumero = ptRepository.encontrarMaiorNumeroEmissao();
+            int proximoNumero = (maiorNumero == null) ? 1 : maiorNumero + 1;
+            pt.setNumeroEmissao(proximoNumero);
+        }
+
+        pt.setStatus("EMITIDA");
+        return ptRepository.save(pt);
+    }
+
+    private List<String> extrairRiscosEAtividades(PermissaoTrabalho pt) {
+        List<String> atividades = new ArrayList<>();
+
+        if (pt.isRequerTrabalhoQuente()) {
+            atividades.add("QUENTE");
+        }
+        if (pt.isRequerTrabalhoAltura()) {
+            atividades.add("ALTURA");
+        }
+        if (pt.isRequerEspacoConfinado()) {
+            atividades.add("CONFINADO");
+        }
+        if (pt.isRequerAltaTensaoSep()) {
+            atividades.add("NR10_SEP");
+        }
+        if (pt.isRequerRiscoEletrico()) {
+            atividades.add("ELETRICO");
+        }
+        if (pt.isRequerAreaClassificada()) {
+            atividades.add("AREA_CLASSIFICADA");
+        }
+        if (pt.isRequerAtividadePintura()) {
+            atividades.add("PINTURA");
+        }
+        if (pt.isRequerSegurancaMaquinas()) {
+            atividades.add("MAQUINAS");
+        }
+
+        if (pt.getRuido() != null && pt.getRuido().isAtivo()) {
+            atividades.add("RUIDO");
+            if (pt.getRuido().getOpcoesSelecionadas() != null) {
+                for (String opcao : pt.getRuido().getOpcoesSelecionadas()) {
+                    if (opcao.toLowerCase().contains("dupla")) {
+                        atividades.add("RUIDO_DUPLA");
+                    } else if (opcao.toLowerCase().contains("simples")) {
+                        atividades.add("RUIDO_SIMPLES");
+                    }
+                }
+            }
+        }
+
+        if (pt.getVibracao() != null && pt.getVibracao().isAtivo()) {
+            atividades.add("VIBRACAO");
+        }
+        if (pt.getSuperficiesAquecidas() != null && pt.getSuperficiesAquecidas().isAtivo()) {
+            atividades.add("SUPERFICIES_AQUECIDAS");
+        }
+        if (pt.getRadiacaoNaoIonizante() != null && pt.getRadiacaoNaoIonizante().isAtivo()) {
+            atividades.add("RADIACAO_NAO_IONIZANTE");
+        }
+        if (pt.getAgentesQuimicos() != null && pt.getAgentesQuimicos().isAtivo()) {
+            atividades.add("QUIMICO");
+        }
+        if (pt.getDiphoterine() != null && pt.getDiphoterine().isAtivo()) {
+            atividades.add("DIPHOTERINE");
+            atividades.add("QUIMICO");
+        }
+        if (pt.getIsolamentoArea() != null && pt.getIsolamentoArea().isAtivo()) {
+            atividades.add("ISOLAMENTO_AREA");
+        }
+
+        return atividades;
+    }
+
+    /**
+     * CORREÇÃO: Valida se o turno estourou 24 horas sem encerramento. Caso
+     * positivo, força o status para ENCERRAMENTO OBRIGATÓRIO /
+     * BAIXA_COMPULSORIA.
+     */
+    public String getStatusProximaAcao(Long permissaoId) {
+        List<RevalidaPermissao> historico = revalidaRepository.findByPermissaoTrabalhoIdOrderByDataHoraRevalidacaoAsc(permissaoId);
+
+        if (historico.isEmpty()) {
+            return "FIM_JORNADA";
+        }
+
+        RevalidaPermissao ultima = historico.get(historico.size() - 1);
+
+        // Se o término é nulo, checamos há quanto tempo a jornada foi iniciada
+        if (ultima.getTerminoJornada() == null && ultima.getInicioJornada() != null) {
+            long horasAbertas = ChronoUnit.HOURS.between(ultima.getInicioJornada(), LocalDateTime.now());
+            if (horasAbertas > 24) {
+                return "BAIXA_COMPULSORIA"; // Excede o limite legal de 24h sem fechar turno
+            }
+            return "FIM_JORNADA";
+        }
+
+        return "INICIO_JORNADA";
+    }
+
+    @Transactional
+    public PermissaoTrabalho solicitarRevalidacao(Long id) throws Exception {
+        if (id == null) {
+            throw new Exception("O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
+
+        if (!pt.podeRevalidar()) {
+            throw new Exception("⚠️ Limite de dias/campos atingido para esta permissão. É obrigatório ENCERRAR a atividade!");
+        }
+
+        List<RevalidaPermissao> historico = revalidaRepository.findByPermissaoTrabalhoIdOrderByDataHoraRevalidacaoAsc(id);
+
+        if (historico.isEmpty()) {
+            RevalidaPermissao novaRevalida = new RevalidaPermissao();
+            novaRevalida.setPermissaoTrabalho(pt);
+            novaRevalida.setDataHoraRevalidacao(LocalDateTime.now());
+            novaRevalida.setInicioJornada(pt.getDataHoraEmissao() != null ? pt.getDataHoraEmissao() : LocalDateTime.now());
+            novaRevalida.setTerminoJornada(LocalDateTime.now());
+            revalidaRepository.save(novaRevalida);
+        } else {
+            RevalidaPermissao ultima = historico.get(historico.size() - 1);
+            if (ultima.getTerminoJornada() == null) {
+                // CORREÇÃO DE SEGURANÇA: Se passaram mais de 24h desde o início sem fechar, 
+                // podemos opcionalmente barrar ou registrar a expiração.
+                long horas = ChronoUnit.HOURS.between(ultima.getInicioJornada(), LocalDateTime.now());
+                if (horas > 24) {
+                    pt.setStatus("BAIXA_COMPULSORIA");
+                    ptRepository.save(pt);
+                    throw new Exception("⚠️ Turno expirado há mais de 24 horas sem encerramento. A PT foi direcionada para Baixa Compulsória!");
+                }
+
+                ultima.setTerminoJornada(LocalDateTime.now());
+                revalidaRepository.save(ultima);
+            }
+        }
+
+        pt.setStatus("EM_REVALIDACAO");
+        return ptRepository.save(pt);
+    }
+
+    @Transactional
+    public RevalidaPermissao confirmarAberturaJornada(Long id, RevalidaPermissao novaJornada) throws Exception {
+        if (id == null) {
+            throw new Exception("O ID da Permissão de Trabalho não pode ser nulo.");
+        }
+
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
+
+        if (!pt.podeRevalidar()) {
+            throw new Exception("⚠️ Limite máximo de dias operacionais esgotado.");
+        }
+
+        if (pt.requerMonitoramentoAmbiental()) {
+            if (novaJornada.getGasOxigenio() == null
+                    || novaJornada.getGasExplosividade() == null
+                    || novaJornada.getGasToxicidade() == null) {
+                throw new Exception("⚠️ Bloqueio de Segurança: Monitoramento de Gases obrigatório!");
+            }
+        }
+
+        novaJornada.setPermissaoTrabalho(pt);
+        novaJornada.setDataHoraRevalidacao(LocalDateTime.now());
+        novaJornada.setInicioJornada(LocalDateTime.now());
+        novaJornada.setTerminoJornada(null);
+
+        pt.setQtdRevalidadas(pt.getQtdRevalidadas() + 1);
+        pt.setStatus("EMITIDA");
+
+        ptRepository.save(pt);
+        return revalidaRepository.save(novaJornada);
+    }
+
+    private void validarMatrizNrsRigorosa(Funcionario f, PermissaoTrabalho pt) throws Exception {
+        String nome = f.getNome();
+        LocalDate hoje = LocalDate.now();
+
+        if (pt.isRequerAreaClassificada() && (f.getValidadeNr20() == null || f.getValidadeNr20().isBefore(hoje))) {
+            throw new Exception(nome + " sem NR-20 válida para Área Classificada!");
+        }
+        if (pt.isRequerTrabalhoAltura() && (f.getValidadeNr35() == null || f.getValidadeNr35().isBefore(hoje))) {
+            throw new Exception(nome + " sem NR-35 válida para Altura!");
+        }
+        if (pt.isRequerEspacoConfinado() && (f.getValidadeNr33() == null || f.getValidadeNr33().isBefore(hoje))) {
+            throw new Exception(nome + " sem NR-33 válida para Espaço Confinado!");
+        }
+        if (pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
+            throw new Exception(nome + " sem NR-10 válida para Risco Elétrico!");
+        }
+        if (pt.isRequerAltaTensaoSep() && (f.getValidadeNr10Sep() == null || f.getValidadeNr10Sep().isBefore(hoje))) {
+            throw new Exception(nome + " sem NR-10 SEP válida!");
+        }
+    }
+
+    private void validarMatrizNrsAcessoFiscal(Funcionario f, PermissaoTrabalho pt) throws Exception {
+        LocalDate hoje = LocalDate.now();
+        if (pt.isRequerAreaClassificada() && (f.getValidadeNr20() == null || f.getValidadeNr20().isBefore(hoje))) {
+            throw new Exception("Fiscal sem NR-20 válida.");
+        }
+        if (pt.isRequerRiscoEletrico() && (f.getValidadeNr10() == null || f.getValidadeNr10().isBefore(hoje))) {
+            throw new Exception("Fiscal sem NR-10 válida.");
+        }
+    }
+
+    public String encerrarEAuditarPT(PermissaoTrabalho pt, List<Funcionario> executantesReais) {
+        pt.setStatus("ENCERRADA");
+        ptRepository.save(pt);
+        return "PT encerrada com sucesso!";
+    }
+
+    public List<PermissaoTrabalho> listarTodas() {
+        List<PermissaoTrabalho> todas = ptRepository.findAll();
+        for (PermissaoTrabalho pt : todas) {
+            verificarEAtualizarExpiracao(pt); // Atualiza no banco se estourou o prazo
+        }
+        return ptRepository.findAll();
+    }
+
+    public List<PermissaoTrabalho> listarPorStatus(String status) {
+        List<PermissaoTrabalho> todas = listarTodas(); // Já executa a varredura e atualização
+        if (status == null || status.trim().isEmpty() || "TODAS".equalsIgnoreCase(status)) {
+            return todas;
+        }
+        List<PermissaoTrabalho> filtradas = new ArrayList<>();
+        for (PermissaoTrabalho pt : todas) {
+            if (status.equalsIgnoreCase(pt.getStatus())) {
+                filtradas.add(pt);
+            }
+        }
+        return filtradas;
+    }
+
+    public List<PermissaoTrabalho> listarPtsParaRevalidar() {
+        List<PermissaoTrabalho> todas = listarTodas(); // Já executa a varredura e atualização
+        List<PermissaoTrabalho> pendentes = new ArrayList<>();
+        for (PermissaoTrabalho pt : todas) {
+            String proximaAcao = getStatusProximaAcao(pt.getId());
+            if ("INICIO_JORNADA".equals(proximaAcao) || "EM_REVALIDACAO".equals(pt.getStatus()) || "AGUARDANDO_REVALIDACAO".equals(pt.getStatus()) || "BAIXA_COMPULSORIA".equals(pt.getStatus())) {
+                pendentes.add(pt);
+            }
+        }
+        return pendentes;
+    }
+
+    @Transactional
+    public String realizarBaixaPt(Long id, BaixaPtRequestDTO dto) throws Exception {
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("PT não encontrada com ID: " + id));
+
+        pt.setServicoConcluido(dto.getServicoConcluido());
+        pt.setEquipamentoTestado(dto.getEquipamentoTestado());
+        pt.setRevalidacaoParaContinuidade(dto.getRevalidacaoParaContinuidade());
+        pt.setJustificativaNaoConclusao(dto.getJustificativaNaoConclusao());
+
+        if (Boolean.TRUE.equals(dto.getServicoConcluido())) {
+            pt.setStatus("BAIXADA");
+        } else {
+            if (Boolean.TRUE.equals(dto.getRevalidacaoParaContinuidade())) {
+                pt.setStatus("AGUARDANDO_REVALIDACAO");
+            } else {
+                pt.setStatus("BAIXADA");
+            }
+        }
+
+        List<Funcionario> executantesReais = new ArrayList<>();
+        if (dto.getExecutantesReaisIds() != null && !dto.getExecutantesReaisIds().isEmpty()) {
+            executantesReais = funcionarioRepository.findAllById(dto.getExecutantesReaisIds());
+        }
+
+        return encerrarEAuditarPT(pt, executantesReais);
+    }
+
+    /**
+     * Valida automaticamente se o turno estourou 24h e atualiza o status no
+     * banco para BAIXA_COMPULSORIA
+     */
+    private void verificarEAtualizarExpiracao(PermissaoTrabalho pt) {
+        // Ignora se já estiver encerrada ou baixada
+        if ("ENCERRADA".equals(pt.getStatus()) || "BAIXADA".equals(pt.getStatus()) || "BAIXA_COMPULSORIA".equals(pt.getStatus())) {
+            return;
+        }
+
+        List<RevalidaPermissao> historico = revalidaRepository.findByPermissaoTrabalhoIdOrderByDataHoraRevalidacaoAsc(pt.getId());
+
+        if (historico.isEmpty()) {
+            // Se não tem histórico, o turno está rodando desde a emissão da PT
+            if (pt.getDataHoraEmissao() != null) {
+                long horasDesdeEmissao = ChronoUnit.HOURS.between(pt.getDataHoraEmissao(), LocalDateTime.now());
+                if (horasDesdeEmissao > 24) {
+                    pt.setStatus("BAIXA_COMPULSORIA");
+                    ptRepository.save(pt);
+                }
+            }
+        } else {
+            // Se já tem histórico, valida o último turno registrado
+            RevalidaPermissao ultima = historico.get(historico.size() - 1);
+            if (ultima.getTerminoJornada() == null && ultima.getInicioJornada() != null) {
+                long horasAbertas = ChronoUnit.HOURS.between(ultima.getInicioJornada(), LocalDateTime.now());
+                if (horasAbertas > 24) {
+                    pt.setStatus("BAIXA_COMPULSORIA");
+                    ptRepository.save(pt);
+                }
+            }
+        }
+    }
+
+    public PermissaoTrabalho buscarPorId(Long id) throws Exception {
+        PermissaoTrabalho pt = ptRepository.findById(id)
+                .orElseThrow(() -> new Exception("Permissão de Trabalho não encontrada."));
+
+        // Garante que se abrir a PT isolada e ela estourou o prazo, atualiza o status na hora
+        verificarEAtualizarExpiracao(pt);
+
+        return pt;
+    }
+}

@@ -2,8 +2,8 @@
 .grid-form-5 {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 8px;
 }
 
 /* Grid de 2 colunas para Solicitante e Executante / Validade */
@@ -13,6 +13,7 @@
     gap: 20px;
     margin-bottom: 15px;
 }
+
 /* Grid de 3 colunas para Solicitante e Executante / Validade */
 .grid-form-3 {
     display: grid;
@@ -45,6 +46,7 @@
 .margin-topo {
     margin-top: 15px;
 }
+
 .linha-ruido-grupo {
     display: flex;
     align-items: center;
@@ -74,11 +76,41 @@
 .linha-ruido-grupo .sub-input-flex input {
     width: 100%;
 }
+
 .grid-form-31 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
 }
+
 .input-uppercase {
     text-transform: uppercase;
+}
+
+.texto-secundario-pequeno {
+    color: var(--texto-secundario, #a0aec0);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+
+.texto-secundario {
+    color: var(--texto-secundario, #a0aec0);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+
+.grid-checkboxes--responsivo {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+}
+/* Reduzindo o espaçamento interno do fieldset de dados da solicitação */
+fieldset {
+    padding: 8px 12px; /* Diminui o espaço superior e inferior */
+    margin-bottom: 12px;
+}
+
+/* Se o bloco tiver uma classe específica, ajuste o padding dela diretamente */
+.campo-info-bloco {
+    padding: 12px 18px;
 }

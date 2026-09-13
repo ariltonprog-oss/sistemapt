@@ -44,6 +44,19 @@ public class PermissaoTrabalho {
     private Long id;
 
     // --- BLOCO 1 AO 6: CABEÇALHO DO FORMULÁRIO ---
+    @Column(name = "NUMERO_EMISSAO")
+    private Integer numeroEmissao;
+
+    @Column(name = "ano_emissao")
+    private Integer anoEmissao;
+
+    public String getNumeroFormatado() {
+        if (numeroEmissao != null && anoEmissao != null) {
+            return numeroEmissao + "/" + anoEmissao;
+        }
+        return "-";
+    }
+
     @JsonProperty("plantaArea")
     private String plantaArea;
 
@@ -677,4 +690,48 @@ public class PermissaoTrabalho {
     public void setRiscosDinamicos(List<PtRiscoDinamico> riscosDinamicos) {
         this.riscosDinamicos = riscosDinamicos;
     }
+
+    /**
+     * @return Integer return the numeroEmissao
+     */
+    public Integer getNumeroEmissao() {
+        return numeroEmissao;
+    }
+
+    /**
+     * @param numeroEmissao the numeroEmissao to set
+     */
+    public void setNumeroEmissao(Integer numeroEmissao) {
+        this.numeroEmissao = numeroEmissao;
+    }
+
+    /**
+     * @return Boolean return the servicoConcluido
+     */
+    public Boolean isServicoConcluido() {
+        return servicoConcluido;
+    }
+
+    /**
+     * @return Boolean return the revalidacaoParaContinuidade
+     */
+    public Boolean isRevalidacaoParaContinuidade() {
+        return revalidacaoParaContinuidade;
+    }
+
+
+    /**
+     * @return Integer return the anoEmissao
+     */
+    public Integer getAnoEmissao() {
+        return anoEmissao;
+    }
+
+    /**
+     * @param anoEmissao the anoEmissao to set
+     */
+    public void setAnoEmissao(Integer anoEmissao) {
+        this.anoEmissao = anoEmissao;
+    }
+
 }
