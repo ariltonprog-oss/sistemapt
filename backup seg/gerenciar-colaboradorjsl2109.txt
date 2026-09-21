@@ -1,5 +1,5 @@
-// Variável global para armazenar a empresa logada atual
-let empresaIdLogada = null;
+// Variável global para armazenar a lista completa de colaboradores
+let listaColaboradoresGlobal = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Verificação de Segurança (Sessão)
@@ -13,113 +13,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const perfil = usuario.perfil ? usuario.perfil.toUpperCase() : '';
     console.log("Gerenciamento de Colaboradores carregado. Acesso como: ", perfil);
 
-    // Identifica o ID da empresa associada ao usuário logado
-    // (Ajuste a propriedade conforme o objeto salvo na sua sessão, ex: usuario.empresaId ou usuario.empresa.id)
-    empresaIdLogada = usuario.empresaId || (usuario.empresa ? usuario.empresa.id : null);
-
-    if (!empresaIdLogada) {
-        console.warn("ID da empresa não encontrado na sessão. Tentando carregar ID padrão ou genérico se aplicável.");
-        empresaIdLogada = 1; // Fallback de segurança se necessário
-    }
-
-    // Carrega as funções para o <select> e os colaboradores da empresa
-    carregarFuncoesDaEmpresa();
+    // Carrega os dados da API
     carregarColaboradores();
 
-    // 2. Configura os eventos de escuta para busca e filtros
+    // 2. Configura os eventos de escuta para busca e filtros em tempo real
     const campoBusca = document.getElementById('campoBusca');
     const filtroStatus = document.getElementById('filtroStatus');
-    const filtroFuncao = document.getElementById('filtroFuncao');
     const filtroTreinamento = document.getElementById('filtroTreinamento');
 
     if (campoBusca) {
-        // Se houver campo de texto, podemos manter busca dinâmica ou por requisição. 
-        // Como o backend já trata por parâmetros, vamos chamar carregarColaboradores ao alterar.
-        campoBusca.addEventListener('input', () => carregarColaboradores());
+        campoBusca.addEventListener('input', aplicarFiltros);
     }
     if (filtroStatus) {
-        filtroStatus.addEventListener('change', () => carregarColaboradores());
-    }
-    if (filtroFuncao) {
-        filtroFuncao.addEventListener('change', () => carregarColaboradores());
+        filtroStatus.addEventListener('change', aplicarFiltros);
     }
     if (filtroTreinamento) {
-        // O filtro de treinamento (vencidos/regulares) pode continuar a ser filtrado localmente na lista ou integrado.
-        filtroTreinamento.addEventListener('change', () => carregarColaboradores());
+        filtroTreinamento.addEventListener('change', aplicarFiltros);
     }
 });
 
-// Função para buscar as funções distintas da empresa e popular o <select>
-async function carregarFuncoesDaEmpresa() {
-    console.log("🔍 A tentar carregar funções para o ID da empresa:", empresaIdLogada);
-
-    if (!empresaIdLogada) {
-        console.warn("⚠️ Alerta: O ID da empresa está vazio na sessão!");
-        return;
-    }
-
-    try {
-        const url = `http://localhost:8080/api/funcionarios/empresa/${empresaIdLogada}/funcoes`;
-        console.log("🔍 A efetuar pedido fetch para o URL:", url);
-
-        const response = await fetch(url);
-        console.log("🔍 Estado da resposta da API de funções:", response.status);
-
-        if (!response.ok) {
-            console.error("❌ Erro na resposta da API:", response.statusText);
-            return;
-        }
-
-        const funcoes = await response.json();
-        console.log("🔍 Lista de funções recebidas do Java:", funcoes);
-
-        const selectFuncao = document.getElementById('filtroFuncao');
-        if (!selectFuncao) return;
-
-        selectFuncao.innerHTML = '<option value="">Todas as Funções</option>';
-        funcoes.forEach(funcao => {
-            if (funcao) {
-                const option = document.createElement('option');
-                option.value = funcao;
-                option.textContent = funcao;
-                selectFuncao.appendChild(option);
-            }
-        });
-    } catch (error) {
-        console.error("❌ Erro crítico ao carregar a lista de funções:", error);
-    }
-}
-
-// Função para buscar colaboradores na API enviando os filtros de backend
+// Função para buscar colaboradores no backend
 async function carregarColaboradores() {
     try {
-        const termoBusca = document.getElementById('campoBusca')?.value.trim() || '';
-        const statusVal = document.getElementById('filtroStatus')?.value || 'ativo';
-        const funcaoVal = document.getElementById('filtroFuncao')?.value || '';
-
-        // Converte o status selecionado para o booleano esperado pelo Java (ativo = true/false, ou null para todos)
-        let ativoParam = '';
-        if (statusVal === 'ativo') ativoParam = 'true';
-        if (statusVal === 'inativo') ativoParam = 'false';
-        // se for 'todos', deixamos vazio para o backend não filtrar por status
-
-        // Monta a URL com os parâmetros de consulta (Query Params)
-        let url = `http://localhost:8080/api/funcionarios/empresa/${empresaIdLogada}?`;
-        const params = new URLSearchParams();
-
-        if (termoBusca) params.append('filtro', termoBusca);
-        if (funcaoVal) params.append('funcao', funcaoVal);
-        if (statusVal !== 'todos') params.append('ativo', ativoParam);
-
-        const response = await fetch(url + params.toString());
+        const response = await fetch('http://localhost:8080/api/funcionarios');
         if (!response.ok) {
             throw new Error('Erro ao buscar colaboradores na API.');
         }
 
-        const listaColaboradores = await response.json();
-
-        // Aplica o filtro complementar de Treinamentos (que é baseado em datas locais)
-        aplicarFiltroTreinamentoLocal(listaColaboradores);
+        listaColaboradoresGlobal = await response.json();
+        
+        // Aplica o filtro inicial (por padrão exibe os "ativos")
+        aplicarFiltros();
 
     } catch (error) {
         console.error("Erro ao carregar colaboradores:", error);
@@ -135,20 +59,42 @@ async function carregarColaboradores() {
     }
 }
 
-// Filtro complementar de treinamentos executado localmente sobre os dados já filtrados pelo banco
-function aplicarFiltroTreinamentoLocal(lista) {
+// Função centralizadora de filtragem (Texto + Status + Treinamentos)
+function aplicarFiltros() {
+    const termoBusca = document.getElementById('campoBusca')?.value.toLowerCase().trim() || '';
+    const statusSelecionado = document.getElementById('filtroStatus')?.value || 'ativo';
     const treinamentoSelecionado = document.getElementById('filtroTreinamento')?.value || 'todos';
+
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const filtrados = lista.filter(func => {
+    const filtrados = listaColaboradoresGlobal.filter(func => {
+        // 1. Filtro de Texto (Nome ou Matrícula)
+        const nome = (func.nome || '').toLowerCase();
+        const matricula = (func.matricula || '').toLowerCase();
+        const matchTexto = nome.includes(termoBusca) || matricula.includes(termoBusca);
+
+        // 2. Filtro de Status na Empresa (Ativo / Inativo)
+        // Assume-se que o atributo possa ser func.ativo (boolean) ou func.status (string 'ativo'/'inativo')
+        let isAtivo = true;
+        if (typeof func.ativo !== 'undefined') {
+            isAtivo = Boolean(func.ativo);
+        } else if (func.status) {
+            isAtivo = func.status.toLowerCase() === 'ativo';
+        }
+
+        let matchStatus = true;
+        if (statusSelecionado === 'ativo') matchStatus = isAtivo;
+        if (statusSelecionado === 'inativo') matchStatus = !isAtivo;
+
+        // 3. Verificação de Vencimentos (ASO, Reciclagem PT ou NRs)
         let temVencimento = false;
 
         if (func.validadeASO) {
             const dataAso = new Date(func.validadeASO + 'T00:00:00');
             if (dataAso < hoje) temVencimento = true;
         } else {
-            temVencimento = true;
+            temVencimento = true; // Considera ausente como pendência
         }
 
         if (func.validadeReciclagemPt) {
@@ -163,13 +109,13 @@ function aplicarFiltroTreinamentoLocal(lista) {
         if (treinamentoSelecionado === 'regular') matchTreinamento = !temVencimento;
         if (treinamentoSelecionado === 'vencidos') matchTreinamento = temVencimento;
 
-        return matchTreinamento;
+        return matchTexto && matchStatus && matchTreinamento;
     });
 
     renderizarTabela(filtrados);
 }
 
-// Renderiza os dados filtrados na tabela HTML (mantido igual ao seu original)
+// Renderiza os dados filtrados na tabela HTML
 function renderizarTabela(lista) {
     const corpoTabela = document.getElementById('tabelaCorpo');
     if (!corpoTabela) return;
@@ -188,6 +134,7 @@ function renderizarTabela(lista) {
     hoje.setHours(0, 0, 0, 0);
 
     corpoTabela.innerHTML = lista.map(func => {
+        // Formatação e verificação de vencimento (ASO)
         let asoFormatado = '-';
         let classeAso = '';
         if (func.validadeASO) {
@@ -202,6 +149,7 @@ function renderizarTabela(lista) {
             classeAso = 'color: #ff9f43;';
         }
 
+        // Formatação e verificação de validade de PT / Reciclagem
         let validadePtFormatado = '-';
         let classeValidadePt = '';
         if (func.validadeReciclagemPt) {
@@ -216,8 +164,10 @@ function renderizarTabela(lista) {
             classeValidadePt = 'color: #ff9f43;';
         }
 
+        // NRs / Treinamentos
         const nrsVencidas = func.nrsVencidas || func.quantidadeNrsVencidas || 'Nenhuma';
 
+        // Tratamento seguro para extrair o nome fantasia da empresa associada
         let nomeEmpresa = '-';
         if (func.empresa) {
             if (typeof func.empresa === 'object') {

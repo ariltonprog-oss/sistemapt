@@ -137,7 +137,7 @@ async function carregarDadosDoColaborador() {
 
     if (!id) {
         alert("Erro: ID do colaborador não encontrado na URL.");
-        window.location.href = "gerenciar-colaborador.html";
+        window.location.href = "gerenciar.html";
         return;
     }
 
@@ -153,7 +153,6 @@ async function carregarDadosDoColaborador() {
         if (document.getElementById('funcao')) document.getElementById('funcao').value = funcionario.funcao || '';
         if (document.getElementById('perfil')) document.getElementById('perfil').value = funcionario.perfil || '';
         if (document.getElementById('usuario')) document.getElementById('usuario').value = funcionario.usuario || '';
-        if (document.getElementById('ativo')) document.getElementById('ativo').value = String(funcionario.ativo ?? true);
 
         // Preenche tipo (Próprio / Terceiro) e Empresa
         const selectTerceiro = document.getElementById('ehTerceiro');
@@ -369,7 +368,6 @@ async function salvarAlteracoes() {
         perfil: perfilSelecionado,
         usuario: document.getElementById('usuario')?.value.trim(),
         senha: document.getElementById('senha') ? document.getElementById('senha').value : "",
-        ativo: document.getElementById('ativo') ? document.getElementById('ativo').value === 'true' : true,
 
         ehTerceiro: ehTerceiro,
         empresa: objetoEmpresa,
@@ -417,7 +415,7 @@ async function salvarAlteracoes() {
         }
 
         alert("Alterações salvas com sucesso!");
-        window.location.href = 'gerenciar-colaborador.html';
+        window.location.href = 'gerenciar.html';
     } catch (erro) {
         console.error("Erro ao salvar:", erro);
         alert("Erro ao salvar: " + erro.message);

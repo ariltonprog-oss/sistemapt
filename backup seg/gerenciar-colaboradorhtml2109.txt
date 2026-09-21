@@ -22,18 +22,12 @@
                 <input type="text" id="campoBusca" placeholder="Pesquisar por nome ou matrícula..." class="input-busca">
             </div>
 
-           <div class="filtros-container">
+            <div class="filtros-container">
                 <!-- Filtro de Status na Empresa -->
                 <select id="filtroStatus" class="input-filtro">
                     <option value="ativo" selected>Status: Ativos</option>
                     <option value="inativo">Inativos / Afastados</option>
                     <option value="todos">Status: Todos</option>
-                </select>
-
-                <!-- NOVO: Filtro de Função -->
-                <select id="filtroFuncao" class="input-filtro">
-                    <option value="">Todas as Funções</option>
-                    <!-- As opções serão preenchidas via JavaScript -->
                 </select>
 
                 <!-- Filtro de Situação de Treinamentos -->

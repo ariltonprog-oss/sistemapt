@@ -104,16 +104,6 @@ public class FuncionarioController {
         return funcionarioService.listarPorEmpresaComFiltros(empresaId, filtro, funcao, ativo);
     }
 
-    /**
-     * ROTA PARA BUSCAR AS FUNÇÕES DISTINTAS DE UMA EMPRESA (PARA O <SELECT> DO FRONT-END)
-     * URL: GET /api/funcionarios/empresa/{empresaId}/funcoes
-     */
-    @GetMapping("/empresa/{empresaId}/funcoes")
-    public List<String> listarFuncoesPorEmpresa(@PathVariable Long empresaId) {
-        System.out.println("DEBUG JAVA - Buscando funções distintas para a empresa: " + empresaId);
-        return funcionarioService.listarFuncoesPorEmpresa(empresaId);
-    }
-
     @GetMapping
     public List<Funcionario> listarTodos(@RequestParam(value = "filtro", required = false) String filtro) {
         System.out.println("DEBUG JAVA - Listando todos os funcionários. Filtro recebido: " + filtro);

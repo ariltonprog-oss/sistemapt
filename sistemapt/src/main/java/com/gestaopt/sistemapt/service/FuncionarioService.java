@@ -459,4 +459,13 @@ public class FuncionarioService {
                 null;
         };
     }
+
+    public List<Funcionario> listarPorEmpresaComFiltros(Long empresaId, String filtro, String funcao, Boolean ativo) {
+        return funcionarioRepository.findByEmpresaComFiltros(empresaId, filtro, funcao, ativo);
+    }
+
+    // Método para listar as funções distintas da empresa para o filtro
+    public List<String> listarFuncoesPorEmpresa(Long empresaId) {
+        return funcionarioRepository.findDistinctFuncoesByEmpresaId(empresaId);
+    }
 }

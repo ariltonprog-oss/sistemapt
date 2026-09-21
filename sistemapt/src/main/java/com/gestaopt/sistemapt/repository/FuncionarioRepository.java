@@ -35,4 +35,29 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
 
     boolean existsByMatricula(String matricula);
 
+    // Buscar todos os funcionários filtrando pelo status (ativo = true ou false)
+    List<Funcionario> findByAtivo(boolean ativo);
+
+    // Buscar funcionários de uma empresa específica filtrando pelo status
+    List<Funcionario> findByEmpresaIdAndAtivo(Long empresaId, boolean ativo);
+
+    // Buscar funcionários de uma empresa filtrando por função
+    List<Funcionario> findByEmpresaIdAndFuncao(Long empresaId, String funcao);
+
+    // Opcional: Para preencher o <select> do HTML apenas com as funções cadastradas daquela empresa
+    @Query("SELECT DISTINCT f.funcao FROM Funcionario f WHERE f.empresa.id = :empresaId AND f.funcao IS NOT NULL ORDER BY f.funcao")
+    List<String> findDistinctFuncoesByEmpresaId(@Param("empresaId") Long empresaId);
+
+    // Buscar funcionários da empresa filtrando opcionalmente por texto, função e status ativo
+    @Query("SELECT f FROM Funcionario f WHERE f.empresa.id = :empresaId " +
+           "AND (:filtro IS NULL OR :filtro = '' OR LOWER(f.nome) LIKE LOWER(CONCAT('%', :filtro, '%')) OR LOWER(f.matricula) LIKE LOWER(CONCAT('%', :filtro, '%'))) " +
+           "AND (:funcao IS NULL OR :funcao = '' OR f.funcao = :funcao) " +
+           "AND (:ativo IS NULL OR f.ativo = :ativo)")
+    List<Funcionario> findByEmpresaComFiltros(
+            @Param("empresaId") Long empresaId,
+            @Param("filtro") String filtro,
+            @Param("funcao") String funcao,
+            @Param("ativo") Boolean ativo
+    );
+    
 }

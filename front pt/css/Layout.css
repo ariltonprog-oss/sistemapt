@@ -140,3 +140,13 @@ body {
     text-transform: uppercase;
     font-weight: 500;
 }
+.grid-form-5col {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.input-destacado {
+    font-weight: bold;
+    color: #0056b3;
+}

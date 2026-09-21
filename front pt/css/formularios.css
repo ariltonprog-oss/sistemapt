@@ -211,3 +211,143 @@ tr.linha-alerta-prazo td,
 tr.linha-alerta-limite td {
     color: #ffffff; /* Ou mantenha a cor padrão legível do seu painel */
 }
+/* Painel de Controles e Filtros */
+.painel-controles-colaboradores {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.busca-container {
+    flex: 1;
+    min-width: 260px;
+}
+
+.filtros-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.input-filtro, .input-busca {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 0.95rem;
+}
+
+.btn-imprimir {
+    padding: 10px 16px;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.btn-imprimir:hover {
+    background-color: #004085;
+}
+
+/* Regras de Impressão e Exportação para PDF (Oculta sidebar, filtros e botões de ação) */
+@media print {
+    #sidebar-wrapper, 
+    .painel-controles-colaboradores, 
+    .tabela-colaboradores th.coluna-acoes, 
+    .tabela-colaboradores td.coluna-acoes {
+        display: none !important;
+    }
+    
+    main.main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    body {
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+
+    .tabela-wrapper {
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+
+    .tabela-colaboradores {
+        width: 100% !important;
+        border-collapse: collapse;
+    }
+
+    .tabela-colaboradores th, .tabela-colaboradores td {
+        border: 1px solid #bbb;
+        padding: 8px;
+        font-size: 10pt;
+    }
+}
+/* Correção definitiva para o painel de controles e filtros */
+.painel-controles-colaboradores {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+    flex-wrap: nowrap; /* Mantém na mesma linha se houver espaço */
+}
+
+.busca-container {
+    flex: 1;
+    max-width: 320px;
+}
+
+.filtros-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Anula estilos globais de formulário para estes selects e inputs específicos */
+.painel-controles-colaboradores .input-busca,
+.painel-controles-colaboradores .input-filtro {
+    width: auto !important;
+    min-width: 170px;
+    height: 40px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background-color: #fff;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+/* Padroniza a altura e visual do botão de imprimir na mesma linha */
+.btn-imprimir {
+    height: 40px;
+    white-space: nowrap;
+    padding: 0 16px;
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s;
+}
+
+.btn-imprimir:hover {
+    background-color: #004085;
+}

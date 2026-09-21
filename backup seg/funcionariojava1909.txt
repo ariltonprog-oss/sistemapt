@@ -37,7 +37,6 @@ public class Funcionario {
     private boolean podeEmitirPt;
     @Column(name = "eh_terceiro", nullable = false)
     private Boolean ehTerceiro = false;
-
     @Column(nullable = false)
     private Boolean ativo = true;
 
@@ -446,10 +445,17 @@ public class Funcionario {
         this.realizacaoNr34 = realizacaoNr34;
     }
 
+
+    /**
+     * @return Boolean return the ativo
+     */
     public Boolean isAtivo() {
         return ativo;
     }
 
+    /**
+     * @param ativo the ativo to set
+     */
     public void setAtivo(Boolean ativo) {
         this.ativo = ativo;
     }

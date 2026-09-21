@@ -83,37 +83,22 @@ public class FuncionarioController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-       
     /**
-     * ROTA PARA LISTAR OS FUNCIONÁRIOS DE UMA EMPRESA COM FILTROS URL: GET
-     * /api/funcionarios/empresa/{empresaId}?filtro=...&funcao=...&ativo=...
+     * ROTA PARA LISTAR OS FUNCIONÁRIOS DE UMA EMPRESA URL: GET
+     * http://localhost:8080/api/funcionarios/empresa/{empresaId}
      */
     @GetMapping("/empresa/{empresaId}")
     public List<Funcionario> listarPorEmpresa(
             @PathVariable Long empresaId,
-            @RequestParam(value = "filtro", required = false) String filtro,
-            @RequestParam(value = "funcao", required = false) String funcao,
-            @RequestParam(value = "ativo", required = false) Boolean ativo) {
-
-        System.out.println("DEBUG JAVA - ID da empresa: " + empresaId
-                + " | Filtro: " + filtro
-                + " | Função: " + funcao
-                + " | Ativo: " + ativo);
-
-        // Vamos passar os novos parâmetros para o service tratar
-        return funcionarioService.listarPorEmpresaComFiltros(empresaId, filtro, funcao, ativo);
+            @RequestParam(value = "filtro", required = false) String filtro) {
+        System.out.println("DEBUG JAVA - ID da empresa: " + empresaId + " | Filtro: " + filtro);
+        return funcionarioService.listarPorEmpresaETerceiros(empresaId, filtro);
     }
 
     /**
-     * ROTA PARA BUSCAR AS FUNÇÕES DISTINTAS DE UMA EMPRESA (PARA O <SELECT> DO FRONT-END)
-     * URL: GET /api/funcionarios/empresa/{empresaId}/funcoes
+     * ROTA PARA LISTAR TODOS OS FUNCIONÁRIOS URL: GET
+     * http://localhost:8080/api/funcionarios
      */
-    @GetMapping("/empresa/{empresaId}/funcoes")
-    public List<String> listarFuncoesPorEmpresa(@PathVariable Long empresaId) {
-        System.out.println("DEBUG JAVA - Buscando funções distintas para a empresa: " + empresaId);
-        return funcionarioService.listarFuncoesPorEmpresa(empresaId);
-    }
-
     @GetMapping
     public List<Funcionario> listarTodos(@RequestParam(value = "filtro", required = false) String filtro) {
         System.out.println("DEBUG JAVA - Listando todos os funcionários. Filtro recebido: " + filtro);
