@@ -1,0 +1,171 @@
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form-group label, 
+.form-group legend {
+    font-size: 0.85rem;
+    color: var(--cor-texto-secundario, #cbd5e1);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.form-control,
+input[type="text"],
+select,
+textarea {
+    background-color: #2a374a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #ffffff;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+}
+
+textarea {
+    height: auto;
+    resize: vertical;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--cor-primaria, #f59e0b);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #64748b;
+}
+
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.grid-form-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 15px;
+}
+
+.grid-form-5col {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.grid-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #e2e8f0;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"],
+.chk-solicitante {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--cor-primaria, #f59e0b);
+    cursor: pointer;
+}
+
+.input-matricula-group {
+    display: grid;
+    grid-template-columns: 200px 1fr 140px;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 6px;
+}
+
+@media (max-width: 768px) {
+    .grid-form-2col,
+    .input-matricula-group {
+        grid-template-columns: 1fr;
+    }
+}
+/* =========================================
+   FORMULÁRIO EM GRADE (2 COLUNAS)
+   ========================================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Duas colunas iguais */
+    gap: 16px 20px; /* Espaçamento entre linhas e colunas */
+}
+
+/* Campos que devem ocupar a largura total das duas colunas */
+.form-group-full {
+    grid-column: span 2;
+}
+
+/* Ajustes visuais para os rótulos e campos internos do formulário */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+/*/* =========================================
+   ESTILOS DA TELA DE EDIÇÃO DE COLABORADOR
+   ========================================= */
+
+.form-grid-edicao {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 colunas balanceadas */
+    gap: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.form-grid-edicao .form-group-full {
+    grid-column: span 5; /* Ocupa a largura total das 5 colunas */
+}
+
+.form-grid-edicao .form-group-duplo {
+    grid-column: span 2; /* Ocupa 2 colunas */
+}
+
+/* Novas classes de controlo individual que deve acrescentar: */
+.form-grid-edicao .form-group-1 { grid-column: span 1; }
+.form-grid-edicao .form-group-2 { grid-column: span 2; }
+.form-grid-edicao .form-group-3 { grid-column: span 3; }
+
+/* Responsividade para ecrãs menores */
+@media (max-width: 1024px) {
+    .form-grid-edicao {
+        grid-template-columns: 1fr 1fr;
+    }
+    .form-grid-edicao .form-group-full,
+    .form-grid-edicao .form-group-duplo,
+    .form-grid-edicao .form-group-1,
+    .form-grid-edicao .form-group-2,
+    .form-grid-edicao .form-group-3 {
+        grid-column: span 2;
+    }
+}

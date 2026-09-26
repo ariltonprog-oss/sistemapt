@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Colaborador - SESMT</title>
+    <title>Cadastro - SESMT</title>
     <link rel="stylesheet" href="../css/styles.css">
     <style>
         .form-group-center {
@@ -28,15 +28,13 @@
 
         <main class="container">
             <div class="card">
-                <h2 class="titulo-secao">✏️ Editar Colaborador #<span id="labelColaboradorId">-</span></h2>
+                <h2 class="titulo-secao">📝 Inserir Novo Colaborador no Sistema</h2>
 
-                <form id="formEditarColaborador" autocomplete="off" onsubmit="return false;">
-                    <!-- Campo oculto para guardar o ID do colaborador -->
-                    <input type="hidden" id="colaboradorId">
+                <form id="formColaborador" autocomplete="off" onsubmit="return false;">
 
-                    <div class="form-grid-edicao">
-                        <!-- LINHA 1: Nome (ocupa 2 colunas) e Matrícula (1 coluna) -->
-                        <div class="form-group form-group-duplo">
+                    <!-- LINHA 1: Dados do Colaborador (5 campos) -->
+                    <div class="linha-formulario-cinco-colunas">
+                        <div class="form-group">
                             <label for="nome">Nome Completo</label>
                             <input type="text" id="nome" required placeholder="Ex: João Silva">
                         </div>
@@ -44,8 +42,6 @@
                             <label for="matricula">Matrícula</label>
                             <input type="text" id="matricula" required placeholder="Ex: 1000857">
                         </div>
-
-                        <!-- LINHA 2: Função, Tipo e Status -->
                         <div class="form-group">
                             <label for="funcao">Função Operacional</label>
                             <select id="funcao" onchange="atualizarMatrizNRs()">
@@ -59,14 +55,14 @@
                                 <option value="Soldador">Soldador</option>
                                 <option value="Oficial de Construção Civil">Oficial de Construção Civil</option>
                                 <option value="Operador Industrial">Operador Industrial</option>
-                                <option value="Encarregado de Instrumentação & Elétrica">Encarregado de
-                                    Instrumentação/Elétrica</option>
-                                <option value="Encarregado de Caldeiraria & Tubulação">Encarregado de
-                                    Caldeiraria/Tubulação</option>
+                                <option value="Encarregado de Instrumentação & Elétrica">Encarregado de Instrumentação/Elétrica</option>
+                                <option value="Encarregado de Caldeiraria & Tubulação">Encarregado de Caldeiraria/Tubulação</option>
                                 <option value="Encarregado de Mecânica">Encarregado de Mecânica</option>
                                 <option value="Encarregado de Civil e Pintura">Encarregado de Civil e Pintura</option>
                             </select>
                         </div>
+
+                        <!-- Tipo de Colaborador -->
                         <div class="form-group">
                             <label for="ehTerceiro">Tipo de Colaborador</label>
                             <select id="ehTerceiro" onchange="alternarCampoTerceiro()">
@@ -74,16 +70,22 @@
                                 <option value="true">Colaborador Terceiro</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="ativo">Status na Empresa</label>
-                            <select id="ativo" required>
-                                <option value="true">Ativo</option>
-                                <option value="false">Inativo / Afastado</option>
-                            </select>
-                        </div>
 
-                        <!-- LINHA 3: Perfil Operacional (Largura total) -->
-                        <div class="form-group form-group-full">
+                        <!-- CONTAINER DA EMPRESA TERCEIRA (5º campo da linha 1, oculto por padrão) -->
+                        <div class="form-group oculto" id="grupoEmpresa">
+                            <label for="selectEmpresaTerceira">Empresa Parceira</label>
+                            <div class="campo-com-botao">
+                                <select id="selectEmpresaTerceira" class="form-control">
+                                    <option value="">Selecione...</option>
+                                </select>
+                                <button type="button" class="btn-secundario" onclick="abrirModalEmpresa()">+ Nova</button>
+                            </div>
+                        </div>
+                    </div> <!-- FECHAMENTO DA LINHA 1 (Corrige a quebra de layout) -->
+
+                    <!-- LINHA 2: Acesso e Validades (5 campos) -->
+                    <div class="linha-formulario-cinco-colunas">
+                        <div class="form-group">
                             <label for="perfil">Perfil Operacional</label>
                             <select id="perfil" required onchange="ajustarCamposLogin()">
                                 <option value="">Selecione...</option>
@@ -93,85 +95,68 @@
                                 <option value="ENCARREGADO">ENCARREGADO (Solicitante / Emitente Opcional de PT)</option>
                             </select>
                         </div>
-
-                        <!-- LINHA 4: Login, Senha e ASO -->
                         <div class="form-group">
                             <label for="usuario">Usuário (Login)</label>
-                            <input type="text" id="usuario" placeholder="Login do usuário">
+                            <input type="text" id="usuario" placeholder="Gerado ao salvar">
                         </div>
                         <div class="form-group">
                             <label for="senha">Senha de Acesso</label>
-                            <input type="password" id="senha" placeholder="Preencha apenas para alterar">
+                            <input type="text" id="senha" placeholder="Digite a senha">
                         </div>
+
+                        <!-- Bloco do ASO -->
                         <div class="form-group">
-                            <label for="realizacaoASO">Data ASO</label>
+                            <label for="realizacaoASO">Data Aso</label>
                             <input type="date" id="realizacaoASO">
-                            <div class="bloco-validade campo-oculto" style="margin-top: 5px;">
-                                <label for="validadeASO" style="font-size: 0.75rem;">Validade ASO</label>
-                                <input type="date" id="validadeASO" readonly title="Data de validade do ASO">
+
+                            <div class="bloco-validade campo-oculto">
+                                <label for="validadeASO">Validade</label>
+                                <input type="date" id="validadeASO" readonly title="Data de validade do ASO calculada automaticamente">
                             </div>
                         </div>
 
-                        <!-- LINHA 5: Treinamento PT -->
-                        <div class="form-group form-group-duplo">
+                        <!-- Bloco do Treinamento PT -->
+                        <div class="form-group">
                             <label for="realizacaoReciclagemPt">Data Treinamento PT</label>
                             <input type="date" id="realizacaoReciclagemPt">
-                            <div class="bloco-validade campo-oculto" style="margin-top: 5px;">
-                                <label for="validadeReciclagemPt" style="font-size: 0.75rem;">Validade Treinamento
-                                    PT</label>
-                                <input type="date" id="validadeReciclagemPt" readonly
-                                    title="Data de validade do Treinamento PT">
+
+                            <div class="bloco-validade campo-oculto">
+                                <label for="validadeReciclagemPt">Validade</label>
+                                <input type="date" id="validadeReciclagemPt" readonly title="Data de validade do Treinamento PT calculada automaticamente">
                             </div>
                         </div>
-                    </div>
+                    </div> <!-- FECHAMENTO DA LINHA 2 -->
 
-                    <!-- Alçada de Emissão -->
-                    <div id="containerAlcadaEmissao" class="container-alcada-emissao elemento-escondido"
-                        style="margin-bottom: 20px;">
+                    <!-- Elementos de controle de largura total -->
+                    <div id="containerAlcadaEmissao" class="container-alcada-emissao elemento-escondido">
                         <input type="checkbox" id="podeEmitirPT">
                         <label for="podeEmitirPT">⚠️ Permitir que este Encarregado atue como EMITENTE de PT</label>
                     </div>
 
                     <!-- Seção de NRs -->
-                    <div class="secao-nrs" style="margin-bottom: 25px;">
-                        <h3 class="titulo-nrs" style="margin-bottom: 12px; color: var(--cor-primaria, #f59e0b);">📋
-                            Requisitos Obrigatórios de Segurança</h3>
+                    <div class="secao-nrs">
+                        <h3 class="titulo-nrs">📋 Requisitos Obrigatórios de Segurança</h3>
                         <div id="containerMatrizNRs">
-                            <p>Carregando as NRs do colaborador...</p>
+                            <p>Selecione uma função para carregar as NRs obrigatórias...</p>
                         </div>
                     </div>
 
-                    <!-- Botões de Ação -->
-                    <div class="btn-group"
-                        style="display: flex; gap: 12px; border-top: 1px solid var(--borda, #334155); padding-top: 20px;">
-                        <button type="button" id="btnDispararSubmit" class="btn-submit"
-                            style="padding: 10px 20px; cursor: pointer;">SALVAR ALTERAÇÕES</button>
-                        <a href="admin.html" class="btn-cancelar"
-                            style="padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center;">CANCELAR</a>
+                    <!-- Botões de Ação na base do formulário -->
+                    <div class="btn-group">
+                        <button type="button" id="btnDispararSubmit" class="btn-submit">SALVAR E CERTIFICAR COLABORADOR</button>
+                        <a href="admin.html" class="btn-cancelar">CANCELAR</a>
                     </div>
                 </form>
-            </div>
+            </div> <!-- FECHAMENTO DO CARD -->
 
-            <!-- CONTAINER DA EMPRESA TERCEIRA -->
-            <div class="form-group oculto" id="grupoEmpresa">
-                <label for="selectEmpresaTerceira">Empresa Parceira</label>
-                <div class="campo-com-botao">
-                    <select id="selectEmpresaTerceira" class="form-control">
-                        <option value="">Selecione a empresa terceirizada...</option>
-                    </select>
-                    <button type="button" class="btn-secundario" onclick="abrirModalEmpresa()">+ Nova</button>
-                </div>
-            </div>
-
-            <!-- Modal de Cadastro Rápido de Empresa Terceira -->
+            <!-- Modal de Cadastro Rápido de Empresa Terceira (Fora do card e do formulário) -->
             <div id="modalNovaEmpresa" class="modal-overlay oculto">
                 <div class="modal-card">
                     <h3>Cadastrar Empresa Terceirizada</h3>
 
                     <div class="form-group">
                         <label for="modalNomeFantasia">Nome Fantasia *</label>
-                        <input type="text" id="modalNomeFantasia" placeholder="Ex: Construtora Silva"
-                            class="form-control">
+                        <input type="text" id="modalNomeFantasia" placeholder="Ex: Construtora Silva" class="form-control">
                     </div>
 
                     <div class="form-group">
@@ -181,8 +166,7 @@
 
                     <div class="modal-acoes">
                         <button type="button" class="btn-cancelar" onclick="fecharModalEmpresa()">Cancelar</button>
-                        <button type="button" class="btn-salvar" onclick="salvarNovaEmpresaTerceira()">Salvar
-                            Empresa</button>
+                        <button type="button" class="btn-salvar" onclick="salvarNovaEmpresaTerceira()">Salvar Empresa</button>
                     </div>
                 </div>
             </div>
@@ -191,7 +175,7 @@
 
     <script src="../js/sidebar.js"></script>
     <script src="../js/auth.js"></script>
-    <script src="../js/editar-colaborador.js"></script>
+    <script src="../js/cadastro.js"></script>
     <script src="../js/utils.js"></script>
 
 </body>

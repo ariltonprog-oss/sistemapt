@@ -1,0 +1,21 @@
+/* =========================================
+   ESTRUTURA FUNCIONAL GLOBAL (STYLES.CSS)
+   ========================================= */
+
+/* 1. Tokens e Reset */
+@import url('variaveis.css');
+@import url('base.css');
+
+/* 2. Estrutura Macro */
+@import url('layout.css');
+
+/* 3. Componentes de UI (Atômicos/Funcionais) */
+@import url('buttons.css');
+@import url('forms.css');
+@import url('tables.css');
+@import url('cards.css');
+@import url('modals.css');
+
+/* 4. Utilitários e Exceções de Página */
+@import url('utilities.css');
+@import url('login.css');

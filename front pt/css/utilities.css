@@ -1,0 +1,36 @@
+.oculto-seguranca {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    z-index: -9999 !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.asterisco-obrigatorio {
+    color: #d9534f;
+}
+
+.msg-status-matricula {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    min-height: 20px;
+}
+
+.msg-status-matricula.erro {
+    color: #ef4444;
+}
+
+.msg-status-matricula.sucesso {
+    color: #22c55e;
+}

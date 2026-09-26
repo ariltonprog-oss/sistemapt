@@ -1,0 +1,53 @@
+/* =========================================
+   TABLES.CSS - Estilos Modernos para Tabelas
+   ========================================= */
+
+.table-container {
+    background-color: var(--cor-card, #1e293b);
+    border: 1px solid var(--borda, #334155);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    width: 95%;
+    max-width: 1400px;
+    overflow-x: auto; /* Garante scroll horizontal se a tela for pequena */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #f8fafc;
+}
+
+th, td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #334155;
+    white-space: nowrap; /* Evita que o texto quebre de forma feia */
+}
+
+th {
+    background-color: #0f172a;
+    font-weight: 600;
+    color: var(--cor-primaria, #f59e0b);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Ajuste fino para botões de ação dentro da tabela */
+td .btn, td button {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+}

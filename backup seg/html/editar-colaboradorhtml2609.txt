@@ -34,9 +34,9 @@
                     <!-- Campo oculto para guardar o ID do colaborador -->
                     <input type="hidden" id="colaboradorId">
 
-                    <div class="form-grid-edicao">
-                        <!-- LINHA 1: Nome (ocupa 2 colunas) e Matrícula (1 coluna) -->
-                        <div class="form-group form-group-duplo">
+                    <!-- LINHA 1: Dados do Colaborador -->
+                    <div class="linha-formulario-cinco-colunas">
+                        <div class="form-group">
                             <label for="nome">Nome Completo</label>
                             <input type="text" id="nome" required placeholder="Ex: João Silva">
                         </div>
@@ -44,8 +44,6 @@
                             <label for="matricula">Matrícula</label>
                             <input type="text" id="matricula" required placeholder="Ex: 1000857">
                         </div>
-
-                        <!-- LINHA 2: Função, Tipo e Status -->
                         <div class="form-group">
                             <label for="funcao">Função Operacional</label>
                             <select id="funcao" onchange="atualizarMatrizNRs()">
@@ -74,6 +72,7 @@
                                 <option value="true">Colaborador Terceiro</option>
                             </select>
                         </div>
+                        <!-- NOVO CAMPO: Status do Colaborador (Preenchendo a 5ª coluna) -->
                         <div class="form-group">
                             <label for="ativo">Status na Empresa</label>
                             <select id="ativo" required>
@@ -81,9 +80,11 @@
                                 <option value="false">Inativo / Afastado</option>
                             </select>
                         </div>
+                    </div>
 
-                        <!-- LINHA 3: Perfil Operacional (Largura total) -->
-                        <div class="form-group form-group-full">
+                    <!-- LINHA 2: Acesso e Validades -->
+                    <div class="linha-formulario-cinco-colunas linha-formulario-margem-top">
+                        <div class="form-group">
                             <label for="perfil">Perfil Operacional</label>
                             <select id="perfil" required onchange="ajustarCamposLogin()">
                                 <option value="">Selecione...</option>
@@ -93,8 +94,6 @@
                                 <option value="ENCARREGADO">ENCARREGADO (Solicitante / Emitente Opcional de PT)</option>
                             </select>
                         </div>
-
-                        <!-- LINHA 4: Login, Senha e ASO -->
                         <div class="form-group">
                             <label for="usuario">Usuário (Login)</label>
                             <input type="text" id="usuario" placeholder="Login do usuário">
@@ -103,22 +102,25 @@
                             <label for="senha">Senha de Acesso</label>
                             <input type="password" id="senha" placeholder="Preencha apenas para alterar">
                         </div>
+
+                        <!-- Bloco do ASO -->
                         <div class="form-group">
                             <label for="realizacaoASO">Data ASO</label>
                             <input type="date" id="realizacaoASO">
-                            <div class="bloco-validade campo-oculto" style="margin-top: 5px;">
-                                <label for="validadeASO" style="font-size: 0.75rem;">Validade ASO</label>
+
+                            <div class="bloco-validade campo-oculto">
+                                <label for="validadeASO">Validade</label>
                                 <input type="date" id="validadeASO" readonly title="Data de validade do ASO">
                             </div>
                         </div>
 
-                        <!-- LINHA 5: Treinamento PT -->
-                        <div class="form-group form-group-duplo">
+                        <!-- Bloco do Treinamento PT -->
+                        <div class="form-group">
                             <label for="realizacaoReciclagemPt">Data Treinamento PT</label>
                             <input type="date" id="realizacaoReciclagemPt">
-                            <div class="bloco-validade campo-oculto" style="margin-top: 5px;">
-                                <label for="validadeReciclagemPt" style="font-size: 0.75rem;">Validade Treinamento
-                                    PT</label>
+
+                            <div class="bloco-validade campo-oculto">
+                                <label for="validadeReciclagemPt">Validade</label>
                                 <input type="date" id="validadeReciclagemPt" readonly
                                     title="Data de validade do Treinamento PT">
                             </div>
@@ -126,28 +128,24 @@
                     </div>
 
                     <!-- Alçada de Emissão -->
-                    <div id="containerAlcadaEmissao" class="container-alcada-emissao elemento-escondido"
-                        style="margin-bottom: 20px;">
+                    <div id="containerAlcadaEmissao"
+                        class="container-alcada-emissao elemento-escondido linha-formulario-margem-top">
                         <input type="checkbox" id="podeEmitirPT">
                         <label for="podeEmitirPT">⚠️ Permitir que este Encarregado atue como EMITENTE de PT</label>
                     </div>
 
                     <!-- Seção de NRs -->
-                    <div class="secao-nrs" style="margin-bottom: 25px;">
-                        <h3 class="titulo-nrs" style="margin-bottom: 12px; color: var(--cor-primaria, #f59e0b);">📋
-                            Requisitos Obrigatórios de Segurança</h3>
+                    <div class="secao-nrs linha-formulario-margem-top">
+                        <h3 class="titulo-nrs">📋 Requisitos Obrigatórios de Segurança</h3>
                         <div id="containerMatrizNRs">
                             <p>Carregando as NRs do colaborador...</p>
                         </div>
                     </div>
 
                     <!-- Botões de Ação -->
-                    <div class="btn-group"
-                        style="display: flex; gap: 12px; border-top: 1px solid var(--borda, #334155); padding-top: 20px;">
-                        <button type="button" id="btnDispararSubmit" class="btn-submit"
-                            style="padding: 10px 20px; cursor: pointer;">SALVAR ALTERAÇÕES</button>
-                        <a href="admin.html" class="btn-cancelar"
-                            style="padding: 10px 20px; text-decoration: none; display: inline-flex; align-items: center;">CANCELAR</a>
+                    <div class="btn-group linha-formulario-margem-top">
+                        <button type="button" id="btnDispararSubmit" class="btn-submit">SALVAR ALTERAÇÕES</button>
+                        <a href="admin.html" class="btn-cancelar">CANCELAR</a>
                     </div>
                 </form>
             </div>

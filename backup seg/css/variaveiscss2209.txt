@@ -1,0 +1,8 @@
+:root {
+    --cor-fundo: #0f172a;
+    --cor-card: #1e293b;
+    --cor-primaria: #eab308; /* Amarelo */
+    --cor-texto: #ffffff;
+    --cor-texto-secundario: #94a3b8;
+    --borda: #334155;
+}

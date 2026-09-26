@@ -123,7 +123,6 @@ body {
     text-transform: uppercase;
     font-weight: 500;
 }
-
 /* =========================================
    ESTILOS DE CABEÇALHO E FILTROS DO DASHBOARD
    ========================================= */
@@ -143,6 +142,7 @@ body {
     gap: 10px;
 }
 
+/* Área dos botões de filtro */
 .dashboard-filtros {
     display: flex;
     gap: 10px;
@@ -177,7 +177,74 @@ body {
     border-color: var(--cor-primaria, #f59e0b);
     font-weight: bold;
 }
+/* =========================================
+   BARRA DE FILTROS - GERENCIAMENTO DE COLABORADORES
+   ========================================= */
 
+/* Contentor principal dos filtros num único cartão limpo */
+.filtros-container, .dashboard-filtros-colaboradores {
+    background-color: var(--cor-card, #1e293b);
+    border: 1px solid var(--borda, #334155);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 0 20px 20px 20px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto; /* Pesquisa larga, 3 selects médios e o botão à direita */
+    gap: 15px;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Ajuste dos inputs e selects dentro da barra de filtros */
+.filtros-container input,
+.filtros-container select {
+    background-color: #0f172a;
+    border: 1px solid #475569;
+    color: #ffffff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+}
+
+.filtros-container input:focus,
+.filtros-container select:focus {
+    outline: none;
+    border-color: var(--cor-primaria, #f59e0b);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+/* Botão de Imprimir / PDF alinhado */
+.btn-imprimir {
+    background-color: #334155;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-imprimir:hover {
+    background-color: #475569;
+    color: #fff;
+}
+
+/* Responsividade para ecrãs menores (empilha se faltar espaço) */
+@media (max-width: 1200px) {
+    .filtros-container, .dashboard-filtros-colaboradores {
+        grid-template-columns: 1fr 1fr;
+    }
+}
 /* =========================================
    BARRA DE FILTROS - GERENCIAMENTO DE COLABORADORES
    ========================================= */
@@ -235,11 +302,4 @@ body {
 .btn-imprimir:hover {
     background-color: #475569;
     color: #fff;
-}
-
-/* Responsividade para ecrãs menores */
-@media (max-width: 1200px) {
-    .filtros-container, .dashboard-filtros-colaboradores {
-        grid-template-columns: 1fr 1fr;
-    }
 }

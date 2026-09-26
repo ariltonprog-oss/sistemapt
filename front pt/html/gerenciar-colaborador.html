@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/formularios.css">
+    <link rel="stylesheet" href="../css/styles.css">
+
     <!-- Ícones (FontAwesome para o botão de imprimir) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>Gerenciar Colaboradores</title>
 </head>
+
 <body>
 
     <div id="sidebar-wrapper"></div>
@@ -17,37 +19,34 @@
         <h2>Gerenciamento de Colaboradores</h2>
 
         <!-- PAINEL DE CONTROLES: BUSCA, FILTROS E AÇÕES -->
-        <div class="painel-controles-colaboradores">
-            <div class="busca-container">
-                <input type="text" id="campoBusca" placeholder="Pesquisar por nome ou matrícula..." class="input-busca">
-            </div>
+        <div class="filtros-container">
+            <!-- Campo de Pesquisa -->
+            <input type="text" id="campoBusca" placeholder="Pesquisar por nome ou matrícula..." class="input-busca">
 
-           <div class="filtros-container">
-                <!-- Filtro de Status na Empresa -->
-                <select id="filtroStatus" class="input-filtro">
-                    <option value="ativo" selected>Status: Ativos</option>
-                    <option value="inativo">Inativos / Afastados</option>
-                    <option value="todos">Status: Todos</option>
-                </select>
+            <!-- Filtro de Status na Empresa -->
+            <select id="filtroStatus" class="input-filtro">
+                <option value="ativo" selected>Status: Ativos</option>
+                <option value="inativo">Inativos / Afastados</option>
+                <option value="todos">Status: Todos</option>
+            </select>
 
-                <!-- NOVO: Filtro de Função -->
-                <select id="filtroFuncao" class="input-filtro">
-                    <option value="">Todas as Funções</option>
-                    <!-- As opções serão preenchidas via JavaScript -->
-                </select>
+            <!-- Filtro de Função -->
+            <select id="filtroFuncao" class="input-filtro">
+                <option value="">Todas as Funções</option>
+                <!-- As opções serão preenchidas via JavaScript -->
+            </select>
 
-                <!-- Filtro de Situação de Treinamentos -->
-                <select id="filtroTreinamento" class="input-filtro">
-                    <option value="todos">Treinamentos: Todos</option>
-                    <option value="regular">Regular (Em dia)</option>
-                    <option value="vencidos">Com Pendências / Vencidos</option>
-                </select>
+            <!-- Filtro de Situação de Treinamentos -->
+            <select id="filtroTreinamento" class="input-filtro">
+                <option value="todos">Treinamentos: Todos</option>
+                <option value="regular">Regular (Em dia)</option>
+                <option value="vencidos">Com Pendências / Vencidos</option>
+            </select>
 
-                <!-- Botão de Impressão / Exportar PDF -->
-                <button type="button" onclick="window.print()" class="btn-imprimir">
-                    <i class="fa-solid fa-print"></i> Imprimir / PDF
-                </button>
-            </div>
+            <!-- Botão de Impressão / Exportar PDF -->
+            <button type="button" onclick="window.print()" class="btn-imprimir">
+                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            </button>
         </div>
 
         <!-- Tabela de Dados -->
@@ -75,4 +74,5 @@
     <script src="../js/sidebar.js"></script>
     <script src="../js/gerenciar-colaborador.js"></script>
 </body>
+
 </html>

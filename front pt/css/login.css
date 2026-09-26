@@ -1,30 +1,112 @@
+/* =========================================
+   LOGIN - ESTILOS DA TELA DE AUTENTICAÇÃO
+   ========================================= */
+
 .page-login {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--cor-fundo);
+    background-color: var(--cor-fundo, #0f172a);
     height: 100vh;
     flex-direction: column;
+    margin: 0;
 }
 
 .login-container {
-    background: var(--cor-card);
+    background: var(--cor-card, #1e293b);
     padding: 40px;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     text-align: center;
+    border: 1px solid var(--borda, #334155);
+    box-sizing: border-box;
 }
-.oculto-seguranca {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    position: absolute !important;
-    z-index: -9999 !important;
-    height: 0 !important;
-    width: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
+
+.login-container h2 {
+    color: var(--cor-primaria, #f59e0b);
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.login-container .subtitle {
+    color: var(--cor-texto-secundario, #94a3b8);
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+}
+
+.login-container .form-group {
+    text-align: left;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.login-container label {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    background-color: #2a374a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #ffffff;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+}
+
+.login-container input[type="text"]:focus,
+.login-container input[type="password"]:focus {
+    outline: none;
+    border-color: var(--cor-primaria, #f59e0b);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+.login-container input::placeholder {
+    color: #64748b;
+}
+
+/* Botão com a classe exata do seu HTML */
+.login-container .btn-submit {
+    background-color: var(--cor-primaria, #f59e0b);
+    color: #0f172a;
+    font-weight: bold;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: 100%;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.login-container .btn-submit:hover {
+    background-color: #d97706;
+}
+
+/* Caixa de Mensagem do Script de Login */
+.login-container .message {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.login-container .message.erro {
+    color: #ef4444;
+}
+
+.login-container .message.sucesso {
+    color: #22c55e;
 }

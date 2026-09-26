@@ -1,0 +1,12 @@
+/* =========================================
+STYLES.CSS - Maestro Funcional
+========================================= */
+
+@import url('variaveis.css');
+@import url('layout.css');
+@import url('buttons.css');
+@import url('forms.css');
+@import url('tables.css');
+@import url('cards.css');
+@import url('utilities.css');
+@import url('login.css')
