@@ -1,0 +1,468 @@
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form-group label,
+.form-group legend {
+    font-size: 0.85rem;
+    color: var(--cor-texto-secundario, #cbd5e1);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.form-control,
+input[type="text"],
+input[type="date"],
+select,
+textarea {
+    background-color: #2a374a;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #cbd5e1;
+    /* <--- Alterado de #ffffff para um tom mais suave (menos agressivo que o branco puro) */
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="date"]:focus,
+/* <--- ADICIONE ESTA LINHA */
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--cor-primaria, #f59e0b);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+textarea {
+    height: auto;
+    resize: vertical;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--cor-primaria, #f59e0b);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+.form-control::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #64748b;
+}
+
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.grid-form-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 15px;
+}
+
+.grid-form-5col {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.grid-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: #e2e8f0;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"],
+.chk-solicitante {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--cor-primaria, #f59e0b);
+    cursor: pointer;
+}
+
+.input-matricula-group {
+    display: grid;
+    grid-template-columns: 200px 1fr 140px;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 6px;
+}
+
+@media (max-width: 768px) {
+
+    .grid-form-2col,
+    .input-matricula-group {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================
+   FORMULÁRIO EM GRADE (2 COLUNAS)
+   ========================================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Duas colunas iguais */
+    gap: 16px 20px;
+    /* Espaçamento entre linhas e colunas */
+}
+
+/* Campos que devem ocupar a largura total das duas colunas */
+.form-group-full {
+    grid-column: span 2;
+}
+
+/* Ajustes visuais para os rótulos e campos internos do formulário */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/*/* =========================================
+   ESTILOS DA TELA DE EDIÇÃO DE COLABORADOR
+   ========================================= */
+
+.form-grid-edicao {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    /* 5 colunas balanceadas */
+    gap: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.form-grid-edicao .form-group-full {
+    grid-column: span 5;
+    /* Ocupa a largura total das 5 colunas */
+}
+
+.form-grid-edicao .form-group-duplo {
+    grid-column: span 2;
+    /* Ocupa 2 colunas */
+}
+
+/* Novas classes de controlo individual que deve acrescentar: */
+.form-grid-edicao .form-group-1 {
+    grid-column: span 1;
+}
+
+.form-grid-edicao .form-group-2 {
+    grid-column: span 2;
+}
+
+.form-grid-edicao .form-group-3 {
+    grid-column: span 3;
+}
+
+/* Responsividade para ecrãs menores */
+@media (max-width: 1024px) {
+    .form-grid-edicao {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .form-grid-edicao .form-group-full,
+    .form-grid-edicao .form-group-duplo,
+    .form-grid-edicao .form-group-1,
+    .form-grid-edicao .form-group-2,
+    .form-grid-edicao .form-group-3 {
+        grid-column: span 2;
+    }
+}
+
+/* Garante que o fundo escurecido cobre toda a tela e flutua por cima */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(11, 19, 43, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* Classe unificada para ocultar elementos com segurança */
+.modal-overlay.oculto,
+.oculto {
+    display: none !important;
+}
+
+/* Caixa interna do modal */
+.modal-card {
+    background: var(--cor-card, #1e293b);
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--borda, #334155);
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.modal-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Transforma o contentor das NRs numa grelha de 5 colunas */
+#containerMatrizNRs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px 16px;
+    align-items: stretch;
+}
+
+/* Cada item individual de NR dentro da grelha */
+.item-nr,
+.nr-card {
+    background-color: rgba(42, 55, 74, 0.4);
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    grid-column: span 1;
+    /* Cada NR ocupa 1 coluna (encaixa perfeitamente 5 por linha) */
+}
+
+/* Ajuste do texto e inputs dentro do card da NR para ficarem compactos */
+.item-nr label,
+.nr-card label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.item-nr input[type="date"],
+.nr-card input[type="date"] {
+    height: 36px;
+    font-size: 0.85rem;
+}
+
+/* Responsividade para ecrãs menores */
+@media (max-width: 1200px) {
+    #containerMatrizNRs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .item-nr,
+    .nr-card {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    #containerMatrizNRs {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* =========================================
+   ESTILOS DA GRID DE NRs (Gerada por JS)
+   ========================================= */
+
+.grid-nrs {
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+.grid-nrs .card-nr-item {
+    background-color: rgba(42, 55, 74, 0.4) !important;
+    border: 1px solid #334155 !important;
+    border-radius: 6px !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    grid-column: span 1 !important;
+    width: 100% !important;
+}
+
+.grid-nrs .card-nr-item label {
+    font-size: 0.8rem !important;
+    color: var(--cor-primaria, #f59e0b) !important;
+    margin-bottom: 2px !important;
+}
+
+.grid-nrs .card-nr-item small {
+    font-size: 0.72rem !important;
+    color: #94a3b8 !important;
+    margin-bottom: 8px !important;
+    line-height: 1.2 !important;
+}
+
+.grid-nrs .card-nr-item input[type="date"] {
+    height: 36px !important;
+    font-size: 0.85rem !important;
+    width: 100% !important;
+}
+
+/* Responsividade para ecrãs menores */
+@media (max-width: 1200px) {
+    .grid-nrs {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-nrs {
+        grid-template-columns: 1fr 1fr !important;
+    }
+}
+
+/* =========================================
+   AJUSTE DO CAMPO DE EMPRESA TERCEIRA
+   ========================================= */
+
+#grupoEmpresa {
+    margin-top: 15px !important;
+    max-width: 450px !important;
+    width: 100% !important;
+}
+
+#grupoEmpresa .campo-com-botao {
+    display: flex !important;
+    gap: 10px !important;
+    align-items: center !important;
+}
+
+#grupoEmpresa select.form-control {
+    flex: 1 !important;
+    height: 38px !important;
+}
+
+.btn-empresa-nova {
+    background-color: #334155 !important;
+    color: #f8fafc !important;
+    border: 1px solid #475569 !important;
+    border-radius: 6px !important;
+    padding: 0 14px !important;
+    height: 38px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.btn-empresa-nova:hover {
+    background-color: #475569 !important;
+}
+
+/* Responsividade para ecrãs menores */
+@media (max-width: 1200px) {
+    #grupoEmpresa {
+        grid-column: span 3 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #grupoEmpresa {
+        grid-column: span 2 !important;
+    }
+}
+/* =========================================
+   CORREÇÃO DOS BOTÕES DE AÇÃO (SALVAR / CANCELAR)
+   ========================================= */
+
+/* Contentor que guarda os botões (ajuste conforme a classe do seu HTML, ex: .form-actions, .botoes-acao) */
+.form-actions, 
+.acoes-formulario, 
+div:has(> button[onclick*="salvar"]), 
+div:has(> .btn-salvar) {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 25px !important;
+    width: 100% !important;
+    grid-column: 1 / -1 !important;
+    height: auto !important;
+}
+
+/* Estilização padronizada para os botões de Salvar e Cancelar */
+.btn-salvar, 
+.btn-salvar-alteracoes, 
+button[type="submit"], 
+.btn-primary-custom {
+    background-color: #10b981 !important; /* Verde elegante para salvar */
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important; /* Cantos arredondados */
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    height: 40px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.btn-salvar:hover, .btn-salvar-alteracoes:hover {
+    background-color: #059669 !important;
+}
+
+.btn-cancelar, 
+.btn-secondary-custom {
+    background-color: #ef4444 !important; /* Vermelho padrão para cancelar */
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 6px !important; /* Cantos arredondados */
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    height: 40px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.btn-cancelar:hover {
+    background-color: dc2626 !important;
+}

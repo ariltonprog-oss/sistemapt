@@ -1,0 +1,245 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+    min-height: 100vh;
+    display: flex;
+}
+
+.main-content {
+    padding: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-container, 
+.container {
+    width: 98% !important;
+    max-width: 100% !important;
+    margin: 0 auto;
+    padding: 10px 15px;
+}
+
+/* Sidebar & Menu Lateral */
+.sidebar-header {
+    padding: 30px 20px;
+    color: var(--cor-primaria);
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border-bottom: 1px solid var(--borda);
+}
+
+.sidebar-menu {
+    list-style: none;
+    margin-top: 20px;
+}
+
+.sidebar-menu li a {
+    display: block;
+    padding: 18px 25px;
+    color: var(--cor-texto);
+    text-decoration: none;
+    font-weight: 500;
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sidebar-menu li a:hover {
+    background-color: var(--borda);
+    color: var(--cor-primaria);
+    border-left: 4px solid var(--cor-primaria);
+}
+
+.sidebar-empresa-gestora {
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 10px 15px;
+}
+
+.sidebar-empresa-gestora .label-empresa {
+    display: block;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.sidebar-empresa-gestora .nome-empresa {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f59e0b;
+    display: flex;
+    align-items: baseline;
+    margin-top: 2px;
+}
+
+.sidebar-empresa-gestora .letra-destaque {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fbbf24;
+    line-height: 1;
+    margin-right: 1px;
+}
+
+.usuario-logado-sidebar {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 15px 15px 5px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.usuario-logado-sidebar .label-usuario {
+    font-size: 10px;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.usuario-logado-sidebar .nome-usuario {
+    font-size: 14px;
+    color: #f8fafc;
+    font-weight: bold;
+    word-break: break-word;
+}
+
+.usuario-logado-sidebar .perfil-usuario {
+    font-size: 11px;
+    color: #38bdf8;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* =========================================
+   ESTILOS DE CABEÇALHO E FILTROS DO DASHBOARD
+   ========================================= */
+
+.header-pagina {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--borda);
+}
+
+.header-conteudo h2 {
+    font-size: 1.4rem;
+    color: #f8fafc;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dashboard-filtros {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.btn-filtro {
+    background-color: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid var(--borda);
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-filtro:hover {
+    background-color: #334155;
+    color: #fff;
+    border-color: #475569;
+}
+
+.btn-filtro.ativo {
+    background-color: var(--cor-primaria, #f59e0b);
+    color: #0f172a;
+    border-color: var(--cor-primaria, #f59e0b);
+    font-weight: bold;
+}
+
+/* =========================================
+   BARRA DE FILTROS - GERENCIAMENTO DE COLABORADORES
+   ========================================= */
+
+.filtros-container, .dashboard-filtros-colaboradores {
+    background-color: var(--cor-card, #1e293b);
+    border: 1px solid var(--borda, #334155);
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin: 0 20px 20px 20px;
+    display: grid;
+    grid-template-columns: 2.5fr 1.2fr 1.2fr 1.2fr auto;
+    gap: 12px;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.filtros-container input,
+.filtros-container select {
+    background-color: #0f172a;
+    border: 1px solid #475569;
+    color: #ffffff;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+}
+
+.filtros-container input:focus,
+.filtros-container select:focus {
+    outline: none;
+    border-color: var(--cor-primaria, #f59e0b);
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+}
+
+.btn-imprimir {
+    background-color: #334155;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-imprimir:hover {
+    background-color: #475569;
+    color: #fff;
+}
+
+/* Responsividade para ecrãs menores */
+@media (max-width: 1200px) {
+    .filtros-container, .dashboard-filtros-colaboradores {
+        grid-template-columns: 1fr 1fr;
+    }
+}

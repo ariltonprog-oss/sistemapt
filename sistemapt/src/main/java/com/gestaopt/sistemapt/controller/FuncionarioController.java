@@ -83,7 +83,6 @@ public class FuncionarioController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-       
     /**
      * ROTA PARA LISTAR OS FUNCIONÁRIOS DE UMA EMPRESA COM FILTROS URL: GET
      * /api/funcionarios/empresa/{empresaId}?filtro=...&funcao=...&ativo=...
@@ -91,22 +90,17 @@ public class FuncionarioController {
     @GetMapping("/empresa/{empresaId}")
     public List<Funcionario> listarPorEmpresa(
             @PathVariable Long empresaId,
-            @RequestParam(value = "filtro", required = false) String filtro,
-            @RequestParam(value = "funcao", required = false) String funcao,
-            @RequestParam(value = "ativo", required = false) Boolean ativo) {
+            @RequestParam(required = false) String filtro,
+            @RequestParam(required = false) String funcao,
+            @RequestParam(required = false) Boolean ativo,
+            @RequestParam(required = false) Boolean ehTerceiro) {
 
-        System.out.println("DEBUG JAVA - ID da empresa: " + empresaId
-                + " | Filtro: " + filtro
-                + " | Função: " + funcao
-                + " | Ativo: " + ativo);
-
-        // Vamos passar os novos parâmetros para o service tratar
-        return funcionarioService.listarPorEmpresaComFiltros(empresaId, filtro, funcao, ativo);
+        return funcionarioService.listarPorEmpresaComFiltros(empresaId, filtro, funcao, ativo, ehTerceiro);
     }
 
     /**
-     * ROTA PARA BUSCAR AS FUNÇÕES DISTINTAS DE UMA EMPRESA (PARA O <SELECT> DO FRONT-END)
-     * URL: GET /api/funcionarios/empresa/{empresaId}/funcoes
+     * ROTA PARA BUSCAR AS FUNÇÕES DISTINTAS DE UMA EMPRESA (PARA O <SELECT> DO
+     * FRONT-END) URL: GET /api/funcionarios/empresa/{empresaId}/funcoes
      */
     @GetMapping("/empresa/{empresaId}/funcoes")
     public List<String> listarFuncoesPorEmpresa(@PathVariable Long empresaId) {

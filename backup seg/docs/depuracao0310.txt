@@ -1,0 +1,26 @@
+gerenciar-colaborador.js:14 Gerenciamento de Colaboradores carregado. Acesso como:  MASTER_EMPRESA
+gerenciar-colaborador.js:54 🔍 A tentar carregar funções para o ID da empresa: 2
+gerenciar-colaborador.js:63 🔍 A efetuar pedido fetch para o URL: http://localhost:8080/api/funcionarios/empresa/2/funcoes
+sidebar.js:19  GET http://localhost:8080/api/funcionarios/2 net::ERR_CONNECTION_REFUSED
+(anônimo) @ sidebar.js:19
+sidebar.js:25 Erro ao buscar dados do funcionário para a sidebar: TypeError: Failed to fetch
+    at HTMLDocument.<anonymous> (sidebar.js:19:36)
+(anônimo) @ sidebar.js:25
+gerenciar-colaborador.js:65  GET http://localhost:8080/api/funcionarios/empresa/2/funcoes net::ERR_CONNECTION_REFUSED
+carregarFuncoesDaEmpresa @ gerenciar-colaborador.js:65
+(anônimo) @ gerenciar-colaborador.js:26
+gerenciar-colaborador.js:89 ❌ Erro crítico ao carregar a lista de funções: TypeError: Failed to fetch
+    at carregarFuncoesDaEmpresa (gerenciar-colaborador.js:65:32)
+    at HTMLDocument.<anonymous> (gerenciar-colaborador.js:26:5)
+carregarFuncoesDaEmpresa @ gerenciar-colaborador.js:89
+await in carregarFuncoesDaEmpresa
+(anônimo) @ gerenciar-colaborador.js:26
+gerenciar-colaborador.js:114  GET http://localhost:8080/api/funcionarios/empresa/2?ativo=true net::ERR_CONNECTION_REFUSED
+carregarColaboradores @ gerenciar-colaborador.js:114
+(anônimo) @ gerenciar-colaborador.js:27
+gerenciar-colaborador.js:125 Erro ao carregar colaboradores: TypeError: Failed to fetch
+    at carregarColaboradores (gerenciar-colaborador.js:114:32)
+    at HTMLDocument.<anonymous> (gerenciar-colaborador.js:27:5)
+carregarColaboradores @ gerenciar-colaborador.js:125
+await in carregarColaboradores
+(anônimo) @ gerenciar-colaborador.js:27

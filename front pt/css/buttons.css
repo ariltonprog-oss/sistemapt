@@ -1,11 +1,19 @@
+/* =========================================
+   SISTEMA CENTRALIZADO DE BOTÕES
+   ========================================= */
+
+/* Contentor de Ações (Rodapé de Formulários) */
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
     margin-top: 25px;
     padding-top: 15px;
+    width: 100%;
+    grid-column: 1 / -1;
 }
 
+/* Botões Principais / Ações Específicas */
 .btn-solicitar {
     background-color: #f59e0b;
     color: #0f172a;
@@ -24,7 +32,8 @@
     background-color: #d97706;
 }
 
-.btn-cancelar {
+.btn-cancelar, 
+.btn-secondary-custom {
     background-color: #ef4444;
     color: #ffffff;
     font-weight: bold;
@@ -44,6 +53,31 @@
 
 .btn-cancelar:hover {
     background-color: #dc2626;
+}
+
+.btn-salvar, 
+.btn-primary {
+    background-color: #10b981; /* Verde elegante para salvar */
+    color: #ffffff;
+    font-weight: bold;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.btn-salvar:hover, 
+.btn-primary:hover {
+    background-color: #059669;
 }
 
 .btn-adicionar-executante {
@@ -67,7 +101,7 @@
     background-color: #1d4ed8;
 }
 
-/* Botões de Ação Unificados (Tabelas / Registros) */
+/* Botões de Ação em Tabelas / Registros */
 .coluna-acoes {
     white-space: nowrap;
     text-align: center;
@@ -99,3 +133,52 @@
 .btn-acao-revalidar { background-color: #e17055 !important; }
 .btn-acao-baixar { background-color: #d63031 !important; }
 .btn-acao-visualizar { background-color: #34495e !important; border: 1px solid #4e6d8c; }
+
+.btn-filtro {
+    background-color: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid var(--borda);
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-filtro:hover {
+    background-color: #334155;
+    color: #fff;
+    border-color: #475569;
+}
+
+.btn-filtro.ativo {
+    background-color: var(--cor-primaria, #f59e0b);
+    color: #0f172a;
+    border-color: var(--cor-primaria, #f59e0b);
+    font-weight: bold;
+}
+.btn-imprimir {
+    background-color: #334155;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.btn-imprimir:hover {
+    background-color: #475569;
+    color: #fff;
+}

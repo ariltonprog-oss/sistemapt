@@ -150,33 +150,6 @@ body {
     margin-bottom: 25px;
 }
 
-.btn-filtro {
-    background-color: #1e293b;
-    color: #cbd5e1;
-    border: 1px solid var(--borda);
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn-filtro:hover {
-    background-color: #334155;
-    color: #fff;
-    border-color: #475569;
-}
-
-.btn-filtro.ativo {
-    background-color: var(--cor-primaria, #f59e0b);
-    color: #0f172a;
-    border-color: var(--cor-primaria, #f59e0b);
-    font-weight: bold;
-}
 
 /* =========================================
    BARRA DE FILTROS - GERENCIAMENTO DE COLABORADORES
@@ -215,27 +188,7 @@ body {
     box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
 }
 
-.btn-imprimir {
-    background-color: #334155;
-    color: #f8fafc;
-    border: 1px solid #475569;
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    white-space: nowrap;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s;
-}
 
-.btn-imprimir:hover {
-    background-color: #475569;
-    color: #fff;
-}
 
 /* Responsividade para ecrãs menores */
 @media (max-width: 1200px) {

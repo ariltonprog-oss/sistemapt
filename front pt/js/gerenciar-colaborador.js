@@ -30,11 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const campoBusca = document.getElementById('campoBusca');
     const filtroStatus = document.getElementById('filtroStatus');
     const filtroFuncao = document.getElementById('filtroFuncao');
+    const filtroTipo = document.getElementById('filtroTipo'); // 🔹 ADICIONADO AQUI
     const filtroTreinamento = document.getElementById('filtroTreinamento');
 
     if (campoBusca) {
-        // Se houver campo de texto, podemos manter busca dinâmica ou por requisição. 
-        // Como o backend já trata por parâmetros, vamos chamar carregarColaboradores ao alterar.
         campoBusca.addEventListener('input', () => carregarColaboradores());
     }
     if (filtroStatus) {
@@ -43,8 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filtroFuncao) {
         filtroFuncao.addEventListener('change', () => carregarColaboradores());
     }
+    if (filtroTipo) { // 🔹 ADICIONADO AQUI
+        filtroTipo.addEventListener('change', () => carregarColaboradores());
+    }
     if (filtroTreinamento) {
-        // O filtro de treinamento (vencidos/regulares) pode continuar a ser filtrado localmente na lista ou integrado.
         filtroTreinamento.addEventListener('change', () => carregarColaboradores());
     }
 });
@@ -96,14 +97,12 @@ async function carregarColaboradores() {
         const termoBusca = document.getElementById('campoBusca')?.value.trim() || '';
         const statusVal = document.getElementById('filtroStatus')?.value || 'ativo';
         const funcaoVal = document.getElementById('filtroFuncao')?.value || '';
+        const tipoVal = document.getElementById('filtroTipo')?.value || ''; // 🔹 ADICIONADO AQUI
 
-        // Converte o status selecionado para o booleano esperado pelo Java (ativo = true/false, ou null para todos)
         let ativoParam = '';
         if (statusVal === 'ativo') ativoParam = 'true';
         if (statusVal === 'inativo') ativoParam = 'false';
-        // se for 'todos', deixamos vazio para o backend não filtrar por status
 
-        // Monta a URL com os parâmetros de consulta (Query Params)
         let url = `http://localhost:8080/api/funcionarios/empresa/${empresaIdLogada}?`;
         const params = new URLSearchParams();
 
@@ -111,17 +110,22 @@ async function carregarColaboradores() {
         if (funcaoVal) params.append('funcao', funcaoVal);
         if (statusVal !== 'todos') params.append('ativo', ativoParam);
 
+        if (tipoVal !== '') { // 🔹 ADICIONADO AQUI: envia 'true' (terceiro) ou 'false' (próprio) para o back-end
+            params.append('ehTerceiro', tipoVal);
+        }
+
         const response = await fetch(url + params.toString());
         if (!response.ok) {
             throw new Error('Erro ao buscar colaboradores na API.');
         }
 
         const listaColaboradores = await response.json();
-
-        // Aplica o filtro complementar de Treinamentos (que é baseado em datas locais)
         aplicarFiltroTreinamentoLocal(listaColaboradores);
 
     } catch (error) {
+
+
+
         console.error("Erro ao carregar colaboradores:", error);
         const corpoTabela = document.getElementById('tabelaCorpo');
         if (corpoTabela) {

@@ -63,9 +63,13 @@ function toggleEmpresa() {
     const grupoEmpresa = document.getElementById('grupoEmpresa');
 
     if (grupoEmpresa) {
-        grupoEmpresa.style.display = ehTerceiro ? 'block' : 'none';
         if (ehTerceiro) {
+            grupoEmpresa.classList.remove('oculto');
+            grupoEmpresa.style.display = 'block';
             carregarEmpresasTerceiras();
+        } else {
+            grupoEmpresa.classList.add('oculto');
+            grupoEmpresa.style.display = 'none';
         }
     }
 }
@@ -276,8 +280,8 @@ function alternarFlagEmitente() {
 
     const valorPerfil = selectPerfil.value ? selectPerfil.value.toLowerCase().trim() : "";
     const idx = selectPerfil.selectedIndex;
-    const textoPerfil = (idx >= 0 && selectPerfil.options[idx]) 
-        ? selectPerfil.options[idx].text.toLowerCase().trim() 
+    const textoPerfil = (idx >= 0 && selectPerfil.options[idx])
+        ? selectPerfil.options[idx].text.toLowerCase().trim()
         : "";
 
     const ehEncarregado = valorPerfil.includes('encarregado') || textoPerfil.includes('encarregado');

@@ -3,11 +3,15 @@
    ========================================= */
 
 .page-login {
+    /* Imagem de fundo com o gradiente escuro de sobreposição */
+    background: linear-gradient(rgba(11, 19, 43, 0.88), rgba(11, 19, 43, 0.92)), url('../img/imagemLogin3.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--cor-fundo, #0f172a);
-    height: 100vh;
     flex-direction: column;
     margin: 0;
 }
@@ -75,7 +79,6 @@
     color: #64748b;
 }
 
-/* Botão com a classe exata do seu HTML */
 .login-container .btn-submit {
     background-color: var(--cor-primaria, #f59e0b);
     color: #0f172a;
@@ -96,7 +99,6 @@
     background-color: #d97706;
 }
 
-/* Caixa de Mensagem do Script de Login */
 .login-container .message {
     margin-top: 15px;
     font-size: 0.85rem;

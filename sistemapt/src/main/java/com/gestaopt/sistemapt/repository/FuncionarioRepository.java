@@ -44,20 +44,23 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Long> 
     // Buscar funcionários de uma empresa filtrando por função
     List<Funcionario> findByEmpresaIdAndFuncao(Long empresaId, String funcao);
 
-    // Opcional: Para preencher o <select> do HTML apenas com as funções cadastradas daquela empresa
-    @Query("SELECT DISTINCT f.funcao FROM Funcionario f WHERE f.empresa.id = :empresaId AND f.funcao IS NOT NULL ORDER BY f.funcao")
-    List<String> findDistinctFuncoesByEmpresaId(@Param("empresaId") Long empresaId);
-
-    // Buscar funcionários da empresa filtrando opcionalmente por texto, função e status ativo
-    @Query("SELECT f FROM Funcionario f WHERE f.empresa.id = :empresaId " +
+  
+   // 1. Busca com filtros (Empresa própria OU qualquer colaborador marcado como terceiro)
+    @Query("SELECT f FROM Funcionario f WHERE (f.empresa.id = :empresaId OR f.ehTerceiro = true) " +
            "AND (:filtro IS NULL OR :filtro = '' OR LOWER(f.nome) LIKE LOWER(CONCAT('%', :filtro, '%')) OR LOWER(f.matricula) LIKE LOWER(CONCAT('%', :filtro, '%'))) " +
            "AND (:funcao IS NULL OR :funcao = '' OR f.funcao = :funcao) " +
-           "AND (:ativo IS NULL OR f.ativo = :ativo)")
+           "AND (:ativo IS NULL OR f.ativo = :ativo) " +
+           "AND (:ehTerceiro IS NULL OR f.ehTerceiro = :ehTerceiro)")
     List<Funcionario> findByEmpresaComFiltros(
             @Param("empresaId") Long empresaId,
             @Param("filtro") String filtro,
             @Param("funcao") String funcao,
-            @Param("ativo") Boolean ativo
+            @Param("ativo") Boolean ativo,
+            @Param("ehTerceiro") Boolean ehTerceiro
     );
+
+    // 2. Funções distintas (Empresa própria OU terceiros)
+    @Query("SELECT DISTINCT f.funcao FROM Funcionario f WHERE (f.empresa.id = :empresaId OR f.ehTerceiro = true) AND f.funcao IS NOT NULL ORDER BY f.funcao")
+    List<String> findDistinctFuncoesByEmpresaId(@Param("empresaId") Long empresaId);
     
 }
