@@ -1,0 +1,218 @@
+# 1. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Manutenção Elétrica Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de manutenção preventiva e corretiva, inspeção, montagem, instalação, substituição de componentes, testes, reparos e intervenções em instalações, circuitos, painéis, motores, equipamentos e sistemas elétricos industriais.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Deslocamento até o local | Quedas, tropeços, colisões e exposição aos riscos da área industrial. | Utilizar rotas autorizadas, observar as condições do piso e respeitar a sinalização e as restrições de acesso. |
+| 2. Inspeção e planejamento | Contato com instalações energizadas, identificação incorreta do circuito e interferências com outras atividades. | Identificar o equipamento e os circuitos envolvidos, consultar diagramas e procedimentos, avaliar os riscos e obter as liberações necessárias. |
+| 3. Isolamento elétrico | Choque elétrico, arco elétrico e energização inesperada. | Priorizar a desenergização, aplicar bloqueio e etiquetagem, verificar a ausência de tensão com instrumento adequado e cumprir os procedimentos de segurança elétrica aplicáveis. |
+| 4. Execução da manutenção | Choque elétrico, queimaduras, cortes, curto-circuito e contato com partes móveis. | Permitir a execução somente por trabalhadores autorizados e capacitados, utilizar ferramentas adequadas e manter as fontes de energia sob controle. |
+| 5. Testes e verificações | Arco elétrico, energização inesperada e acionamento de equipamentos. | Planejar os testes, restringir o acesso à área, utilizar instrumentos apropriados e adotar medidas específicas para qualquer intervenção energizada autorizada. |
+| 6. Recomposição e liberação | Curto-circuito, falha de funcionamento, choque elétrico e acionamento inesperado. | Conferir conexões, aterramento e proteções, retirar ferramentas, comunicar os envolvidos e restabelecer a energia conforme procedimento autorizado. |
+| 7. Encerramento | Materiais esquecidos, resíduos e exposição de outras equipes a riscos. | Organizar o local, registrar os serviços realizados e comunicar pendências ou condições inseguras. |
+
+### 3. EPIs E RECURSOS DE SEGURANÇA
+
+- Capacete de segurança e óculos de proteção.
+- Calçado de segurança adequado à atividade.
+- Vestimenta compatível com os riscos elétricos e térmicos identificados.
+- Luvas e proteção facial específicas, quando exigidas pela avaliação de risco.
+- Ferramentas isoladas e instrumentos de medição apropriados, quando aplicáveis.
+- Dispositivos de bloqueio, etiquetas, sinalização e barreiras de isolamento.
+
+### 4. CONDIÇÕES IMPEDITIVAS
+
+- Ausência de autorização ou capacitação exigida.
+- Impossibilidade de identificar ou isolar as fontes de energia.
+- Ausência de confirmação da condição elétrica segura.
+- Ferramentas, instrumentos ou proteções inadequados.
+- Presença de partes energizadas expostas sem os controles necessários.
+- Mudança das condições de trabalho sem reavaliação dos riscos.
+
+### 5. RESPONSABILIDADES
+
+- **Supervisor:** planejar e autorizar o serviço conforme os procedimentos internos.
+- **Responsável pela instalação:** assegurar os isolamentos e as liberações sob sua responsabilidade.
+- **Eletricistas:** cumprir os procedimentos e verificar as condições de segurança.
+- **Equipe envolvida:** comunicar desvios e interromper a atividade diante de riscos não controlados.
+
+### 6. REGISTROS E PARTICIPAÇÃO DA EQUIPE
+
+Registrar data, local, equipamentos envolvidos, integrantes da equipe, fontes de energia identificadas, controles adotados, riscos adicionais e confirmação de participação dos envolvidos.
+
+---
+
+# 2. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Manutenção Mecânica Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de manutenção preventiva e corretiva, inspeção, desmontagem, montagem, ajustes, lubrificação, substituição de componentes e reparos em máquinas, equipamentos, conjuntos mecânicos e sistemas industriais.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Deslocamento e reconhecimento da área | Quedas, tropeços, colisões e contato com equipamentos em operação. | Utilizar rotas autorizadas, observar a movimentação de máquinas e manter distância de áreas de risco. |
+| 2. Planejamento e preparação | Falta de identificação das fontes de energia, interferências operacionais e uso de ferramentas inadequadas. | Inspecionar o local, identificar o equipamento, planejar a intervenção e alinhar o serviço com a operação. |
+| 3. Isolamento do equipamento | Partida inesperada, esmagamento, aprisionamento e liberação de energia acumulada. | Isolar e bloquear as fontes de energia aplicáveis, incluindo elétrica, hidráulica, pneumática, gravitacional, mecânica e outras pertinentes. Aliviar energias residuais e verificar a condição segura. |
+| 4. Desmontagem e retirada de componentes | Queda de peças, prensamento, cortes, esforço físico e projeção de componentes. | Utilizar ferramentas e dispositivos de apoio adequados, avaliar o peso das peças e empregar meios de movimentação de cargas quando necessário. |
+| 5. Manutenção e substituição de peças | Cortes, impactos, contato com lubrificantes, superfícies quentes e movimentos inesperados. | Manter os componentes estabilizados, utilizar ferramentas apropriadas e adotar medidas de proteção contra riscos mecânicos e químicos. |
+| 6. Montagem e ajustes | Prensamento de dedos, montagem incorreta, desalinhamento e falha mecânica. | Seguir especificações e procedimentos, conferir fixações e alinhamentos e manter as proteções removidas somente durante a intervenção controlada. |
+| 7. Testes e retorno à operação | Partida inesperada, vibração excessiva, projeção de peças e contato com partes móveis. | Reinstalar proteções, retirar pessoas e ferramentas da área, comunicar a operação e realizar testes controlados mediante autorização. |
+| 8. Encerramento | Ferramentas esquecidas, vazamentos, resíduos e proteções não reinstaladas. | Inspecionar o equipamento, organizar a área, registrar pendências e comunicar a liberação ou restrições operacionais. |
+
+### 3. EPIs E RECURSOS DE SEGURANÇA
+
+- Capacete, óculos de proteção e calçado de segurança.
+- Luvas adequadas aos riscos da atividade, sem comprometer a segurança perto de partes rotativas.
+- Protetor auditivo e proteção facial, quando necessários.
+- Ferramentas apropriadas, dispositivos de bloqueio e etiquetagem.
+- Equipamentos de içamento e movimentação de cargas, quando aplicáveis.
+- Barreiras e sinalização para isolamento da área.
+
+### 4. CONDIÇÕES IMPEDITIVAS
+
+- Equipamento sem isolamento seguro das energias.
+- Presença de energia residual não controlada.
+- Cargas suspensas sem controle ou componentes instáveis.
+- Proteções inadequadas ou ferramentas defeituosas.
+- Ausência de recursos adequados para movimentar peças pesadas.
+- Impossibilidade de realizar testes em condições controladas.
+
+### 5. RESPONSABILIDADES
+
+- **Supervisor:** planejar a manutenção e assegurar os recursos necessários.
+- **Operação:** coordenar a liberação e o isolamento do equipamento.
+- **Mecânicos:** executar a intervenção conforme os procedimentos técnicos.
+- **Equipe envolvida:** respeitar os isolamentos, manter comunicação e comunicar condições inseguras.
+
+### 6. REGISTROS E PARTICIPAÇÃO DA EQUIPE
+
+Registrar data, local, equipamento, serviço previsto, fontes de energia, recursos de movimentação, riscos adicionais, controles implantados e participantes da AST.
+
+---
+
+# 3. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Manutenção em Caldeiraria e Tubulação Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de fabricação, montagem, desmontagem, reparo, substituição, ajuste e manutenção de estruturas metálicas, suportes, tubulações, conexões, flanges e demais componentes de caldeiraria e tubulação industrial.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Inspeção e planejamento | Vazamentos, pressão, temperatura, produtos perigosos e interferências com outras equipes. | Identificar o sistema, conhecer o fluido e as condições operacionais, avaliar as interferências e obter as liberações necessárias. |
+| 2. Isolamento e preparação | Liberação de pressão, fluidos, vapores, produtos químicos e energia residual. | Confirmar o isolamento do sistema, aplicar bloqueios, despressurizar, drenar e descontaminar quando necessário, verificando as condições seguras antes da abertura. |
+| 3. Abertura e desmontagem | Projeção de fluidos, queimaduras, contato químico, queda de componentes e prensamento. | Confirmar a ausência de pressão e a condição segura do sistema, posicionar-se fora da trajetória de possíveis liberações e utilizar ferramentas e dispositivos adequados. |
+| 4. Corte, preparação e ajuste de peças | Cortes, partículas projetadas, ruído, faíscas e exposição a fumos. | Utilizar ferramentas apropriadas, instalar proteções e barreiras, controlar as fontes de ignição e adotar os controles de trabalho a quente quando aplicáveis. |
+| 5. Movimentação e montagem | Queda de cargas, esmagamento, prensamento e falha de suportes. | Planejar o içamento, inspecionar acessórios, delimitar a área e manter pessoas afastadas de cargas suspensas e pontos de esmagamento. |
+| 6. Instalação e fechamento | Montagem incorreta, vazamentos, falha de vedação e desalinhamento. | Conferir materiais, conexões, juntas, fixações e suportes conforme as especificações técnicas e os procedimentos aplicáveis. |
+| 7. Testes e liberação | Ruptura, vazamentos, projeção de componentes e exposição à pressão. | Realizar os testes previstos por procedimento aprovado, delimitar a área, utilizar os parâmetros especificados e manter pessoas afastadas das zonas de risco. |
+| 8. Encerramento | Materiais e ferramentas esquecidos, resíduos e condições inseguras remanescentes. | Inspecionar o local, retirar materiais, registrar os resultados e comunicar pendências antes da liberação do sistema. |
+
+### 3. EPIs E RECURSOS DE SEGURANÇA
+
+- Capacete, óculos de proteção e calçado de segurança.
+- Luvas adequadas aos riscos mecânicos, químicos e térmicos.
+- Protetor facial e proteção auditiva, conforme a atividade.
+- Vestimenta apropriada para corte, montagem e eventual trabalho a quente.
+- Ferramentas, dispositivos de bloqueio, barreiras e acessórios de içamento adequados.
+- Equipamentos de detecção atmosférica, quando exigidos pela avaliação de risco.
+
+### 4. CONDIÇÕES IMPEDITIVAS
+
+- Linha ou equipamento sem isolamento comprovado.
+- Presença de pressão, temperatura ou produto perigoso não controlado.
+- Ausência de autorização para abertura do sistema.
+- Estruturas ou cargas sem estabilidade assegurada.
+- Falta de planejamento para içamento ou movimentação.
+- Testes sem procedimento definido e área controlada.
+
+### 5. RESPONSABILIDADES
+
+- **Supervisor:** planejar as etapas e garantir os recursos necessários.
+- **Operação:** confirmar os isolamentos, as condições de processo e a liberação do sistema.
+- **Caldeireiros e tubuladores:** executar a montagem e a manutenção conforme os procedimentos técnicos.
+- **Equipe envolvida:** respeitar as áreas isoladas e comunicar alterações nas condições de segurança.
+
+### 6. REGISTROS E PARTICIPAÇÃO DA EQUIPE
+
+Registrar data, local, sistema ou trecho de tubulação, serviço previsto, fluido envolvido, isolamentos, recursos de movimentação, riscos adicionais e participantes da AST.
+
+---
+
+# 4. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Soldagem Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de soldagem, ponteamento, preparação de juntas, reparos, cortes associados à atividade e demais operações de união ou recuperação de componentes metálicos em ambiente industrial.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Inspeção e planejamento | Materiais combustíveis, atmosferas inflamáveis, interferências operacionais e exposição a produtos perigosos. | Inspecionar a área, identificar materiais e condições do processo, obter a permissão de trabalho a quente quando exigida e avaliar as atividades simultâneas. |
+| 2. Preparação da área | Incêndio, explosão, queimaduras e propagação de faíscas. | Remover ou proteger materiais combustíveis, instalar barreiras contra faíscas, controlar as fontes de ignição e disponibilizar os recursos de combate a incêndio previstos. |
+| 3. Preparação dos equipamentos | Choque elétrico, vazamento de gases, incêndio e falha de mangueiras ou conexões. | Inspecionar máquinas, cabos, aterramentos, mangueiras, reguladores e conexões; manter cilindros identificados, fixados e protegidos conforme os requisitos aplicáveis. |
+| 4. Execução da soldagem | Radiação, queimaduras, fumos metálicos, gases, projeção de partículas e choque elétrico. | Utilizar proteção de soldagem adequada, controlar os fumos por ventilação ou exaustão, manter os cabos em boas condições e impedir a exposição de pessoas não protegidas. |
+| 5. Trabalho em locais restritos ou confinados, quando aplicável | Acúmulo de gases, deficiência de oxigênio, intoxicação, incêndio e dificuldade de resgate. | Aplicar os requisitos específicos para o local, incluindo avaliação atmosférica, ventilação, autorização, monitoramento e plano de emergência, quando pertinentes. |
+| 6. Inspeção após a soldagem | Incêndio tardio, contato com superfícies quentes e defeitos na união. | Inspecionar a área e os materiais adjacentes, manter a vigilância contra incêndio pelo período estabelecido no procedimento e verificar a qualidade da solda conforme os critérios aplicáveis. |
+| 7. Desmobilização | Queimaduras, resíduos, equipamentos ligados e materiais esquecidos. | Desligar e guardar os equipamentos com segurança, acondicionar os materiais, retirar resíduos e confirmar que não permanecem focos de aquecimento ou condições de incêndio. |
+
+### 3. EPIs E RECURSOS DE SEGURANÇA
+
+- Capacete e proteção ocular adequada ao processo.
+- Máscara de solda com filtro apropriado.
+- Luvas, avental e vestimenta de proteção contra calor e respingos.
+- Calçado de segurança e proteção respiratória, conforme avaliação de risco.
+- Proteção auditiva quando necessária.
+- Cortinas de soldagem, ventilação ou exaustão, extintores e demais recursos definidos no procedimento.
+- Equipamentos e acessórios de soldagem inspecionados e adequados ao serviço.
+
+### 4. CONDIÇÕES IMPEDITIVAS
+
+- Ausência de permissão de trabalho a quente quando exigida.
+- Atmosfera inflamável ou perigosa sem controle adequado.
+- Presença de materiais combustíveis sem proteção.
+- Equipamentos, cabos, mangueiras ou conexões defeituosos.
+- Ausência dos recursos de prevenção e combate a incêndio previstos.
+- Falta de ventilação ou de controles atmosféricos exigidos para o local.
+- Interferência com outras atividades que gere risco não controlado.
+
+### 5. RESPONSABILIDADES
+
+- **Supervisor:** planejar a atividade e garantir as autorizações e os recursos.
+- **Operação:** confirmar as condições da área e os isolamentos sob sua responsabilidade.
+- **Soldadores:** executar o serviço conforme os procedimentos e requisitos técnicos.
+- **Vigia ou observador de incêndio, quando exigido:** acompanhar a atividade e atuar conforme suas atribuições e o plano de emergência.
+- **Equipe envolvida:** respeitar os isolamentos e comunicar qualquer condição insegura.
+
+### 6. REGISTROS E PARTICIPAÇÃO DA EQUIPE
+
+Registrar data, local, serviço, processo de soldagem, materiais envolvidos, autorização para trabalho a quente quando exigida, controles contra incêndio, riscos adicionais e participantes da AST.
+
+---
+
+# 5. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Pintura e Revestimento Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de preparação de superfícies, limpeza, remoção de revestimentos, aplicação de tintas, primers, solventes e revestimentos protetivos, retoques e manutenção de pintura em estruturas, equipamentos e instalações industriais.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Inspeção e planejamento | Exposição a produtos químicos, interferências operacionais e condições inadequadas do local. | Consultar as fichas com dados de segurança dos produtos, avaliar o ambiente, verificar as condições meteorológicas quando aplicável e obter as autorizações necessárias. |
+| 2. Preparação e isolamento da área | Inalação de vapores, contato químico, incêndio e contaminação de áreas adjacentes. | Delimitar a área, controlar o acesso, identificar fontes de ignição e proteger equipamentos, pessoas

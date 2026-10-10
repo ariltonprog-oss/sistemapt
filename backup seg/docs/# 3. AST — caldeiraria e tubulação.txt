@@ -1,0 +1,49 @@
+# 3. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Manutenção em Caldeiraria e Tubulação Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de fabricação, montagem, desmontagem, reparo, substituição, ajuste e manutenção de estruturas metálicas, suportes, tubulações, conexões, flanges e demais componentes de caldeiraria e tubulação industrial.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Inspeção e planejamento | Vazamentos, pressão, temperatura, produtos perigosos e interferências com outras equipes. | Identificar o sistema, conhecer o fluido e as condições operacionais, avaliar as interferências e obter as liberações necessárias. |
+| 2. Isolamento e preparação | Liberação de pressão, fluidos, vapores, produtos químicos e energia residual. | Confirmar o isolamento do sistema, aplicar bloqueios, despressurizar, drenar e descontaminar quando necessário, verificando as condições seguras antes da abertura. |
+| 3. Abertura e desmontagem | Projeção de fluidos, queimaduras, contato químico, queda de componentes e prensamento. | Confirmar a ausência de pressão e a condição segura do sistema, posicionar-se fora da trajetória de possíveis liberações e utilizar ferramentas e dispositivos adequados. |
+| 4. Corte, preparação e ajuste de peças | Cortes, partículas projetadas, ruído, faíscas e exposição a fumos. | Utilizar ferramentas apropriadas, instalar proteções e barreiras, controlar as fontes de ignição e adotar os controles de trabalho a quente quando aplicáveis. |
+| 5. Movimentação e montagem | Queda de cargas, esmagamento, prensamento e falha de suportes. | Planejar o içamento, inspecionar acessórios, delimitar a área e manter pessoas afastadas de cargas suspensas e pontos de esmagamento. |
+| 6. Instalação e fechamento | Montagem incorreta, vazamentos, falha de vedação e desalinhamento. | Conferir materiais, conexões, juntas, fixações e suportes conforme as especificações técnicas e os procedimentos aplicáveis. |
+| 7. Testes e liberação | Ruptura, vazamentos, projeção de componentes e exposição à pressão. | Realizar os testes previstos por procedimento aprovado, delimitar a área, utilizar os parâmetros especificados e manter pessoas afastadas das zonas de risco. |
+| 8. Encerramento | Materiais e ferramentas esquecidos, resíduos e condições inseguras remanescentes. | Inspecionar o local, retirar materiais, registrar os resultados e comunicar pendências antes da liberação do sistema. |
+
+### 3. EPIs E RECURSOS DE SEGURANÇA
+
+- Capacete, óculos de proteção e calçado de segurança.
+- Luvas adequadas aos riscos mecânicos, químicos e térmicos.
+- Protetor facial e proteção auditiva, conforme a atividade.
+- Vestimenta apropriada para corte, montagem e eventual trabalho a quente.
+- Ferramentas, dispositivos de bloqueio, barreiras e acessórios de içamento adequados.
+- Equipamentos de detecção atmosférica, quando exigidos pela avaliação de risco.
+
+### 4. CONDIÇÕES IMPEDITIVAS
+
+- Linha ou equipamento sem isolamento comprovado.
+- Presença de pressão, temperatura ou produto perigoso não controlado.
+- Ausência de autorização para abertura do sistema.
+- Estruturas ou cargas sem estabilidade assegurada.
+- Falta de planejamento para içamento ou movimentação.
+- Testes sem procedimento definido e área controlada.
+
+### 5. RESPONSABILIDADES
+
+- **Supervisor:** planejar as etapas e garantir os recursos necessários.
+- **Operação:** confirmar os isolamentos, as condições de processo e a liberação do sistema.
+- **Caldeireiros e tubuladores:** executar a montagem e a manutenção conforme os procedimentos técnicos.
+- **Equipe envolvida:** respeitar as áreas isoladas e comunicar alterações nas condições de segurança.
+
+### 6. REGISTROS E PARTICIPAÇÃO DA EQUIPE
+
+Registrar data, local, sistema ou trecho de tubulação, serviço previsto, fluido envolvido, isolamentos, recursos de movimentação, riscos adicionais e participantes da AST.
+

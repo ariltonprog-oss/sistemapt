@@ -1,6 +1,9 @@
 package com.gestaopt.sistemapt.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.gestaopt.sistemapt.model.EspecialidadeAST;
 
 public class EmitirPermissaoRequestDTO {
 
@@ -10,11 +13,15 @@ public class EmitirPermissaoRequestDTO {
     private String alturaDetalhes;
     private String nomeAst;
     private String monitoramentoAmbiental;
-    private String turnoGrupo; // <-- Adicionado aqui
+    private String turnoGrupo;
     private Long emitenteId;
     private String matricula;
+    
+    // --- NOVOS CAMPOS ADICIONADOS ---
+    private String numeroPec;
+    private List<EspecialidadeAST> astsVinculadas;
 
-    // Getters e Setters
+    // Getters e Setters existentes
     public LocalDateTime getDataHoraInicio() {
         return dataHoraInicio;
     }
@@ -85,5 +92,22 @@ public class EmitirPermissaoRequestDTO {
 
     public void setMatricula(String matricula) {
         this.matricula = matricula;
+    }
+
+    // --- GETTERS E SETTERS DOS NOVOS CAMPOS ---
+    public String getNumeroPec() {
+        return numeroPec;
+    }
+
+    public void setNumeroPec(String numeroPec) {
+        this.numeroPec = numeroPec;
+    }
+
+    public List<EspecialidadeAST> getAstsVinculadas() {
+        return astsVinculadas;
+    }
+
+    public void setAstsVinculadas(List<EspecialidadeAST> astsVinculadas) {
+        this.astsVinculadas = astsVinculadas;
     }
 }

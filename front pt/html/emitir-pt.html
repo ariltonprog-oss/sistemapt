@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emissão de PT - Sistema PT</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/emitir-pt.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/forms.css">
+    
     <!-- Ícones (FontAwesome) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 </head>
 
 <body>
@@ -28,11 +28,10 @@
 
                 <form id="formEmitirPT">
                     <!-- RESUMO DA SOLICITAÇÃO -->
-                    <fieldset class="secao-form secao-resumo-pt">
+                    <fieldset class="secao-form secao-resumo-pt secao-emissao">
                         <legend>Dados da Solicitação</legend>
 
-                        <!-- Linha 1: 6 colunas -->
-                        <div class="grid-form-5">
+                        <div class="grid-form-5col">
                             <div class="campo-info">
                                 <label class="label-info-titulo">Planta / Área:</label>
                                 <div id="infoPlantaArea" class="label-info-valor">-</div>
@@ -51,15 +50,16 @@
                                 <div id="infoSolicitante" class="label-info-valor">-</div>
                             </div>
                             <div class="form-group">
-                                <label class="label-info-titulo">Nome da AST Associada</label>
+                                <label class="label-info-titulo" for="inputNomeAst">Nome da AST Associada</label>
                                 <input type="text" id="inputNomeAst" class="form-control"
                                     placeholder="Informe ou ajuste a AST">
                             </div>
                         </div>
                     </fieldset>
-                    <!-- Linha 2: Tabela de Executantes / Equipe -->
-                    <div class="campo-info campo-info-bloco margin-topo">
-                        <label class="label-info-titulo">Equipe Executante (Conferência de Campo):</label>
+
+                    <!-- Equipe Executante / Equipe -->
+                    <div class="bloco-info-emitir">
+                        <label class="label-info-titulo" style="display: block; margin-bottom: 10px;">Equipe Executante (Conferência de Campo):</label>
                         <div class="table-responsive tabela-executantes-container">
                             <table class="tabela-padrao tabela-executantes-emissao">
                                 <thead>
@@ -75,25 +75,24 @@
                             </table>
                         </div>
                     </div>
+
                     <!-- Descrição da Atividade -->
-                    <div class="campo-info campo-info-bloco margin-topo">
-                        <label class="label-info-titulo">Descrição da Atividade:</label>
-                        <p id="infoDescricao" class="label-descricao-texto">-</p>
+                    <div class="bloco-info-emitir">
+                        <label class="label-info-titulo" style="display: block; margin-bottom: 8px;">Descrição da Atividade:</label>
+                        <p id="infoDescricao" class="label-descricao-texto" style="margin: 0; line-height: 1.4;">-</p>
                     </div>
 
-
                     <!-- Resumo dos Riscos e Requisitos da PT -->
-                    <div class="campo-info campo-info-bloco margin-topo">
-                        <label class="label-info-titulo">Riscos e Requisitos de Segurança Selecionados:</label>
-                        <div id="listaRiscosResumo" class="riscos-container">
+                    <div class="bloco-info-emitir">
+                        <label class="label-info-titulo" style="display: block; margin-bottom: 10px;">Riscos e Requisitos de Segurança Selecionados:</label>
+                        <div id="listaRiscosResumo" class="riscos-resumo-container">
                             <!-- Preenchido dinamicamente via JS -->
                         </div>
                     </div>
 
-
-                    <!-- BLOCO CONDICIONAL: LOTO / ENERGIAS PERIGOSAS -->
+                    <!-- BLOCO CONDICIONAL: LOTO -->
                     <div id="blocoLoto" class="bloco-condicional oculto">
-                        <fieldset class="secao-form secao-validade-pt">
+                        <fieldset class="secao-form secao-validade-pt secao-emissao">
                             <legend>🔒 Controle de Energias Perigosas (LOTO)</legend>
                             <div class="form-group">
                                 <label for="lotoDetalhes">Verificações de Bloqueio e Energia Zero:</label>
@@ -105,23 +104,21 @@
 
                     <!-- BLOCO CONDICIONAL: TRABALHO EM ALTURA -->
                     <div id="blocoAltura" class="bloco-condicional oculto">
-                        <fieldset class="secao-form secao-validade-pt">
+                        <fieldset class="secao-form secao-validade-pt secao-emissao">
                             <legend>🧗 Requisitos para Trabalho em Altura</legend>
                             <div class="form-group">
-                                <label for="alturaDetalhes">Condições de Ancoragem, Linha de Vida e EPIs
-                                    específicos:</label>
+                                <label for="alturaDetalhes">Condições de Ancoragem, Linha de Vida e EPIs específicos:</label>
                                 <input type="text" id="alturaDetalhes" class="form-control"
                                     placeholder="Ex: Inspeção de talabarte dupla, cinto tipo paraquedista ok">
                             </div>
                         </fieldset>
                     </div>
 
-                    <!-- BLOCO CONDICIONAL: ESPAÇO CONFINADO / OUTRAS CRÍTICAS -->
+                    <!-- BLOCO CONDICIONAL: ESPAÇO CONFINADO -->
                     <div id="blocoMonitoramento" class="bloco-condicional">
-                        <fieldset class="secao-form secao-validade-pt">
+                        <fieldset class="secao-form secao-validade-pt secao-emissao">
                             <legend>📊 Monitoramento Ambiental e Documentos</legend>
-                            <div class="grid-form-2">
-
+                            <div class="grid-form-2col">
                                 <div class="form-group">
                                     <label for="monitoramentoAmbiental">Medições Ambientais (O2, Gases, etc.)</label>
                                     <input type="text" id="monitoramentoAmbiental" class="form-control"
@@ -131,20 +128,18 @@
                         </fieldset>
                     </div>
 
-                    <!-- 🟢 SEÇÃO DINÂMICA: INSPEÇÃO DE EPIS E MEDIDAS DE CONTROLE POR RISCO -->
-                    <fieldset class="secao-form secao-validade-pt">
-                        <legend><i class="fa-solid fa-shield-halved"></i> Inspeção de EPIs e Medidas de Controle
-                            Específicas</legend>
-                        <p class="texto-secundario">
-                            Itens de verificação gerados automaticamente com base nos riscos e requisitos selecionados
-                            na solicitação desta PT:
+                    <!-- INSPEÇÃO DE EPIS -->
+                    <fieldset class="secao-form secao-validade-pt secao-emissao">
+                        <legend><i class="fa-solid fa-shield-halved"></i> Inspeção de EPIs e Medidas de Controle Específicas</legend>
+                        <p class="texto-secundario" style="margin-bottom: 15px;">
+                            Itens de verificação gerados automaticamente com base nos riscos e requisitos selecionados na solicitação desta PT:
                         </p>
-                        <!-- Container preenchido via JavaScript dinamicamente -->
-                        <div id="containerInspecaoEpiMedidas" class="grid-checkboxes grid-checkboxes--responsivo">
+                        <div id="containerInspecaoEpiMedidas" style="width: 100%;">
                         </div>
                     </fieldset>
 
-                    <fieldset class="secao-form secao-validade-pt">
+                    <!-- CONDIÇÕES OPERACIONAIS -->
+                    <fieldset class="secao-form secao-validade-pt secao-emissao">
                         <legend>Condições Operacionais e Liberação Final</legend>
 
                         <div class="form-group">
@@ -153,12 +148,9 @@
                                 placeholder="Insira cuidados adicionais..."></textarea>
                         </div>
 
-
-
-                        <div class="grid-form-31">
+                        <div class="grid-form-31" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                             <div class="form-group">
-                                <label for="turnoGrupo">Turno / Grupo <span
-                                        class="asterisco-obrigatorio">*</span></label>
+                                <label for="turnoGrupo">Turno / Grupo <span class="asterisco-obrigatorio">*</span></label>
                                 <input type="text" id="turnoGrupo" name="turnoGrupo"
                                     class="form-control input-uppercase" placeholder="Ex: TURNO A" required>
                             </div>
@@ -175,35 +167,32 @@
                             </div>
                         </div>
 
-
-                        <div class="form-group margin-topo-form">
-                            <label class="grid-form-2">
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label class="checkbox-vistoria-label">
                                 <input type="checkbox" id="checkVistoriaCampo" required class="input-checkbox-vistoria">
-                                <span>Confirmo que a vistoria de campo foi realizada e a área está segura para os
-                                    trabalhos.</span>
+                                <span>Confirmo que a vistoria de campo foi realizada e a área está segura para os trabalhos.</span>
                             </label>
                         </div>
+                    </fieldset>
 
-            </div>
-            </fieldset>
+                    <!-- VALIDADE E LIBERAÇÃO -->
+                    <fieldset class="secao-form secao-validade-pt secao-emissao">
+                        <legend>Validade e Liberação</legend>
+                        <div class="form-group">
+                            <label for="dataHoraInicio">Data e Hora de Início *</label>
+                            <input type="datetime-local" id="dataHoraInicio" required class="form-control" style="max-width: 300px;">
+                        </div>
+                    </fieldset>
 
-            <!-- VALIDADE E LIBERAÇÃO -->
-            <fieldset class="secao-form secao-validade-pt">
-                <legend>Validade e Liberação</legend>
-                <div class="grid-form-3">
-                    <div class="form-group">
-                        <label for="dataHoraInicio">Data e Hora de Início *</label>
-                        <input type="datetime-local" id="dataHoraInicio" required class="form-control">
-                    </div>
-                    <div class="btn-group btn-group-emissao margin-topo">
+                    <!-- BOTÕES DE AÇÃO -->
+                    <div class="acoes-form-emitir">
                         <a href="dashboard.html" class="btn-cancelar">Cancelar</a>
-                        <button type="submit" class="btn-submit btn-confirmar-emissao">🛡️ Confirmar e Emitir
-                            PT</button>
+                        <button type="submit" class="btn-submit btn-confirmar-emissao">🛡️ Confirmar e Emitir PT</button>
                     </div>
-            </fieldset>
-            </form>
-    </div>
-    </main>
+
+                </form>
+            </div>
+        </main>
     </div>
 
     <script src="../js/sidebar.js"></script>

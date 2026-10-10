@@ -23,6 +23,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.persistence.CollectionTable;
 
 @interface JsonIgnoreProperties {
 
@@ -154,6 +155,18 @@ public class PermissaoTrabalho {
     @Column(name = "area_atuacao")
     @JsonProperty("areaAtuacao")
     private Especialidade areaAtuacao;
+
+    // --- NOVOS CAMPOS: PEC E ASTS VINCULADAS ---
+    @Column(name = "numero_pec", length = 50)
+    @JsonProperty("numeroPec")
+    private String numeroPec;
+
+    @ElementCollection(targetClass = EspecialidadeAST.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "pt_asts_vinculadas", joinColumns = @JoinColumn(name = "pt_id"))
+    @Column(name = "especialidade_ast")
+    @JsonProperty("astsVinculadas")
+    private List<EspecialidadeAST> astsVinculadas = new ArrayList<>();
 
     // --- MATRIZ DE EPIs CALCULADOS ---
     @ElementCollection
@@ -732,6 +745,23 @@ public class PermissaoTrabalho {
      */
     public void setAnoEmissao(Integer anoEmissao) {
         this.anoEmissao = anoEmissao;
+    }
+
+    // --- GETTERS E SETTERS PARA PEC E ASTS ---
+    public String getNumeroPec() {
+        return numeroPec;
+    }
+
+    public void setNumeroPec(String numeroPec) {
+        this.numeroPec = numeroPec;
+    }
+
+    public List<EspecialidadeAST> getAstsVinculadas() {
+        return astsVinculadas;
+    }
+
+    public void setAstsVinculadas(List<EspecialidadeAST> astsVinculadas) {
+        this.astsVinculadas = astsVinculadas;
     }
 
 }

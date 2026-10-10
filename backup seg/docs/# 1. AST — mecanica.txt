@@ -1,0 +1,50 @@
+# 2. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Manutenção Mecânica Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de manutenção preventiva e corretiva, inspeção, desmontagem, montagem, ajustes, lubrificação, substituição de componentes e reparos em máquinas, equipamentos, conjuntos mecânicos e sistemas industriais.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Deslocamento e reconhecimento da área | Quedas, tropeços, colisões e contato com equipamentos em operação. | Utilizar rotas autorizadas, observar a movimentação de máquinas e manter distância de áreas de risco. |
+| 2. Planejamento e preparação | Falta de identificação das fontes de energia, interferências operacionais e uso de ferramentas inadequadas. | Inspecionar o local, identificar o equipamento, planejar a intervenção e alinhar o serviço com a operação. |
+| 3. Isolamento do equipamento | Partida inesperada, esmagamento, aprisionamento e liberação de energia acumulada. | Isolar e bloquear as fontes de energia aplicáveis, incluindo elétrica, hidráulica, pneumática, gravitacional, mecânica e outras pertinentes. Aliviar energias residuais e verificar a condição segura. |
+| 4. Desmontagem e retirada de componentes | Queda de peças, prensamento, cortes, esforço físico e projeção de componentes. | Utilizar ferramentas e dispositivos de apoio adequados, avaliar o peso das peças e empregar meios de movimentação de cargas quando necessário. |
+| 5. Manutenção e substituição de peças | Cortes, impactos, contato com lubrificantes, superfícies quentes e movimentos inesperados. | Manter os componentes estabilizados, utilizar ferramentas apropriadas e adotar medidas de proteção contra riscos mecânicos e químicos. |
+| 6. Montagem e ajustes | Prensamento de dedos, montagem incorreta, desalinhamento e falha mecânica. | Seguir especificações e procedimentos, conferir fixações e alinhamentos e manter as proteções removidas somente durante a intervenção controlada. |
+| 7. Testes e retorno à operação | Partida inesperada, vibração excessiva, projeção de peças e contato com partes móveis. | Reinstalar proteções, retirar pessoas e ferramentas da área, comunicar a operação e realizar testes controlados mediante autorização. |
+| 8. Encerramento | Ferramentas esquecidas, vazamentos, resíduos e proteções não reinstaladas. | Inspecionar o equipamento, organizar a área, registrar pendências e comunicar a liberação ou restrições operacionais. |
+
+### 3. EPIs E RECURSOS DE SEGURANÇA
+
+- Capacete, óculos de proteção e calçado de segurança.
+- Luvas adequadas aos riscos da atividade, sem comprometer a segurança perto de partes rotativas.
+- Protetor auditivo e proteção facial, quando necessários.
+- Ferramentas apropriadas, dispositivos de bloqueio e etiquetagem.
+- Equipamentos de içamento e movimentação de cargas, quando aplicáveis.
+- Barreiras e sinalização para isolamento da área.
+
+### 4. CONDIÇÕES IMPEDITIVAS
+
+- Equipamento sem isolamento seguro das energias.
+- Presença de energia residual não controlada.
+- Cargas suspensas sem controle ou componentes instáveis.
+- Proteções inadequadas ou ferramentas defeituosas.
+- Ausência de recursos adequados para movimentar peças pesadas.
+- Impossibilidade de realizar testes em condições controladas.
+
+### 5. RESPONSABILIDADES
+
+- **Supervisor:** planejar a manutenção e assegurar os recursos necessários.
+- **Operação:** coordenar a liberação e o isolamento do equipamento.
+- **Mecânicos:** executar a intervenção conforme os procedimentos técnicos.
+- **Equipe envolvida:** respeitar os isolamentos, manter comunicação e comunicar condições inseguras.
+
+### 6. REGISTROS E PARTICIPAÇÃO DA EQUIPE
+
+Registrar data, local, equipamento, serviço previsto, fontes de energia, recursos de movimentação, riscos adicionais, controles implantados e participantes da AST.
+
+---

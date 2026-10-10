@@ -1,0 +1,62 @@
+# AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Manutenção em Instrumentação Industrial
+
+**1. DESCRIÇÃO DA ATIVIDADE**
+
+Execução de serviços de manutenção preventiva e corretiva, inspeção, ajustes, calibração, testes, substituição de componentes, verificações funcionais e demais intervenções em sistemas e equipamentos de instrumentação industrial.
+
+**2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS**
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Deslocamento até o local de trabalho | Quedas, tropeços, escorregões, colisões e exposição aos riscos da área industrial. | Utilizar as rotas autorizadas, observar as condições do piso, respeitar a sinalização e manter atenção ao tráfego de pessoas, veículos e equipamentos. |
+| 2. Inspeção e reconhecimento da área | Vazamentos, exposição a produtos químicos, gases, superfícies quentes, ruído e interferências com outras atividades. | Inspecionar previamente o local, identificar os riscos existentes, verificar as condições ambientais e comunicar qualquer anormalidade à supervisão ou à operação. |
+| 3. Planejamento e liberação do serviço | Falta de autorização, desconhecimento dos riscos, execução simultânea de atividades incompatíveis e ausência de controles necessários. | Realizar a AST com a equipe executante, obter as autorizações e permissões exigidas, consultar os procedimentos aplicáveis e alinhar a atividade com a operação e demais equipes envolvidas. |
+| 4. Isolamento e preparação para a intervenção | Choque elétrico, energização inesperada, pressão residual, liberação de fluidos, movimentos mecânicos e outras energias perigosas. | Identificar todas as fontes de energia aplicáveis, realizar os isolamentos necessários, aplicar bloqueio e etiquetagem conforme procedimento, aliviar energias residuais e confirmar as condições seguras antes de iniciar a intervenção. |
+| 5. Execução da manutenção | Cortes, prensamentos, impactos, contato com superfícies quentes, exposição a substâncias perigosas e lesões por ferramentas. | Utilizar ferramentas adequadas e em boas condições, seguir os procedimentos técnicos, manter organização no local e utilizar os EPIs definidos pela avaliação de riscos. |
+| 6. Intervenções elétricas e eletrônicas | Choque elétrico, curto-circuito, queimaduras e danos aos componentes. | Confirmar as condições de desenergização quando aplicável, verificar a ausência de tensão com instrumento apropriado, respeitar os limites de atuação autorizada e adotar os controles específicos para serviços que precisem ser executados energizados. |
+| 7. Trabalhos em altura ou locais de acesso restrito, quando aplicável | Quedas de pessoas e materiais, dificuldade de acesso e resgate, exposição a atmosferas perigosas. | Atender aos requisitos específicos para trabalho em altura ou espaço confinado, quando aplicáveis, utilizando sistemas de proteção, equipamentos, monitoramento e recursos de emergência exigidos para a atividade. |
+| 8. Testes, ajustes e verificações funcionais | Energização inesperada, acionamento de equipamentos, alterações no processo, sobrepressão e exposição a partes móveis. | Planejar os testes, comunicar as pessoas envolvidas, verificar as condições de segurança, respeitar os limites dos equipamentos e coordenar as intervenções com a operação. |
+| 9. Recomposição e liberação do sistema | Vazamentos, conexões incorretas, falhas de funcionamento, ausência de proteções e retorno inseguro à operação. | Conferir a montagem, as conexões e as proteções, retirar ferramentas e materiais, realizar as verificações previstas e restabelecer as condições operacionais somente mediante autorização e conforme o procedimento aplicável. |
+| 10. Organização e encerramento do serviço | Quedas, cortes, materiais esquecidos, resíduos e riscos para outras equipes. | Recolher ferramentas e materiais, destinar resíduos corretamente, manter a área limpa e organizada, comunicar pendências e registrar a conclusão ou as condições remanescentes do serviço. |
+
+**3. EPIs E RECURSOS DE SEGURANÇA**
+
+Utilizar os equipamentos de proteção individual definidos pela avaliação dos riscos da atividade e pelas exigências da área, podendo incluir:
+
+- Capacete de segurança.
+- Óculos de proteção e, quando necessário, protetor facial.
+- Calçado de segurança.
+- Vestimenta de trabalho compatível com os riscos identificados.
+- Luvas adequadas aos riscos mecânicos, químicos, térmicos ou elétricos envolvidos.
+- Proteção auditiva e proteção respiratória, quando requeridas.
+- Cinturão e sistema de proteção contra quedas, quando aplicáveis.
+
+Disponibilizar ferramentas adequadas, instrumentos de teste apropriados, dispositivos de bloqueio e etiquetagem, sinalização, barreiras e demais recursos exigidos pela avaliação de riscos.
+
+**4. CONDIÇÕES IMPEDITIVAS**
+
+Não iniciar ou interromper a atividade quando:
+
+- Não houver autorização ou liberação exigida para o serviço.
+- Os riscos não estiverem identificados ou controlados.
+- Não for possível confirmar o isolamento das energias perigosas aplicáveis.
+- Houver vazamento, atmosfera perigosa ou condição operacional insegura.
+- Faltarem equipamentos, ferramentas ou EPIs necessários.
+- Surgirem riscos adicionais ou mudanças nas condições inicialmente avaliadas.
+- Houver dúvida quanto ao procedimento seguro para execução da atividade.
+
+A atividade somente poderá ser retomada após a avaliação da situação, a implantação dos controles necessários e a autorização dos responsáveis competentes.
+
+**5. RESPONSABILIDADES**
+
+- **Supervisor ou responsável pelo serviço:** assegurar o planejamento, a disponibilidade dos recursos e o cumprimento dos requisitos de segurança.
+- **Operação da unidade:** realizar ou coordenar os isolamentos operacionais e as liberações sob sua responsabilidade.
+- **Equipe de instrumentação:** cumprir os procedimentos, verificar as condições de segurança e comunicar desvios ou situações de risco.
+- **Todos os envolvidos:** participar da análise, esclarecer dúvidas e interromper o trabalho diante de condições inseguras.
+
+**6. REGISTROS E PARTICIPAÇÃO DA EQUIPE**
+
+Registrar a data, o local, a descrição da atividade, os integrantes da equipe, os riscos específicos identificados no campo, as medidas adicionais adotadas e a confirmação de participação dos envolvidos.
+
+A AST deverá ser revisada sempre que houver mudança no escopo, nas condições do local, nos equipamentos envolvidos ou nos riscos da atividade.

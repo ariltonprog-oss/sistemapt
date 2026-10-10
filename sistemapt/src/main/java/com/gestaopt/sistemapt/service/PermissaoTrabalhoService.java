@@ -72,6 +72,12 @@ public class PermissaoTrabalhoService {
         pt.setAlturaDetalhes(dto.getAlturaDetalhes());
         pt.setNomeAst(dto.getNomeAst());
         pt.setMonitoramentoAmbiental(dto.getMonitoramentoAmbiental());
+
+        // --- 🟢 ADIÇÃO DOS NOVOS CAMPOS DE PEC E ASTS VINCULADAS ---
+        pt.setNumeroPec(dto.getNumeroPec());
+        pt.setAstsVinculadas(dto.getAstsVinculadas());
+        // -----------------------------------------------------------
+
         pt.setDataHoraEmissao(LocalDateTime.now());
         pt.setStatus("EMITIDA");
 

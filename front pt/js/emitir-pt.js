@@ -175,7 +175,7 @@ async function carregarDadosParaEmissao(id) {
                 }
 
                 if (ativo) {
-                    temRico = true;
+                    temRisco = true;
                     const tag = document.createElement('div'); // Mudado de span para div para quebrar linha
                     tag.textContent = textoFinal;
                     tag.className = 'risco-badge';
@@ -229,12 +229,13 @@ function gerarChecklistDinamico(pt) {
         return;
     }
 
-    let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; width: 100%;">';
+    // Estrutura de grid responsiva em 3 colunas (ou ajustável conforme o tamanho da tela)
+    let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; width: 100%;">';
     episCalculados.forEach(epiNome => {
         html += `
-            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 14px; border-radius: 6px; display: flex; align-items: center; gap: 10px; color: #cbd5e1;">
-                <i class="fa-solid fa-circle-check" style="color: #38bdf8; font-size: 14px;"></i>
-                <span style="font-size: 14px;">${epiNome}</span>
+            <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); padding: 12px 14px; border-radius: 6px; display: flex; align-items: center; gap: 10px; color: #cbd5e1;">
+                <i class="fa-solid fa-circle-check" style="color: #38bdf8; font-size: 16px; flex-shrink: 0;"></i>
+                <span style="font-size: 14px; line-height: 1.3;">${epiNome}</span>
             </div>
         `;
     });

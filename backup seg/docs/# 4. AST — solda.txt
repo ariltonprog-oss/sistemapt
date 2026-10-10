@@ -1,0 +1,52 @@
+# 4. AST — ANÁLISE DE SEGURANÇA DA TAREFA
+## Atividade: Soldagem Industrial
+
+### 1. DESCRIÇÃO DA ATIVIDADE
+
+Execução de serviços de soldagem, ponteamento, preparação de juntas, reparos, cortes associados à atividade e demais operações de união ou recuperação de componentes metálicos em ambiente industrial.
+
+### 2. PERIGOS, RISCOS E MEDIDAS PREVENTIVAS
+
+| Etapa da atividade | Perigos e riscos potenciais | Medidas preventivas e recomendações de segurança |
+|---|---|---|
+| 1. Inspeção e planejamento | Materiais combustíveis, atmosferas inflamáveis, interferências operacionais e exposição a produtos perigosos. | Inspecionar a área, identificar materiais e condições do processo, obter a permissão de trabalho a quente quando exigida e avaliar as atividades simultâneas. |
+| 2. Preparação da área | Incêndio, explosão, queimaduras e propagação de faíscas. | Remover ou proteger materiais combustíveis, instalar barreiras contra faíscas, controlar as fontes de ignição e disponibilizar os recursos de combate a incêndio previstos. |
+| 3. Preparação dos equipamentos | Choque elétrico, vazamento de gases, incêndio e falha de mangueiras ou conexões. | Inspecionar máquinas, cabos, aterramentos, mangueiras, reguladores e conexões; manter cilindros identificados, fixados e protegidos conforme os requisitos aplicáveis. |
+| 4. Execução da soldagem | Radiação, queimaduras, fumos metálicos, gases, projeção de partículas e choque elétrico. | Utilizar proteção de soldagem adequada, controlar os fumos por ventilação ou exaustão, manter os cabos em boas condições e impedir a exposição de pessoas não protegidas. |
+| 5. Trabalho em locais restritos ou confinados, quando aplicável | Acúmulo de gases, deficiência de oxigênio, intoxicação, incêndio e dificuldade de resgate. | Aplicar os requisitos específicos para o local, incluindo avaliação atmosférica, ventilação, autorização, monitoramento e plano de emergência, quando pertinentes. |
+| 6. Inspeção após a soldagem | Incêndio tardio, contato com superfícies quentes e defeitos na união. | Inspecionar a área e os materiais adjacentes, manter a vigilância contra incêndio pelo período estabelecido no procedimento e verificar a qualidade da solda conforme os critérios aplicáveis. |
+| 7. Desmobilização | Queimaduras, resíduos, equipamentos ligados e materiais esquecidos. | Desligar e guardar os equipamentos com segurança, acondicionar os materiais, retirar resíduos e confirmar que não permanecem focos de aquecimento ou condições de incêndio. |
+
+### 3. EPIs E RECURSOS DE SEGURANÇA
+
+- Capacete e proteção ocular adequada ao processo.
+- Máscara de solda com filtro apropriado.
+- Luvas, avental e vestimenta de proteção contra calor e respingos.
+- Calçado de segurança e proteção respiratória, conforme avaliação de risco.
+- Proteção auditiva quando necessária.
+- Cortinas de soldagem, ventilação ou exaustão, extintores e demais recursos definidos no procedimento.
+- Equipamentos e acessórios de soldagem inspecionados e adequados ao serviço.
+
+### 4. CONDIÇÕES IMPEDITIVAS
+
+- Ausência de permissão de trabalho a quente quando exigida.
+- Atmosfera inflamável ou perigosa sem controle adequado.
+- Presença de materiais combustíveis sem proteção.
+- Equipamentos, cabos, mangueiras ou conexões defeituosos.
+- Ausência dos recursos de prevenção e combate a incêndio previstos.
+- Falta de ventilação ou de controles atmosféricos exigidos para o local.
+- Interferência com outras atividades que gere risco não controlado.
+
+### 5. RESPONSABILIDADES
+
+- **Supervisor:** planejar a atividade e garantir as autorizações e os recursos.
+- **Operação:** confirmar as condições da área e os isolamentos sob sua responsabilidade.
+- **Soldadores:** executar o serviço conforme os procedimentos e requisitos técnicos.
+- **Vigia ou observador de incêndio, quando exigido:** acompanhar a atividade e atuar conforme suas atribuições e o plano de emergência.
+- **Equipe envolvida:** respeitar os isolamentos e comunicar qualquer condição insegura.
+
+### 6. REGISTROS E PARTICIPAÇÃO DA EQUIPE
+
+Registrar data, local, serviço, processo de soldagem, materiais envolvidos, autorização para trabalho a quente quando exigida, controles contra incêndio, riscos adicionais e participantes da AST.
+
+---
