@@ -70,4 +70,4 @@ public class AstConteudoService {
     public ModeloAstDTO obterConteudoPorEspecialidade(EspecialidadeAST especialidade) {
         return CATALOGO_ASTS.get(especialidade);
     }
-}
+} 
